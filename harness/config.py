@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     DEBUG: bool = True
+    SESSION_TIMEOUT_HOURS: int = 24
 
     class Config:
         env_file = ".env"

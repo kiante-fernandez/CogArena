@@ -44,6 +44,31 @@ async def get_manager() -> SessionManager:
 
 # --- API Routes ---
 
+@app.get("/")
+async def root():
+    task_ids = []
+    for task_dir in sorted(settings.TASKS_DIR.iterdir()):
+        if task_dir.is_dir() and (task_dir / "task_config.json").exists():
+            task_ids.append(task_dir.name)
+
+    return {
+        "name": "CogArena",
+        "version": "0.1.0",
+        "description": "Benchmark for testing AI agents on interactive cognitive psychology experiments",
+        "docs": "/docs",
+        "endpoints": {
+            "health": "GET /api/health",
+            "create_session": "POST /api/sessions",
+            "session_status": "GET /api/sessions/{session_id}",
+            "submit_data": "POST /api/data/{session_id}/{task_id}",
+            "evaluate": "POST /api/evaluate/{session_id}",
+            "results": "GET /api/results/{session_id}",
+            "leaderboard": "GET /api/leaderboard",
+        },
+        "tasks": task_ids,
+    }
+
+
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "version": "0.1.0"}
@@ -54,6 +79,16 @@ async def create_session(data: SessionCreate):
     async with async_session_factory() as db:
         mgr = SessionManager(db, settings.TASKS_DIR)
         return await mgr.create_session(data)
+
+
+@app.get("/api/sessions/{session_id}")
+async def get_session(session_id: str):
+    async with async_session_factory() as db:
+        mgr = SessionManager(db, settings.TASKS_DIR)
+        try:
+            return await mgr.get_session_status(session_id)
+        except ValueError as e:
+            raise HTTPException(status_code=404, detail=str(e))
 
 
 @app.post("/api/data/{session_id}/{task_id}")
@@ -110,7 +145,10 @@ async def get_results(session_id: str):
 
 @app.get("/api/leaderboard")
 async def get_leaderboard():
-    return {"entries": [], "note": "Leaderboard not yet populated"}
+    async with async_session_factory() as db:
+        mgr = SessionManager(db, settings.TASKS_DIR)
+        entries = await mgr.get_leaderboard()
+        return {"entries": entries}
 
 
 # --- Static Files (mounted last) ---

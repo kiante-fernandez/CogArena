@@ -1,10 +1,12 @@
 import json
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from harness.config import settings
 from harness.db.models import (
     Session, TaskResult, Score,
     SessionCreate, SessionResponse, TaskInfo, TaskScore, ScorecardResponse,
@@ -29,7 +31,7 @@ class SessionManager:
         self.db.add(session)
         await self.db.commit()
 
-        tasks = self.get_available_tasks(session_id)
+        tasks = await self._get_tasks_with_status(session_id)
         return SessionResponse(session_id=session_id, tasks=tasks, status="created")
 
     def get_available_tasks(self, session_id: str) -> list[TaskInfo]:
@@ -43,13 +45,40 @@ class SessionManager:
                 ))
         return tasks
 
-    async def submit_trial_data(
-        self, session_id: str, task_id: str, trial_data: list[dict], metadata: dict | None = None
-    ) -> None:
+    async def _get_tasks_with_status(self, session_id: str) -> list[TaskInfo]:
+        completed_result = await self.db.execute(
+            select(TaskResult.task_id).where(TaskResult.session_id == session_id)
+        )
+        completed_ids = set(completed_result.scalars().all())
+
+        tasks = []
+        for task_dir in sorted(self.tasks_dir.iterdir()):
+            config_path = task_dir / "task_config.json"
+            if task_dir.is_dir() and config_path.exists():
+                tasks.append(TaskInfo(
+                    task_id=task_dir.name,
+                    url=f"/tasks/{task_dir.name}/?session_id={session_id}",
+                    completed=task_dir.name in completed_ids,
+                ))
+        return tasks
+
+    async def validate_session_active(self, session_id: str) -> Session:
         result = await self.db.execute(select(Session).where(Session.id == session_id))
         session = result.scalar_one_or_none()
         if session is None:
             raise ValueError(f"Session {session_id} not found")
+        if session.status == "scored":
+            raise ValueError(f"Session {session_id} already scored")
+        if session.created_at:
+            age = datetime.now(timezone.utc) - session.created_at.replace(tzinfo=timezone.utc)
+            if age.total_seconds() > settings.SESSION_TIMEOUT_HOURS * 3600:
+                raise ValueError(f"Session {session_id} expired")
+        return session
+
+    async def submit_trial_data(
+        self, session_id: str, task_id: str, trial_data: list[dict], metadata: dict | None = None
+    ) -> None:
+        await self.validate_session_active(session_id)
 
         existing = await self.db.execute(
             select(TaskResult).where(
@@ -67,7 +96,10 @@ class SessionManager:
         )
         self.db.add(task_result)
 
-        session.status = "in_progress"
+        result = await self.db.execute(select(Session).where(Session.id == session_id))
+        session = result.scalar_one_or_none()
+        if session:
+            session.status = "in_progress"
         await self.db.commit()
 
     async def get_session_status(self, session_id: str) -> SessionResponse:
@@ -76,7 +108,7 @@ class SessionManager:
         if session is None:
             raise ValueError(f"Session {session_id} not found")
 
-        tasks = self.get_available_tasks(session_id)
+        tasks = await self._get_tasks_with_status(session_id)
         return SessionResponse(session_id=session_id, tasks=tasks, status=session.status)
 
     async def get_trial_data(self, session_id: str, task_id: str) -> list[dict] | None:
@@ -156,3 +188,36 @@ class SessionManager:
         if session:
             session.status = "scored"
             await self.db.commit()
+
+    async def get_leaderboard(self) -> list[dict]:
+        result = await self.db.execute(
+            select(Session).where(Session.status == "scored")
+        )
+        sessions = list(result.scalars().all())
+
+        entries = []
+        for session in sessions:
+            scores_result = await self.db.execute(
+                select(Score).where(Score.session_id == session.id)
+            )
+            scores = list(scores_result.scalars().all())
+            if not scores:
+                continue
+
+            n = len(scores)
+            entries.append({
+                "session_id": session.id,
+                "agent_name": session.agent_name,
+                "scaffold": session.scaffold,
+                "model_name": session.model_name,
+                "observation_mode": session.observation_mode,
+                "composite_score": round(sum(s.composite for s in scores) / n, 2),
+                "l1_overall": round(sum(s.l1_completion for s in scores) / n, 4),
+                "l2_overall": round(sum(s.l2_accuracy for s in scores) / n, 4),
+                "l3_overall": round(sum(s.l3_behavioral for s in scores) / n, 4),
+                "tasks_completed": n,
+                "evaluated_at": session.updated_at.isoformat() if session.updated_at else None,
+            })
+
+        entries.sort(key=lambda e: e["composite_score"], reverse=True)
+        return entries

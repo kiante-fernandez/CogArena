@@ -65,6 +65,7 @@ class SessionCreate(BaseModel):
 class TaskInfo(BaseModel):
     task_id: str
     url: str
+    completed: bool = False
 
 
 class SessionResponse(BaseModel):
