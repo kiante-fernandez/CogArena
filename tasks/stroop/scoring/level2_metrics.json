@@ -1,0 +1,41 @@
+{
+    "task_id": "stroop",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "description": "Proportion of correct responses across all conditions",
+            "type": "proportion_correct",
+            "field": "correct",
+            "human_mean": 0.95,
+            "human_sd": 0.04
+        },
+        {
+            "name": "congruent_accuracy",
+            "description": "Accuracy on congruent trials",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"condition": "congruent"},
+            "human_mean": 0.97,
+            "human_sd": 0.03
+        },
+        {
+            "name": "incongruent_accuracy",
+            "description": "Accuracy on incongruent trials",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"condition": "incongruent"},
+            "human_mean": 0.92,
+            "human_sd": 0.06
+        },
+        {
+            "name": "mean_correct_rt",
+            "description": "Mean RT on correct trials (ms)",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"correct": true},
+            "human_mean": 680,
+            "human_sd": 120,
+            "direction": "lower_is_better"
+        }
+    ]
+}

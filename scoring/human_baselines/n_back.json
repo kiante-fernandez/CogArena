@@ -1,0 +1,13 @@
+{
+    "task_id": "n_back",
+    "source": "Owen et al. (2005) - N-back meta-analysis; Jaeggi et al. (2010)",
+    "note": "Placeholder literature estimates for 2-back. Replace with empirical Prolific data in Phase 5.",
+    "baselines": {
+        "d_prime": {"mean": 2.5, "sd": 0.8, "n": 100},
+        "hit_rate": {"mean": 0.75, "sd": 0.12, "n": 100},
+        "false_alarm_rate": {"mean": 0.15, "sd": 0.08, "n": 100},
+        "overall_accuracy": {"mean": 0.82, "sd": 0.08, "n": 100},
+        "mean_correct_rt": {"mean": 550, "sd": 120, "n": 100},
+        "lure_false_alarm_rate": {"mean": 0.30, "sd": 0.15, "n": 100}
+    }
+}

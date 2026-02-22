@@ -1,0 +1,22 @@
+{
+    "task_id": "trust_game",
+    "task_name": "Trust Game",
+    "domain": "social_strategic",
+    "description": "Investment game with simulated partners of varying trustworthiness",
+    "parameters": {
+        "n_trials": 15,
+        "n_rounds": 15,
+        "endowment": 10,
+        "multiplier": 3,
+        "trustee_types": {
+            "cooperative": {"return_rate_min": 0.40, "return_rate_max": 0.60, "n_rounds": 5},
+            "neutral": {"return_rate_min": 0.25, "return_rate_max": 0.35, "n_rounds": 5},
+            "defecting": {"return_rate_min": 0.05, "return_rate_max": 0.15, "n_rounds": 5}
+        },
+        "response_type": "slider",
+        "response_field": "amount_sent",
+        "slider_range": [0, 10],
+        "response_deadline_ms": 15000,
+        "required_fields": ["trial_index", "round", "amount_sent", "amount_returned", "net_payoff"]
+    }
+}

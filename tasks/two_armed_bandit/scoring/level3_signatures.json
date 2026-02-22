@@ -1,0 +1,37 @@
+{
+    "task_id": "two_armed_bandit",
+    "signatures": [
+        {
+            "name": "horizon_effect_exploration",
+            "description": "More exploration in horizon-6 than horizon-1 games",
+            "test": "paired_ttest_greater",
+            "group_a": {"filter": {"horizon": 6}, "field": "explore_choice"},
+            "group_b": {"filter": {"horizon": 1}, "field": "explore_choice"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "win_stay",
+            "description": "After winning, tendency to stay on same arm above chance",
+            "test": "proportion_test",
+            "filter": {"prev_win": true},
+            "field": "stayed",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        },
+        {
+            "name": "directed_exploration",
+            "description": "In horizon-6 with unequal info, choose less-sampled arm above chance",
+            "test": "proportion_test",
+            "filter": {"horizon": 6, "info_condition": "unequal"},
+            "field": "chose_less_sampled",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        }
+    ]
+}

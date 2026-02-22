@@ -1,0 +1,11 @@
+{
+  // tsconfig for the jsPsych monorepo
+  "extends": "@jspsych/config/tsconfig.json",
+  "compilerOptions": {
+    // map package imports directly to their source files
+    "paths": {
+      "jspsych": ["../jspsych/src"],
+      "@jspsych/*": ["../*/src"]
+    },
+  }
+}

@@ -1,0 +1,21 @@
+{
+    "task_id": "n_back",
+    "task_name": "N-Back (2-Back)",
+    "domain": "memory_learning",
+    "description": "Working memory task: respond when current letter matches the one 2 trials back",
+    "parameters": {
+        "n_trials": 120,
+        "n_blocks": 5,
+        "trials_per_block": 24,
+        "n_back_level": 2,
+        "target_proportion": 0.30,
+        "lure_proportion": 0.10,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 2000,
+        "stimulus_duration_ms": 1500,
+        "isi_ms": 500,
+        "fixation_duration_ms": 500,
+        "required_fields": ["trial_index", "block", "stimulus", "n_back_match", "correct", "hit", "false_alarm"]
+    }
+}

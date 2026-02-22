@@ -1,0 +1,36 @@
+{
+    "task_id": "risky_choice",
+    "metrics": [
+        {
+            "name": "overall_risky_choice_rate",
+            "type": "proportion_correct",
+            "field": "chose_risky",
+            "human_mean": 0.45,
+            "human_sd": 0.15
+        },
+        {
+            "name": "gain_risky_rate",
+            "type": "proportion_correct",
+            "field": "chose_risky",
+            "filter": {"domain": "gain"},
+            "human_mean": 0.35,
+            "human_sd": 0.18
+        },
+        {
+            "name": "loss_risky_rate",
+            "type": "proportion_correct",
+            "field": "chose_risky",
+            "filter": {"domain": "loss"},
+            "human_mean": 0.55,
+            "human_sd": 0.18
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "human_mean": 2500,
+            "human_sd": 800,
+            "direction": "lower_is_better"
+        }
+    ]
+}

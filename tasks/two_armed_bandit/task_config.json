@@ -1,0 +1,22 @@
+{
+    "task_id": "two_armed_bandit",
+    "task_name": "2-Armed Bandit (Horizon Task)",
+    "domain": "multi_armed_bandits",
+    "description": "Explore-exploit tradeoff with horizon manipulation",
+    "parameters": {
+        "n_trials": 80,
+        "n_games": 40,
+        "games_per_horizon": 20,
+        "horizons": [1, 6],
+        "n_forced": 4,
+        "reward_mean": 50,
+        "reward_sd": 10,
+        "mean_separation_range": [4, 12],
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "fixation_duration_ms": 500,
+        "feedback_duration_ms": 1500,
+        "required_fields": ["trial_index", "game_index", "horizon", "trial_in_game", "trial_type", "arm_chosen", "reward", "correct"]
+    }
+}

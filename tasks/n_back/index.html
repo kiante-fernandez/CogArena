@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CogArena - N-Back</title>
+    <script src="/jsPsych-8.2.3/packages/jspsych/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-html-keyboard-response/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-instructions/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-call-function/dist/index.browser.js"></script>
+    <link rel="stylesheet" href="/jsPsych-8.2.3/packages/jspsych/css/jspsych.css">
+    <style>
+        .nback-stimulus {
+            font-size: 96px;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .nback-prompt {
+            font-size: 24px;
+            color: #666;
+            margin-top: 20px;
+        }
+        .fixation { font-size: 48px; }
+        .feedback { font-size: 28px; }
+        .example-sequence {
+            font-size: 36px;
+            font-family: monospace;
+            letter-spacing: 20px;
+            margin: 20px;
+        }
+        .example-match {
+            color: #2e7d32;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .example-normal { color: #333; }
+    </style>
+</head>
+<body>
+    <script src="experiment.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+    "task_id": "trust_game",
+    "signatures": [
+        {
+            "name": "above_zero_trust",
+            "description": "Agent sends non-zero amount in most rounds",
+            "test": "proportion_test",
+            "filter": {},
+            "field": "sent_nonzero",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "reciprocity_sensitivity",
+            "description": "Amount sent correlates with previous round return",
+            "test": "correlation_test",
+            "field_x": "prev_return_proportion",
+            "field_y": "amount_sent_proportion",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "trustee_type_adaptation",
+            "description": "Higher investment to cooperative vs defecting trustees",
+            "test": "paired_ttest_greater",
+            "group_a": {"filter": {"trustee_type": "cooperative"}, "field": "amount_sent_proportion"},
+            "group_b": {"filter": {"trustee_type": "defecting"}, "field": "amount_sent_proportion"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 0.75
+        }
+    ]
+}

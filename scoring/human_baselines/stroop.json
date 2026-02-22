@@ -1,0 +1,11 @@
+{
+    "task_id": "stroop",
+    "source": "literature_estimates",
+    "note": "Placeholder values from published Stroop meta-analyses. Replace with empirical data in Phase 5.",
+    "overall_accuracy": {"mean": 0.95, "sd": 0.04, "n": 100},
+    "congruent_accuracy": {"mean": 0.97, "sd": 0.03},
+    "incongruent_accuracy": {"mean": 0.92, "sd": 0.06},
+    "mean_correct_rt": {"mean": 680, "sd": 120},
+    "stroop_effect_rt": {"mean": 80, "sd": 40},
+    "post_error_slowing": {"mean": 30, "sd": 25}
+}

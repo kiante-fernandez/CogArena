@@ -1,0 +1,20 @@
+{
+    "task_id": "trust_game",
+    "metrics": [
+        {
+            "name": "mean_investment_proportion",
+            "type": "mean",
+            "field": "amount_sent_proportion",
+            "human_mean": 0.50,
+            "human_sd": 0.15
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "human_mean": 4000,
+            "human_sd": 1500,
+            "direction": "lower_is_better"
+        }
+    ]
+}

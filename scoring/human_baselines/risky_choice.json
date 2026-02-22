@@ -1,0 +1,12 @@
+{
+    "task_id": "risky_choice",
+    "source": "Kahneman & Tversky (1979) Prospect Theory; Tversky & Kahneman (1992) CPT",
+    "note": "Placeholder literature estimates. Replace with empirical Prolific data in Phase 5.",
+    "baselines": {
+        "overall_risky_choice_rate": {"mean": 0.45, "sd": 0.15, "n": 100},
+        "gain_risky_rate": {"mean": 0.35, "sd": 0.18, "n": 100},
+        "loss_risky_rate": {"mean": 0.55, "sd": 0.18, "n": 100},
+        "mixed_risky_rate": {"mean": 0.42, "sd": 0.16, "n": 100},
+        "mean_rt": {"mean": 2500, "sd": 800, "n": 100}
+    }
+}

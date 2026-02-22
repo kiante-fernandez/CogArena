@@ -1,0 +1,47 @@
+{
+    "task_id": "stroop",
+    "signatures": [
+        {
+            "name": "stroop_interference_rt",
+            "description": "RT on incongruent trials > RT on congruent trials",
+            "test": "paired_ttest_greater",
+            "group_a": {"filter": {"condition": "incongruent"}, "field": "rt"},
+            "group_b": {"filter": {"condition": "congruent"}, "field": "rt"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "stroop_interference_accuracy",
+            "description": "Accuracy on congruent > accuracy on incongruent",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"condition": "congruent"}, "field": "correct"},
+            "group_b": {"filter": {"condition": "incongruent"}, "field": "correct"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 0.5
+        },
+        {
+            "name": "post_error_slowing",
+            "description": "RT increases after an error trial",
+            "test": "sequential_regression",
+            "predictor": {"field": "correct", "lag": 1, "invert": true},
+            "outcome": {"field": "rt"},
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "congruency_sequence_effect",
+            "description": "Stroop effect is smaller after incongruent trials (Gratton effect)",
+            "test": "interaction_test",
+            "pre_filter": {"condition": ["congruent", "incongruent"]},
+            "factor_a": {"field": "condition", "levels": ["congruent", "incongruent"]},
+            "factor_b": {"field": "condition", "lag": 1, "levels": ["congruent", "incongruent"]},
+            "outcome": {"field": "rt"},
+            "expected_direction": "negative_interaction",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "task_id": "two_armed_bandit",
+    "source": "Wilson et al. (2014) - Humans use directed and random exploration to solve the explore-exploit dilemma",
+    "note": "Placeholder literature estimates. Replace with empirical Prolific data in Phase 5.",
+    "baselines": {
+        "overall_optimal_choice": {"mean": 0.65, "sd": 0.10, "n": 50},
+        "horizon1_optimal": {"mean": 0.70, "sd": 0.12, "n": 50},
+        "horizon6_optimal": {"mean": 0.62, "sd": 0.12, "n": 50},
+        "mean_rt": {"mean": 800, "sd": 200, "n": 50},
+        "exploration_rate_h1": {"mean": 0.30, "sd": 0.12, "n": 50},
+        "exploration_rate_h6": {"mean": 0.38, "sd": 0.12, "n": 50},
+        "directed_exploration_rate": {"mean": 0.55, "sd": 0.15, "n": 50}
+    }
+}

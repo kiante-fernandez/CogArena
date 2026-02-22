@@ -1,0 +1,16 @@
+{
+    "task_id": "risky_choice",
+    "task_name": "Risky Choice (Gambles)",
+    "domain": "decision_making",
+    "description": "Binary choices between safe and risky options across gain, loss, and mixed domains",
+    "parameters": {
+        "n_trials": 60,
+        "domains": ["gain", "loss", "mixed"],
+        "trials_per_domain": 20,
+        "probabilities": [0.1, 0.25, 0.5, 0.75, 0.9],
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 10000,
+        "required_fields": ["trial_index", "domain", "probability", "chose_risky", "chose_safe", "rt"]
+    }
+}

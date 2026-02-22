@@ -1,0 +1,11 @@
+{
+    "task_id": "trust_game",
+    "source": "Berg, Dickhaut & McCabe (1995); Johnson & Mislin (2011) meta-analysis",
+    "note": "Placeholder literature estimates. Replace with empirical Prolific data in Phase 5.",
+    "baselines": {
+        "mean_investment_proportion": {"mean": 0.50, "sd": 0.15, "n": 100},
+        "mean_rt": {"mean": 4000, "sd": 1500, "n": 100},
+        "trust_rate": {"mean": 0.85, "sd": 0.12, "n": 100},
+        "reciprocity_correlation": {"mean": 0.35, "sd": 0.20, "n": 100}
+    }
+}

@@ -1,0 +1,45 @@
+{
+    "task_id": "n_back",
+    "metrics": [
+        {
+            "name": "d_prime",
+            "type": "d_prime",
+            "field": "correct",
+            "human_mean": 2.5,
+            "human_sd": 0.8
+        },
+        {
+            "name": "hit_rate",
+            "type": "proportion_correct",
+            "field": "hit",
+            "filter": {"n_back_match": true},
+            "human_mean": 0.75,
+            "human_sd": 0.12
+        },
+        {
+            "name": "false_alarm_rate",
+            "type": "proportion_correct",
+            "field": "false_alarm",
+            "filter": {"n_back_match": false},
+            "human_mean": 0.15,
+            "human_sd": 0.08,
+            "direction": "lower_is_better"
+        },
+        {
+            "name": "overall_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "human_mean": 0.82,
+            "human_sd": 0.08
+        },
+        {
+            "name": "mean_correct_rt",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"correct": true},
+            "human_mean": 550,
+            "human_sd": 120,
+            "direction": "lower_is_better"
+        }
+    ]
+}

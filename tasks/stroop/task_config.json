@@ -1,0 +1,32 @@
+{
+    "task_id": "stroop",
+    "task_name": "Stroop Color-Word Interference Task",
+    "domain": "perception_attention",
+    "version": "1.0.0",
+    "citation": "Stroop, 1935",
+    "psych201_reference": "busch2024_stroop",
+    "cogbench_reference": null,
+    "parameters": {
+        "n_trials": 96,
+        "n_blocks": 4,
+        "trials_per_block": 24,
+        "conditions": ["congruent", "incongruent", "neutral"],
+        "proportion_congruent": 0.33,
+        "stimulus_duration_ms": null,
+        "fixation_duration_ms": 500,
+        "response_deadline_ms": 5000,
+        "response_keys": ["d", "f", "j", "k"],
+        "color_key_mapping": {"red": "d", "blue": "f", "green": "j", "yellow": "k"}
+    },
+    "randomization": {
+        "seed_from_session": true,
+        "randomize_trial_order": true,
+        "randomize_color_assignment": true
+    },
+    "data_logging": {
+        "required_fields": [
+            "trial_index", "block", "condition", "stimulus_word",
+            "stimulus_color", "response", "rt", "correct"
+        ]
+    }
+}
