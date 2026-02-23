@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ task.task_name }} — CogArena{% endblock %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-gray-400 mb-6">
+        <a href="/catalog" class="hover:text-black transition-colors">Tasks</a>
+        <span class="mx-2">/</span>
+        <span class="text-gray-700">{{ task.task_name }}</span>
+    </nav>
+
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-bold mb-2">{{ task.task_name }}</h1>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded domain-{{ task.domain }}">
+                {{ task.domain_label }}
+            </span>
+            {% if task.citation %}
+            <span class="text-sm text-gray-400 ml-3">{{ task.citation }}</span>
+            {% endif %}
+        </div>
+        <a href="/tasks/{{ task.task_id }}/?session_id=demo" class="shrink-0 text-sm font-medium text-white bg-black rounded-lg px-5 py-2.5 hover:bg-gray-800 transition-colors">
+            Try This Task
+        </a>
+    </div>
+
+    {% if task.description %}
+    <p class="text-gray-600 text-lg mb-8">{{ task.description }}</p>
+    {% endif %}
+
+    <!-- Parameters -->
+    <div class="rounded-xl border border-gray-200 p-6 mb-6">
+        <h2 class="font-semibold text-lg mb-4">Parameters</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+            <div>
+                <span class="text-gray-400 block">Trials</span>
+                <span class="font-medium">{{ task.n_trials }}</span>
+            </div>
+            {% if task.parameters.get('n_blocks') %}
+            <div>
+                <span class="text-gray-400 block">Blocks</span>
+                <span class="font-medium">{{ task.parameters.n_blocks }}</span>
+            </div>
+            {% endif %}
+            <div>
+                <span class="text-gray-400 block">Response Type</span>
+                <span class="font-medium">{{ task.response_label }}</span>
+            </div>
+            <div>
+                <span class="text-gray-400 block">Response Deadline</span>
+                <span class="font-medium">{{ task.parameters.get('response_deadline_ms', 'N/A') }}ms</span>
+            </div>
+            {% if task.parameters.get('response_keys') %}
+            <div>
+                <span class="text-gray-400 block">Response Keys</span>
+                <span class="font-medium">{{ task.parameters.response_keys | join(', ') | upper }}</span>
+            </div>
+            {% endif %}
+            {% if task.parameters.get('conditions') %}
+            <div>
+                <span class="text-gray-400 block">Conditions</span>
+                <span class="font-medium">{{ task.parameters.conditions | join(', ') }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Measured Behaviors -->
+    {% if signatures %}
+    <div class="rounded-xl border border-gray-200 p-6 mb-6">
+        <h2 class="font-semibold text-lg mb-4">Measured Behaviors</h2>
+        <div class="divide-y divide-gray-100">
+            {% for sig in signatures %}
+            <div class="py-3">
+                <span class="font-medium text-sm">{{ sig.name | replace('_', ' ') | title }}</span>
+                <p class="text-sm text-gray-500 mt-1">{{ sig.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-8">
+        <a href="/catalog" class="text-sm text-gray-500 hover:text-black transition-colors">&larr; Back to all tasks</a>
+    </div>
+</section>
+{% endblock %}

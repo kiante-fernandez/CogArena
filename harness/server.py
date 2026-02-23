@@ -2,9 +2,10 @@ import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from harness.config import settings
@@ -16,6 +17,60 @@ from scoring.score_session import score_task
 
 engine = create_async_engine(settings.DATABASE_URL, echo=settings.DEBUG)
 async_session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+PROJECT_ROOT = Path(__file__).parent.parent
+templates = Jinja2Templates(directory=str(PROJECT_ROOT / "templates"))
+
+DOMAIN_LABELS = {
+    "perception_attention": "Perception & Attention",
+    "multi_armed_bandits": "Bandits & Exploration",
+    "decision_making": "Decision-Making",
+    "social_strategic": "Social & Strategic",
+    "memory_learning": "Memory & Learning",
+    "reinforcement_learning": "Reinforcement Learning",
+}
+
+
+def _load_tasks_meta() -> list[dict]:
+    """Load task metadata from all task_config.json files."""
+    tasks = []
+    for task_dir in sorted(settings.TASKS_DIR.iterdir()):
+        config_path = task_dir / "task_config.json"
+        if not (task_dir.is_dir() and config_path.exists()):
+            continue
+        with open(config_path) as f:
+            config = json.load(f)
+
+        params = config.get("parameters", {})
+        response_type = params.get("response_type", "keypress")
+        response_keys = params.get("response_keys", [])
+        if response_type == "slider":
+            response_label = "Slider"
+        elif response_keys:
+            response_label = f"Keypress: {', '.join(k.upper() for k in response_keys)}"
+        else:
+            response_label = "Keypress"
+
+        # Count L3 signatures
+        sig_path = task_dir / "scoring" / "level3_signatures.json"
+        n_sigs = 0
+        if sig_path.exists():
+            with open(sig_path) as f:
+                n_sigs = len(json.load(f).get("signatures", []))
+
+        tasks.append({
+            "task_id": config["task_id"],
+            "task_name": config.get("task_name", config["task_id"]),
+            "domain": config.get("domain", "unknown"),
+            "domain_label": DOMAIN_LABELS.get(config.get("domain", ""), config.get("domain", "")),
+            "description": config.get("description", ""),
+            "citation": config.get("citation", ""),
+            "n_trials": params.get("n_trials", 0),
+            "response_label": response_label,
+            "n_signatures": n_sigs,
+            "parameters": params,
+        })
+    return tasks
 
 
 @asynccontextmanager
@@ -37,15 +92,69 @@ app.add_middleware(
 )
 
 
-async def get_manager() -> SessionManager:
-    async with async_session_factory() as db:
-        yield SessionManager(db, settings.TASKS_DIR)
+# --- Website Routes ---
+
+@app.get("/", include_in_schema=False)
+async def landing_page(request: Request):
+    tasks = _load_tasks_meta()
+    domains = set(t["domain"] for t in tasks)
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "task_count": len(tasks),
+        "domain_count": len(domains),
+    })
+
+
+@app.get("/catalog", include_in_schema=False)
+async def catalog_page(request: Request):
+    tasks = _load_tasks_meta()
+    domains = set(t["domain"] for t in tasks)
+    return templates.TemplateResponse("catalog.html", {
+        "request": request,
+        "tasks": tasks,
+        "domains": domains,
+    })
+
+
+@app.get("/catalog/{task_id}", include_in_schema=False)
+async def task_detail_page(request: Request, task_id: str):
+    tasks = _load_tasks_meta()
+    task = next((t for t in tasks if t["task_id"] == task_id), None)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Load behavioral signatures for display
+    signatures = []
+    sig_path = settings.TASKS_DIR / task_id / "scoring" / "level3_signatures.json"
+    if sig_path.exists():
+        with open(sig_path) as f:
+            signatures = json.load(f).get("signatures", [])
+
+    return templates.TemplateResponse("task_detail.html", {
+        "request": request,
+        "task": task,
+        "signatures": signatures,
+    })
+
+
+@app.get("/leaderboard", include_in_schema=False)
+async def leaderboard_page(request: Request):
+    return templates.TemplateResponse("leaderboard.html", {"request": request})
+
+
+@app.get("/try", include_in_schema=False)
+async def try_page(request: Request):
+    tasks = _load_tasks_meta()
+    return templates.TemplateResponse("try.html", {
+        "request": request,
+        "tasks": tasks,
+    })
 
 
 # --- API Routes ---
 
-@app.get("/")
-async def root():
+@app.get("/api/info", summary="Server info and available endpoints")
+async def api_info():
     task_ids = []
     for task_dir in sorted(settings.TASKS_DIR.iterdir()):
         if task_dir.is_dir() and (task_dir / "task_config.json").exists():
@@ -57,7 +166,9 @@ async def root():
         "description": "Benchmark for testing AI agents on interactive cognitive psychology experiments",
         "docs": "/docs",
         "endpoints": {
+            "info": "GET /api/info",
             "health": "GET /api/health",
+            "tasks": "GET /api/tasks",
             "create_session": "POST /api/sessions",
             "session_status": "GET /api/sessions/{session_id}",
             "submit_data": "POST /api/data/{session_id}/{task_id}",
@@ -69,19 +180,24 @@ async def root():
     }
 
 
-@app.get("/api/health")
+@app.get("/api/health", summary="Health check")
 async def health():
     return {"status": "ok", "version": "0.1.0"}
 
 
-@app.post("/api/sessions")
+@app.get("/api/tasks", summary="List all available tasks with configuration")
+async def list_tasks():
+    return {"tasks": _load_tasks_meta()}
+
+
+@app.post("/api/sessions", summary="Create a new evaluation session")
 async def create_session(data: SessionCreate):
     async with async_session_factory() as db:
         mgr = SessionManager(db, settings.TASKS_DIR)
         return await mgr.create_session(data)
 
 
-@app.get("/api/sessions/{session_id}")
+@app.get("/api/sessions/{session_id}", summary="Get session status and task completion")
 async def get_session(session_id: str):
     async with async_session_factory() as db:
         mgr = SessionManager(db, settings.TASKS_DIR)
@@ -91,7 +207,7 @@ async def get_session(session_id: str):
             raise HTTPException(status_code=404, detail=str(e))
 
 
-@app.post("/api/data/{session_id}/{task_id}")
+@app.post("/api/data/{session_id}/{task_id}", summary="Submit trial data for a task")
 async def submit_data(session_id: str, task_id: str, body: TrialDataSubmission):
     async with async_session_factory() as db:
         mgr = SessionManager(db, settings.TASKS_DIR)
@@ -104,7 +220,7 @@ async def submit_data(session_id: str, task_id: str, body: TrialDataSubmission):
     return {"status": "ok", "session_id": session_id, "task_id": task_id}
 
 
-@app.post("/api/evaluate/{session_id}")
+@app.post("/api/evaluate/{session_id}", summary="Trigger scoring for a session")
 async def evaluate_session(session_id: str):
     async with async_session_factory() as db:
         mgr = SessionManager(db, settings.TASKS_DIR)
@@ -133,7 +249,7 @@ async def evaluate_session(session_id: str):
     return {"status": "scored", "session_id": session_id}
 
 
-@app.get("/api/results/{session_id}")
+@app.get("/api/results/{session_id}", summary="Get scorecard for a scored session")
 async def get_results(session_id: str):
     async with async_session_factory() as db:
         mgr = SessionManager(db, settings.TASKS_DIR)
@@ -143,7 +259,7 @@ async def get_results(session_id: str):
             raise HTTPException(status_code=404, detail=str(e))
 
 
-@app.get("/api/leaderboard")
+@app.get("/api/leaderboard", summary="Get ranked leaderboard of all scored sessions")
 async def get_leaderboard():
     async with async_session_factory() as db:
         mgr = SessionManager(db, settings.TASKS_DIR)
@@ -152,6 +268,14 @@ async def get_leaderboard():
 
 
 # --- Static Files (mounted last) ---
+
+static_dir = PROJECT_ROOT / "static"
+if static_dir.exists():
+    app.mount(
+        "/static",
+        StaticFiles(directory=str(static_dir)),
+        name="static",
+    )
 
 if settings.JSPSYCH_DIR.exists():
     app.mount(

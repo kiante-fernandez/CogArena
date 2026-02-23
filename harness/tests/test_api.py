@@ -164,8 +164,14 @@ async def test_health(client: AsyncClient):
     assert data["status"] == "ok"
 
 
-async def test_root(client: AsyncClient):
+async def test_root_html(client: AsyncClient):
     resp = await client.get("/")
+    assert resp.status_code == 200
+    assert "text/html" in resp.headers["content-type"]
+
+
+async def test_api_info(client: AsyncClient):
+    resp = await client.get("/api/info")
     assert resp.status_code == 200
     data = resp.json()
     assert data["name"] == "CogArena"
