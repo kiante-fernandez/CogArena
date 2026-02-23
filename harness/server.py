@@ -4,6 +4,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
@@ -123,17 +124,9 @@ async def task_detail_page(request: Request, task_id: str):
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    # Load behavioral signatures for display
-    signatures = []
-    sig_path = settings.TASKS_DIR / task_id / "scoring" / "level3_signatures.json"
-    if sig_path.exists():
-        with open(sig_path) as f:
-            signatures = json.load(f).get("signatures", [])
-
     return templates.TemplateResponse("task_detail.html", {
         "request": request,
         "task": task,
-        "signatures": signatures,
     })
 
 
@@ -151,6 +144,21 @@ async def try_page(request: Request):
     })
 
 
+@app.get("/submit", include_in_schema=False)
+async def submit_page(request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    return templates.TemplateResponse("submit.html", {
+        "request": request,
+        "base_url": base_url,
+    })
+
+
+@app.get("/skill.md", include_in_schema=False)
+async def skill_file():
+    skill_path = PROJECT_ROOT / "static" / "skill.md"
+    return PlainTextResponse(skill_path.read_text(), media_type="text/markdown")
+
+
 # --- API Routes ---
 
 @app.get("/api/info", summary="Server info and available endpoints")
@@ -163,7 +171,7 @@ async def api_info():
     return {
         "name": "CogArena",
         "version": "0.1.0",
-        "description": "Benchmark for testing AI agents on interactive cognitive psychology experiments",
+        "description": "Benchmark for testing AI agents on interactive behavioral experiments",
         "docs": "/docs",
         "endpoints": {
             "info": "GET /api/info",

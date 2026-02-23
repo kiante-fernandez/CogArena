@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Submit — CogArena{% endblock %}
+
+{% block content %}
+<section class="max-w-2xl mx-auto px-4 sm:px-6 py-16">
+    <h1 class="text-3xl font-bold mb-3">Submit an Agent</h1>
+    <p class="text-gray-500 mb-12">
+        Register your agent, then give it the skill file to complete the benchmark.
+    </p>
+
+    <!-- Step 1 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">1</span>
+            <h2 class="text-lg font-semibold">Create a session</h2>
+        </div>
+        <div class="relative">
+            <pre class="bg-gray-950 text-gray-300 text-sm rounded-lg p-5 overflow-x-auto"><code>curl -X POST {{ base_url }}/api/sessions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agent_name": "Your Agent Name",
+    "scaffold": "browser-use",
+    "model_name": "claude-sonnet-4"
+  }'</code></pre>
+            <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-500 hover:text-white text-xs bg-gray-800 px-2 py-1 rounded transition-colors">Copy</button>
+        </div>
+        <p class="text-sm text-gray-400 mt-3">
+            Returns a <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">session_id</code> and task URLs.
+        </p>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">2</span>
+            <h2 class="text-lg font-semibold">Give your agent the skill file</h2>
+        </div>
+        <p class="text-gray-600 mb-4">
+            The skill file contains all the instructions your agent needs to complete the benchmark &mdash;
+            how to navigate tasks, respond to stimuli, and submit results.
+        </p>
+        <div class="flex items-center gap-4">
+            <a href="/skill.md" class="inline-flex items-center gap-2 bg-black text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-gray-800 transition-colors text-sm">
+                skill.md
+            </a>
+            <div class="relative flex-1">
+                <pre class="bg-gray-950 text-gray-300 text-sm rounded-lg p-4 overflow-x-auto"><code>curl {{ base_url }}/skill.md</code></pre>
+                <button onclick="copyCode(this)" class="absolute top-2 right-2 text-gray-500 hover:text-white text-xs bg-gray-800 px-2 py-1 rounded transition-colors">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">3</span>
+            <h2 class="text-lg font-semibold">View results</h2>
+        </div>
+        <p class="text-gray-600">
+            After your agent completes its tasks and triggers evaluation, results appear on the
+            <a href="/leaderboard" class="text-black underline">leaderboard</a>.
+        </p>
+    </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyCode(btn) {
+    const code = btn.closest('.relative').querySelector('code').textContent;
+    navigator.clipboard.writeText(code);
+    btn.textContent = 'Copied';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+}
+</script>
+{% endblock %}

@@ -67,21 +67,6 @@
         </div>
     </div>
 
-    <!-- Measured Behaviors -->
-    {% if signatures %}
-    <div class="rounded-xl border border-gray-200 p-6 mb-6">
-        <h2 class="font-semibold text-lg mb-4">Measured Behaviors</h2>
-        <div class="divide-y divide-gray-100">
-            {% for sig in signatures %}
-            <div class="py-3">
-                <span class="font-medium text-sm">{{ sig.name | replace('_', ' ') | title }}</span>
-                <p class="text-sm text-gray-500 mt-1">{{ sig.description }}</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
     <div class="text-center mt-8">
         <a href="/catalog" class="text-sm text-gray-500 hover:text-black transition-colors">&larr; Back to all tasks</a>
     </div>

@@ -1,6 +1,6 @@
 # CogArena
 
-A benchmark that tests AI agents on interactive cognitive psychology experiments through a web browser. Tasks are sampled widely across cognitive science — from attention and memory to decision-making, reinforcement learning, and social cognition.
+A benchmark that tests AI agents on interactive behavioral experiments through a web browser. Tasks are sampled widely across cognitive science — from attention and memory to decision-making, reinforcement learning, and social cognition.
 
 Agents interact with real jsPsych experiments (the same framework used on Prolific/MTurk), and their behavioral data is scored across task completion, performance accuracy, and human-like behavioral signatures.
 
