@@ -1,0 +1,37 @@
+{
+    "task_id": "reversal_learning",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "human_mean": 0.72,
+            "human_sd": 0.10
+        },
+        {
+            "name": "pre_reversal_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"phase": "pre_reversal"},
+            "human_mean": 0.85,
+            "human_sd": 0.08
+        },
+        {
+            "name": "post_reversal_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"phase": "post_reversal"},
+            "human_mean": 0.45,
+            "human_sd": 0.15
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"correct": true},
+            "human_mean": 600,
+            "human_sd": 150,
+            "direction": "lower_is_better"
+        }
+    ]
+}

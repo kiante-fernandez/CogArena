@@ -1,0 +1,37 @@
+{
+    "task_id": "reversal_learning",
+    "signatures": [
+        {
+            "name": "above_chance_pre_reversal",
+            "description": "Pre-reversal accuracy significantly above chance (0.50)",
+            "test": "proportion_test",
+            "filter": {"phase": "pre_reversal"},
+            "field": "correct",
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "chance_level": 0.50,
+            "weight": 1.0
+        },
+        {
+            "name": "perseveration_effect",
+            "description": "More errors immediately post-reversal than pre-reversal",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"phase": "pre_reversal"}, "field": "correct"},
+            "group_b": {"filter": {"phase": "post_reversal"}, "field": "correct"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 0.75
+        },
+        {
+            "name": "post_reversal_learning",
+            "description": "Accuracy improves with trials since reversal (recovery curve)",
+            "test": "correlation_test",
+            "x_field": "trials_since_reversal",
+            "y_field": "correct",
+            "filter": {"phase": "post_reversal"},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 0.75
+        }
+    ]
+}

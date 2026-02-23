@@ -1,0 +1,37 @@
+{
+    "task_id": "flanker",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "human_mean": 0.95,
+            "human_sd": 0.04
+        },
+        {
+            "name": "congruent_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"condition": "congruent"},
+            "human_mean": 0.98,
+            "human_sd": 0.02
+        },
+        {
+            "name": "incongruent_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"condition": "incongruent"},
+            "human_mean": 0.92,
+            "human_sd": 0.05
+        },
+        {
+            "name": "mean_correct_rt",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"correct": true},
+            "human_mean": 450,
+            "human_sd": 80,
+            "direction": "lower_is_better"
+        }
+    ]
+}

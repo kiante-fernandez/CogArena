@@ -176,7 +176,7 @@ async def test_api_info(client: AsyncClient):
     data = resp.json()
     assert data["name"] == "CogArena"
     assert "stroop" in data["tasks"]
-    assert len(data["tasks"]) == 5
+    assert len(data["tasks"]) == 10
 
 
 async def test_create_session(client: AsyncClient):
@@ -185,9 +185,13 @@ async def test_create_session(client: AsyncClient):
     data = resp.json()
     assert "session_id" in data
     assert data["status"] == "created"
-    assert len(data["tasks"]) == 5
+    assert len(data["tasks"]) == 10
     task_ids = {t["task_id"] for t in data["tasks"]}
-    assert task_ids == {"stroop", "two_armed_bandit", "risky_choice", "trust_game", "n_back"}
+    expected = {
+        "stroop", "two_armed_bandit", "risky_choice", "trust_game", "n_back",
+        "go_nogo", "flanker", "dictator_game", "iowa_gambling", "reversal_learning",
+    }
+    assert task_ids == expected
 
 
 async def test_get_session_status(client: AsyncClient):

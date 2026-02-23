@@ -32,8 +32,8 @@ Visit [http://localhost:8000](http://localhost:8000) to see the benchmark site, 
 ### Run Tests
 
 ```bash
-pytest scoring/tests/ -v        # Scoring tests (49)
-pytest harness/tests/ -v        # API integration tests (10)
+pytest scoring/tests/ -v        # Scoring tests (~80)
+pytest harness/tests/ -v        # API + field alignment tests (~15)
 ```
 
 ## Tasks
@@ -41,10 +41,15 @@ pytest harness/tests/ -v        # API integration tests (10)
 | Task | Domain | Trials | Response | Key Behaviors |
 |------|--------|--------|----------|---------------|
 | Stroop | Perception & Attention | 96 | Keypress (d/f/j/k) | Stroop interference, post-error slowing, congruency sequence effect |
+| Go/No-Go | Perception & Attention | 100 | Keypress (f) / Withhold | Response inhibition, commission vs omission errors, post-error slowing |
+| Flanker | Perception & Attention | 96 | Keypress (f/j) | Flanker interference, accuracy cost, congruency sequence effect |
 | 2-Armed Bandit | Exploration-Exploitation | 80 | Keypress (f/j) | Horizon-dependent exploration, win-stay, directed exploration |
 | Risky Choice | Decision-Making | 60 | Keypress (f/j) | Risk aversion in gains, loss aversion framing, EV sensitivity |
+| Iowa Gambling Task | Decision-Making | 100 | Keypress (d/f/j/k) | Learning effect, above-chance advantageous choices, deck avoidance |
 | Trust Game | Social & Strategic | 15 | Slider (0-10) | Non-zero trust, reciprocity sensitivity, trustee adaptation |
+| Dictator Game | Social & Strategic | 20 | Slider (0-10) | Non-zero giving, giving consistency, prosocial behavior |
 | N-Back (2-back) | Memory & Learning | 120 | Keypress (f/j) | Above-chance discrimination, lure susceptibility, post-error slowing |
+| Reversal Learning | Reinforcement Learning | 120 | Keypress (f/j) | Pre-reversal learning, perseveration, post-reversal recovery |
 
 ## Website
 
@@ -108,7 +113,7 @@ cogarena/
 │   ├── config.py               # Settings (pydantic-settings)
 │   ├── run_benchmark.py        # CLI benchmark runner
 │   ├── db/models.py            # SQLAlchemy + Pydantic models
-│   └── tests/                  # 10 integration tests
+│   └── tests/                  # Integration + field alignment tests
 ├── scoring/                    # Three-level grading pipeline
 │   ├── level1_completion.py    # Task completion checks
 │   ├── level2_accuracy.py      # Performance metrics vs human baselines
@@ -117,7 +122,7 @@ cogarena/
 │   ├── score_session.py        # Scoring entry point
 │   ├── analysis_templates/     # Statistical test implementations
 │   ├── human_baselines/        # Reference stats per task
-│   └── tests/                  # 49 scoring tests
+│   └── tests/                  # Scoring tests (~80)
 ├── templates/                  # Jinja2 website templates
 │   ├── base.html               # Shared layout (nav, footer)
 │   ├── index.html              # Landing page
@@ -129,10 +134,15 @@ cogarena/
 ├── static/                     # CSS, JS, and skill.md
 ├── tasks/                      # jsPsych experiments (auto-discovered)
 │   ├── stroop/
+│   ├── go_nogo/
+│   ├── flanker/
 │   ├── two_armed_bandit/
 │   ├── risky_choice/
+│   ├── iowa_gambling/
 │   ├── trust_game/
-│   └── n_back/
+│   ├── dictator_game/
+│   ├── n_back/
+│   └── reversal_learning/
 └── jsPsych-8.2.3/             # Vendored jsPsych library
 ```
 
@@ -144,6 +154,7 @@ cogarena/
 | 2 | Done | 4 new tasks (Bandit, Risky Choice, Trust Game, N-Back) |
 | 3 | Done | Harness hardening, benchmark runner, integration tests |
 | 4 | Done | Benchmark website, API readiness |
-| 5 | Next | Test with AI agents via external services |
-| 6 | Planned | Human baselines via Prolific |
-| 7 | Planned | Expand to ~24 tasks across 6 cognitive domains |
+| 5 | Done | 5 new tasks (Go/No-Go, Flanker, IGT, Dictator, Reversal Learning) — 10 total |
+| 6 | Next | Test with AI agents via external services |
+| 7 | Planned | Human baselines via Prolific |
+| 8 | Planned | Expand to ~24 tasks across 6 cognitive domains |

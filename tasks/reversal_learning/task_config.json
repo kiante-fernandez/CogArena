@@ -1,0 +1,23 @@
+{
+    "task_id": "reversal_learning",
+    "task_name": "Reversal Learning Task",
+    "domain": "reinforcement_learning",
+    "version": "1.0.0",
+    "citation": "Clark, Cools & Robbins, 2004",
+    "description": "Learn which stimulus is rewarded through feedback, then adapt when reward contingencies reverse. Measures cognitive flexibility and perseveration.",
+    "parameters": {
+        "n_trials": 120,
+        "reward_probability": 0.80,
+        "reversal_range": [15, 25],
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 3000,
+        "fixation_duration_ms": 500,
+        "feedback_duration_ms": 1000,
+        "required_fields": [
+            "trial_index", "stimulus_chosen", "rewarded", "correct",
+            "phase", "trials_since_reversal", "reversal_count",
+            "response", "rt"
+        ]
+    }
+}

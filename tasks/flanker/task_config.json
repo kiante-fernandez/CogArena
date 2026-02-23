@@ -1,0 +1,25 @@
+{
+    "task_id": "flanker",
+    "task_name": "Eriksen Flanker Task",
+    "domain": "perception_attention",
+    "version": "1.0.0",
+    "citation": "Eriksen & Eriksen, 1974",
+    "description": "Identify the direction of a central arrow while ignoring flanking arrows. Measures selective attention and conflict monitoring.",
+    "parameters": {
+        "n_trials": 96,
+        "n_blocks": 4,
+        "trials_per_block": 24,
+        "conditions": ["congruent", "incongruent"],
+        "proportion_congruent": 0.50,
+        "stimulus_duration_ms": null,
+        "fixation_duration_ms": 500,
+        "response_deadline_ms": 3000,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "direction_key_mapping": {"left": "f", "right": "j"},
+        "required_fields": [
+            "trial_index", "block", "condition", "target_direction",
+            "flanker_direction", "response", "rt", "correct"
+        ]
+    }
+}

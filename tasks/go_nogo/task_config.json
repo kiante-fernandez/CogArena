@@ -1,0 +1,24 @@
+{
+    "task_id": "go_nogo",
+    "task_name": "Go/No-Go Task",
+    "domain": "perception_attention",
+    "version": "1.0.0",
+    "citation": "Donders, 1969; Logan, 1994",
+    "description": "Respond to frequent 'go' stimuli while withholding responses to infrequent 'no-go' stimuli. Measures response inhibition and impulsivity.",
+    "parameters": {
+        "n_trials": 100,
+        "n_blocks": 5,
+        "trials_per_block": 20,
+        "go_proportion": 0.75,
+        "stimulus_duration_ms": 500,
+        "response_deadline_ms": 1000,
+        "fixation_duration_ms": 500,
+        "feedback_duration_ms": 500,
+        "response_keys": ["f"],
+        "response_type": "keypress",
+        "required_fields": [
+            "trial_index", "block", "stimulus_type", "response",
+            "rt", "correct", "timed_out"
+        ]
+    }
+}

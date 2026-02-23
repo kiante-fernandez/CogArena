@@ -1,0 +1,38 @@
+{
+    "task_id": "dictator_game",
+    "signatures": [
+        {
+            "name": "nonzero_giving",
+            "description": "Proportion of giving above zero exceeds chance (> 0.50)",
+            "test": "proportion_test",
+            "filter": {},
+            "field": "gave_nonzero",
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "chance_level": 0.50,
+            "weight": 1.0
+        },
+        {
+            "name": "giving_consistency",
+            "description": "Giving amounts are consistent across rounds (low coefficient of variation)",
+            "test": "correlation_test",
+            "x_field": "trial_index",
+            "y_field": "amount_given_proportion",
+            "filter": {"gave_nonzero": true},
+            "threshold_p": 0.10,
+            "expected_direction": "any",
+            "weight": 0.5
+        },
+        {
+            "name": "moderate_giving",
+            "description": "Mean giving proportion is within the human range (0.10 - 0.50)",
+            "test": "proportion_test",
+            "filter": {},
+            "field": "gave_nonzero",
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "chance_level": 0.30,
+            "weight": 0.75
+        }
+    ]
+}

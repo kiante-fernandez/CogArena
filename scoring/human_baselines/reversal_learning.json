@@ -1,0 +1,11 @@
+{
+    "task_id": "reversal_learning",
+    "source": "literature_estimates",
+    "note": "Placeholder values from reversal learning literature (Clark et al., 2004; Izquierdo et al., 2017). Replace with empirical data.",
+    "overall_accuracy": {"mean": 0.72, "sd": 0.10, "n": 100},
+    "pre_reversal_accuracy": {"mean": 0.85, "sd": 0.08},
+    "post_reversal_accuracy": {"mean": 0.45, "sd": 0.15},
+    "perseveration_rate": {"mean": 0.35, "sd": 0.15},
+    "trials_to_criterion": {"mean": 8, "sd": 4},
+    "mean_rt": {"mean": 600, "sd": 150}
+}

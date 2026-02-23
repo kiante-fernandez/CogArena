@@ -1,0 +1,10 @@
+{
+    "task_id": "iowa_gambling",
+    "source": "literature_estimates",
+    "note": "Placeholder values from IGT meta-analyses (Bechara et al., 1994; Steingroever et al., 2013). Replace with empirical data.",
+    "proportion_advantageous": {"mean": 0.55, "sd": 0.12, "n": 100},
+    "proportion_advantageous_first20": {"mean": 0.45, "sd": 0.15},
+    "proportion_advantageous_last20": {"mean": 0.65, "sd": 0.15},
+    "mean_net_score": {"mean": 200, "sd": 500},
+    "mean_rt": {"mean": 1500, "sd": 500}
+}

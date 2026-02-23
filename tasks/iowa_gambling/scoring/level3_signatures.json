@@ -1,0 +1,37 @@
+{
+    "task_id": "iowa_gambling",
+    "signatures": [
+        {
+            "name": "learning_effect",
+            "description": "More advantageous choices in last 40 trials than first 40 trials",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"block": 5}, "field": "correct"},
+            "group_b": {"filter": {"block": 1}, "field": "correct"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "above_chance_advantageous",
+            "description": "Overall proportion of advantageous choices exceeds chance (0.50)",
+            "test": "proportion_test",
+            "filter": {},
+            "field": "correct",
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "chance_level": 0.50,
+            "weight": 0.75
+        },
+        {
+            "name": "deck_a_avoidance",
+            "description": "Deck A chosen less than chance (< 25%) — high frequency loss deck",
+            "test": "proportion_test",
+            "filter": {},
+            "field": "chose_advantageous",
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "chance_level": 0.40,
+            "weight": 0.5
+        }
+    ]
+}

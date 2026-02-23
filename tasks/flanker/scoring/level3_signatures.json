@@ -1,0 +1,46 @@
+{
+    "task_id": "flanker",
+    "signatures": [
+        {
+            "name": "flanker_interference_rt",
+            "description": "Slower RT on incongruent vs congruent trials (flanker effect)",
+            "test": "paired_ttest",
+            "group_a": {"filter": {"condition": "incongruent", "correct": true}, "field": "rt"},
+            "group_b": {"filter": {"condition": "congruent", "correct": true}, "field": "rt"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "flanker_interference_accuracy",
+            "description": "Lower accuracy on incongruent vs congruent trials",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"condition": "congruent"}, "field": "correct"},
+            "group_b": {"filter": {"condition": "incongruent"}, "field": "correct"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 0.75
+        },
+        {
+            "name": "post_error_slowing",
+            "description": "RT increases after an error trial",
+            "test": "sequential_regression",
+            "predictor": {"field": "correct", "lag": 1, "invert": true},
+            "outcome": {"field": "rt"},
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 0.5
+        },
+        {
+            "name": "congruency_sequence_effect",
+            "description": "Flanker effect reduced after incongruent trials (Gratton effect)",
+            "test": "interaction_test",
+            "factor_a": {"field": "condition", "levels": ["congruent", "incongruent"]},
+            "factor_b": {"field": "prev_condition", "levels": ["congruent", "incongruent"]},
+            "outcome": {"field": "rt"},
+            "expected_direction": "interaction",
+            "threshold_p": 0.05,
+            "weight": 0.5
+        }
+    ]
+}

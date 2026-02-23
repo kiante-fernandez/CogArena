@@ -1,0 +1,35 @@
+{
+    "task_id": "go_nogo",
+    "signatures": [
+        {
+            "name": "above_chance_discrimination",
+            "description": "Hit rate exceeds false alarm rate (d' > 0 proxy)",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"stimulus_type": "go"}, "field": "correct"},
+            "group_b": {"filter": {"stimulus_type": "nogo"}, "field": "false_alarm"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "commission_over_omission",
+            "description": "Commission errors (false alarms) more common than omission errors (misses)",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"stimulus_type": "nogo"}, "field": "false_alarm"},
+            "group_b": {"filter": {"stimulus_type": "go"}, "field": "miss"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 0.75
+        },
+        {
+            "name": "post_error_slowing",
+            "description": "RT increases after an error trial",
+            "test": "sequential_regression",
+            "predictor": {"field": "correct", "lag": 1, "invert": true},
+            "outcome": {"field": "rt"},
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 0.5
+        }
+    ]
+}

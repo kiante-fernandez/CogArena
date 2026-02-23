@@ -1,0 +1,10 @@
+{
+    "task_id": "dictator_game",
+    "source": "literature_estimates",
+    "note": "Placeholder values from dictator game meta-analysis (Engel, 2011). Replace with empirical data.",
+    "mean_giving_proportion": {"mean": 0.28, "sd": 0.15, "n": 100},
+    "proportion_gave_nonzero": {"mean": 0.64, "sd": 0.15},
+    "proportion_gave_half": {"mean": 0.17, "sd": 0.12},
+    "mean_amount_given": {"mean": 2.8, "sd": 1.5},
+    "modal_giving": {"mode": 0, "note": "Mode is typically 0 (selfish) but mean is pulled up by fair givers"}
+}

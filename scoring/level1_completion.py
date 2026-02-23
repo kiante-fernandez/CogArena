@@ -19,8 +19,12 @@ def score_completion(trial_data: list[dict], task_config: dict) -> dict:
     })
 
     if trial_data:
+        # Use explicit timed_out field; only fall back to response=None
+        # when timed_out is absent (handles go/no-go withhold correctly)
         timed_out = sum(
-            1 for t in trial_data if t.get("timed_out", False) or t.get("response") is None
+            1 for t in trial_data
+            if t.get("timed_out", False)
+            or ("timed_out" not in t and t.get("response") is None)
         )
         timeout_rate = timed_out / len(trial_data)
     else:

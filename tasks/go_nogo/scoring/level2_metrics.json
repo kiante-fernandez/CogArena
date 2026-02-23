@@ -1,0 +1,45 @@
+{
+    "task_id": "go_nogo",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "human_mean": 0.93,
+            "human_sd": 0.05
+        },
+        {
+            "name": "go_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"stimulus_type": "go"},
+            "human_mean": 0.95,
+            "human_sd": 0.04
+        },
+        {
+            "name": "nogo_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"stimulus_type": "nogo"},
+            "human_mean": 0.85,
+            "human_sd": 0.10
+        },
+        {
+            "name": "d_prime",
+            "type": "d_prime",
+            "hit_field": "hit",
+            "fa_field": "false_alarm",
+            "human_mean": 3.0,
+            "human_sd": 0.8
+        },
+        {
+            "name": "mean_go_rt",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"stimulus_type": "go", "correct": true},
+            "human_mean": 350,
+            "human_sd": 60,
+            "direction": "lower_is_better"
+        }
+    ]
+}

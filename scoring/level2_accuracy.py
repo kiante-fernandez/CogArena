@@ -52,25 +52,15 @@ def _apply_filter(trials: list[dict], filter_spec: dict | None) -> list[dict]:
 
 
 def _compute_metric(trials: list[dict], metric: dict) -> float:
-    field = metric["field"]
-    values = [t[field] for t in trials if field in t and t[field] is not None]
-
-    if not values:
-        return None
-
     metric_type = metric["type"]
-    if metric_type == "proportion_correct":
-        return sum(1 for v in values if v) / len(values)
-    elif metric_type == "mean":
-        return float(np.mean(values))
-    elif metric_type == "median":
-        return float(np.median(values))
-    elif metric_type == "sd":
-        return float(np.std(values, ddof=1)) if len(values) > 1 else 0.0
-    elif metric_type == "d_prime":
-        hits = sum(1 for t in trials if t.get("hit"))
+
+    # d_prime uses hit_field/fa_field instead of field
+    if metric_type == "d_prime":
+        hit_field = metric.get("hit_field", "hit")
+        fa_field = metric.get("fa_field", "false_alarm")
+        hits = sum(1 for t in trials if t.get(hit_field))
         misses = sum(1 for t in trials if t.get("miss"))
-        fas = sum(1 for t in trials if t.get("false_alarm"))
+        fas = sum(1 for t in trials if t.get(fa_field))
         crs = sum(1 for t in trials if t.get("correct_rejection"))
         n_signal = hits + misses
         n_noise = fas + crs
@@ -83,5 +73,20 @@ def _compute_metric(trials: list[dict], metric: dict) -> float:
         hit_rate = max(half_signal, min(1 - half_signal, hit_rate))
         fa_rate = max(half_noise, min(1 - half_noise, fa_rate))
         return float(stats.norm.ppf(hit_rate) - stats.norm.ppf(fa_rate))
+
+    field = metric["field"]
+    values = [t[field] for t in trials if field in t and t[field] is not None]
+
+    if not values:
+        return None
+
+    if metric_type == "proportion_correct":
+        return sum(1 for v in values if v) / len(values)
+    elif metric_type == "mean":
+        return float(np.mean(values))
+    elif metric_type == "median":
+        return float(np.median(values))
+    elif metric_type == "sd":
+        return float(np.std(values, ddof=1)) if len(values) > 1 else 0.0
     else:
         raise ValueError(f"Unknown metric type: {metric_type}")

@@ -1,0 +1,11 @@
+{
+    "task_id": "flanker",
+    "source": "literature_estimates",
+    "note": "Placeholder values from Eriksen flanker meta-analyses (Mullane et al., 2009). Replace with empirical data.",
+    "overall_accuracy": {"mean": 0.95, "sd": 0.04, "n": 100},
+    "congruent_accuracy": {"mean": 0.98, "sd": 0.02},
+    "incongruent_accuracy": {"mean": 0.92, "sd": 0.05},
+    "mean_correct_rt": {"mean": 450, "sd": 80},
+    "flanker_effect_rt": {"mean": 50, "sd": 30},
+    "post_error_slowing": {"mean": 25, "sd": 20}
+}

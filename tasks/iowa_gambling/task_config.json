@@ -1,0 +1,23 @@
+{
+    "task_id": "iowa_gambling",
+    "task_name": "Iowa Gambling Task",
+    "domain": "decision_making",
+    "version": "1.0.0",
+    "citation": "Bechara, Damasio, Damasio & Anderson, 1994",
+    "description": "Choose from four card decks with different reward/punishment schedules. Measures decision-making under ambiguity and learning from feedback.",
+    "parameters": {
+        "n_trials": 100,
+        "n_blocks": 5,
+        "trials_per_block": 20,
+        "decks": ["A", "B", "C", "D"],
+        "response_keys": ["d", "f", "j", "k"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "fixation_duration_ms": 500,
+        "feedback_duration_ms": 2000,
+        "required_fields": [
+            "trial_index", "block", "deck_chosen", "win", "loss",
+            "net_outcome", "total_score", "response", "rt", "correct"
+        ]
+    }
+}
