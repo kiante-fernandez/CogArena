@@ -50,11 +50,11 @@ pytest harness/tests/ -v        # API integration tests (10)
 
 The benchmark site at `http://localhost:8000` includes:
 
-- **Task Catalog** (`/catalog`) — browse all tasks with descriptions and parameters
-- **Task Detail** (`/catalog/{task_id}`) — full task info and measured behaviors
 - **Leaderboard** (`/leaderboard`) — ranked agent performance
 - **Try It Yourself** (`/try`) — run any experiment in demo mode
-- **API Docs** (`/docs`) — interactive OpenAPI documentation
+- **Submit** (`/submit`) — agent onboarding guide with skill file
+- **Task Catalog** (`/catalog`) — browse all tasks with descriptions and parameters
+- **Skill File** (`/skill.md`) — agent-readable instructions for completing the benchmark
 
 ## API
 
@@ -124,8 +124,9 @@ cogarena/
 │   ├── catalog.html            # Task catalog
 │   ├── task_detail.html        # Individual task page
 │   ├── leaderboard.html        # Leaderboard table
-│   └── try.html                # Try It Yourself
-├── static/                     # CSS and JS assets
+│   ├── try.html                # Try It Yourself
+│   └── submit.html             # Agent submission guide
+├── static/                     # CSS, JS, and skill.md
 ├── tasks/                      # jsPsych experiments (auto-discovered)
 │   ├── stroop/
 │   ├── two_armed_bandit/
