@@ -1,0 +1,332 @@
+\documentclass{article}
+
+\usepackage[preprint]{neurips_2025}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tabularx}
+
+\title{CogArena: Benchmarking AI Agents on Interactive Behavioral Experiments}
+
+\author{
+  Kiant\'{e} Fernandez \\
+  Department of Psychology \\
+  University of California, Los Angeles \\
+  \texttt{kiante@ucla.edu}
+}
+
+\begin{document}
+
+\maketitle
+
+% ============================================================
+\begin{abstract}
+% ============================================================
+
+Existing benchmarks evaluate AI agents on web-based tasks such as online shopping, code management, and crowdsourcing annotation, while a separate line of work evaluates large language models on cognitive psychology experiments through text-based prompting. No current benchmark bridges these two paradigms by testing whether agents can take interactive behavioral experiments through a browser and produce human-like behavioral data. We introduce CogArena, a benchmark consisting of ten interactive experiments built with jsPsych and spanning six cognitive domains: perception and attention, decision-making, exploration-exploitation, social cognition, memory, and reinforcement learning. Agents interact with these experiments through a standard browser interface, and their trial-level data are evaluated via a three-level scoring pipeline that measures task completion, performance accuracy normalized against human baselines, and behavioral alignment with 32 cognitive signatures such as Stroop interference, post-error slowing, and horizon-dependent exploration. We describe the benchmark design, the scoring methodology, and the open evaluation infrastructure including a REST API, agent-readable skill file, configurable response deadlines for agents with varying inference latencies, and a public leaderboard. We provide reference agent implementations and report baseline results from a random agent that validates the end-to-end pipeline.
+
+\end{abstract}
+
+% ============================================================
+\section{Introduction}
+\label{sec:intro}
+% ============================================================
+
+The development of AI agents capable of interacting with web-based environments has progressed rapidly in recent years. Benchmarks such as WebArena~\citep{zhou2024webarena}, WebShop~\citep{yao2022webshop}, and Mind2Web~\citep{deng2024mind2web} evaluate whether agents can navigate websites, fill out forms, and complete multi-step productivity tasks through a browser. More recently, TurkingBench~\citep{xu2025turkingbench} demonstrated that crowdsourcing web pages originally designed for human workers provide a natural testbed for browser-based AI agents. In parallel, a growing body of work in computational cognitive science has begun evaluating large language models on psychological experiments. CogBench~\citep{codaforno2024cogbench} tests 35 language models on seven cognitive tasks measuring behavioral metrics such as directed exploration, risk aversion, and model-based planning. The Psych-101 dataset~\citep{binz2024psych101} aggregates trial-by-trial human data from 160 experiments, enabling the training of Centaur~\citep{binz2025centaur}, a foundation model of human cognition that predicts participant behavior across diverse paradigms.
+
+These two research threads have proceeded largely in isolation. Web agent benchmarks evaluate interactive competence but do not target controlled behavioral experiments or measure cognitive signatures in agent behavior. Cognitive science benchmarks for AI assess whether models produce human-like decisions but deliver stimuli as natural language descriptions rather than as visual displays requiring real-time perceptual processing and motor responses. A Stroop task presented as text (``the word RED printed in blue ink; press the key corresponding to the ink color'') tests language comprehension and instruction following. The same task presented as a colored word on screen, with a response deadline of two seconds and a fixation cross between trials, tests visual perception, selective attention, and response inhibition under time pressure. These are fundamentally different evaluations, and neither subsumes the other.
+
+CogArena bridges this gap. The benchmark applies the core insight of TurkingBench --- that web-based tasks designed for human participants are a natural testbed for AI agents --- to behavioral science rather than NLP annotation. Because our tasks are controlled psychological experiments rather than open-ended annotation forms, we can go beyond binary pass/fail scoring to measure whether the agent's behavioral data exhibits the same cognitive signatures that humans reliably produce. A human participant taking the Stroop task does not merely press correct keys; they respond more slowly on incongruent trials than on congruent trials (the Stroop interference effect), slow down after committing an error (post-error slowing), and show a reduced interference effect following incongruent trials (the congruency sequence effect or Gratton effect). These signatures emerge from the dynamics of cognitive processing, and their presence or absence in agent data provides a richer characterization of behavior than accuracy alone.
+
+The CogArena benchmark makes the following contributions. First, we present ten interactive jsPsych experiments spanning six cognitive domains --- perception and attention, decision-making under risk, exploration-exploitation, social and strategic reasoning, memory and learning, and reinforcement learning --- served on a self-hosted server and playable through any browser automation tool. Second, we introduce a three-level scoring pipeline that evaluates task completion, performance accuracy normalized against human baselines, and behavioral alignment via 32 statistical tests for cognitive signatures. The behavioral alignment level, which receives the highest weight in the composite score, is the primary methodological contribution: no existing benchmark formalizes cognitive signatures into a scoring system for interactive agent evaluation. Third, we provide open evaluation infrastructure including a REST API for session management and data submission, an agent-readable skill file, a benchmark command-line interface, and a public leaderboard website where both agents and human visitors can take the same experiments.
+
+% ============================================================
+\section{Related Work}
+\label{sec:related}
+% ============================================================
+
+CogArena draws on two streams of prior work: benchmarks that evaluate AI agents on web-based interactive tasks, and benchmarks that evaluate AI systems on cognitive psychology experiments.
+
+\paragraph{Web agent benchmarks.}
+
+The evaluation of browser-based AI agents has advanced through a series of increasingly realistic benchmarks. WebShop~\citep{yao2022webshop} introduced a simulated e-commerce environment containing 1.18 million real products and 12,087 crowdsourced instructions, testing grounded language agents on product search, specification matching, and purchase completion. WebArena~\citep{zhou2024webarena} scaled this approach to self-hosted clones of productivity tools including GitLab, Reddit, and an online store, evaluating agents on 812 open-ended tasks with binary pass/fail grading. Mind2Web~\citep{deng2024mind2web} extended evaluation to 137 live websites, introducing multi-level scoring that captures completion rate, task success, and action efficiency. TurkingBench~\citep{xu2025turkingbench} demonstrated that real Amazon Mechanical Turk HIT pages --- HTML forms originally designed for human crowdworkers --- provide a natural testbed for browser agents, yielding 158 tasks across 32,200 instances. More recent work has addressed additional dimensions of agent capability. VeriGUI~\citep{liu2025verigui} introduced verifiable long-chain GUI tasks with subtask-level evaluation, averaging over 200 steps per trajectory across web and desktop environments. AgencyBench~\citep{li2026agencybench} benchmarked autonomous agents across 32 real-world scenarios requiring an average of 90 tool calls per task, using automated rubric-based evaluation with user simulation agents. Evo-Memory~\citep{wei2025evomemory} evaluated memory management capabilities in LLM agents operating across streaming task sequences. Collectively, these benchmarks evaluate web interaction competence across diverse domains and modalities, but none targets controlled behavioral experiments or measures cognitive signatures in agent behavior.
+
+\paragraph{Cognitive science benchmarks for AI.}
+
+A complementary line of research evaluates whether AI systems exhibit human-like cognitive patterns. Binz and Schulz~\citep{binz2023using} applied canonical cognitive psychology paradigms to GPT-3 through text-based prompting, finding signatures of model-based reinforcement learning alongside severe failures in causal reasoning and an absence of directed exploration. CogBench~\citep{codaforno2024cogbench} formalized this approach into a systematic evaluation framework, testing 35 language models on seven experiments encompassing bandits, temporal discounting, instrumental learning, risk-taking, and strategic interaction. CogBench extracts ten behavioral metrics through computational modeling and evaluates models via text API, with stimuli presented as natural language descriptions of experimental trials. The Psych-101 dataset~\citep{binz2024psych101} aggregated trial-by-trial behavioral data from 60,092 human participants across 160 experiments, converting each experiment into a natural language transcript suitable for language model evaluation via log-likelihood. Psych-201~\citep{binz2025psych201} extends this effort to approximately 100 million choices from nearly one million participants across a broader set of paradigms. Centaur~\citep{binz2025centaur}, a foundation model fine-tuned on Psych-101, captures held-out participant behavior better than existing cognitive models and generalizes to novel experimental domains. All of these approaches present stimuli as text and evaluate responses through language model APIs. CogArena fills the gap between these two research streams by combining browser-based interactive evaluation with controlled cognitive experiments and formalized behavioral alignment scoring.
+
+\begin{table}[t]
+\caption{Comparison of CogArena with related benchmarks. CogArena is the only benchmark that combines browser-based agent interaction with controlled cognitive experiments and behavioral alignment scoring.}
+\label{tab:comparison}
+\centering
+\small
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{Benchmark} & \textbf{Content} & \textbf{Interface} & \textbf{Grading} & \textbf{Human Comp.} \\
+\midrule
+WebShop & E-commerce & Browser & Task success & No \\
+WebArena & Web productivity & Browser & Binary pass/fail & No \\
+Mind2Web & 137 websites & Browser & Multi-level & No \\
+TurkingBench & NLP annotation & Browser & Accuracy & Crowdworkers \\
+CogBench & 7 cog.\ experiments & Text API & 10 metrics & Qualitative \\
+Psych-101/201 & 160+ experiments & Text API & Log-likelihood & Direct \\
+\midrule
+\textbf{CogArena} & \textbf{10 cog.\ experiments} & \textbf{Browser} & \textbf{3-level + signatures} & \textbf{Direct} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================
+\section{The CogArena Benchmark}
+\label{sec:benchmark}
+% ============================================================
+
+\subsection{Task Overview}
+\label{sec:tasks}
+
+CogArena comprises ten interactive experiments spanning six cognitive domains. In the domain of \emph{perception and attention}, three tasks evaluate fundamental cognitive control processes. The Stroop Color-Word Interference Task~\citep{stroop1935} presents color words printed in incongruent ink colors and requires participants to identify the ink color while inhibiting the automatic reading response, testing selective attention and cognitive control across 96 trials using four response keys. The Go/No-Go Task~\citep{donders1969reaction, logan1994gonogo} presents frequent go stimuli (green circles) and infrequent no-go stimuli (red circles), requiring participants to respond rapidly to go stimuli while withholding responses to no-go stimuli across 100 trials, measuring response inhibition and impulsivity. The Eriksen Flanker Task~\citep{eriksen1974flanker} displays arrays of five arrows in which the central target arrow may point in the same or opposite direction as the flanking arrows, testing selective attention and conflict monitoring across 96 trials.
+
+In the domain of \emph{decision-making under risk}, the Risky Choice task presents 60 binary choices between safe and risky options across gain, loss, and mixed domains, measuring risk aversion, loss aversion, and sensitivity to expected value~\citep{kahneman1979prospect}. The Iowa Gambling Task~\citep{bechara1994igt} requires participants to choose from four card decks with different reward and punishment schedules across 100 trials, measuring decision-making under ambiguity and the ability to learn advantageous deck selections from feedback.
+
+The \emph{exploration-exploitation} domain is represented by the Two-Armed Bandit Horizon Task~\citep{wilson2014horizon}, in which participants make choices between two slot machines across 40 games with varying decision horizons (1 or 6 free choices per game, preceded by 4 forced-choice information trials), yielding 140 scored free-choice trials across approximately 300 total stimulus presentations. The task tests whether agents engage in more exploratory behavior when more future decisions remain.
+
+In the domain of \emph{social and strategic} reasoning, the Trust Game~\citep{berg1995trust} pairs participants with simulated partners of varying trustworthiness across 15 rounds, measuring trust, reciprocity sensitivity, and adaptation to partner behavior through slider-based investment decisions. The Dictator Game~\citep{kahneman1986fairness, engel2011dictator} provides participants with an endowment to divide between themselves and anonymous partners across 20 rounds, measuring altruism, fairness norms, and prosocial behavior.
+
+The \emph{memory and learning} domain includes the N-Back Task~\citep{kirchner1958nback, owen2005nback}, a working memory paradigm in which participants indicate whether the current stimulus matches the one presented two trials earlier across 120 trials, measuring working memory capacity and discrimination sensitivity. Finally, the \emph{reinforcement learning} domain includes the Reversal Learning Task~\citep{clark2004reversal}, in which participants learn stimulus-reward associations that periodically reverse, measuring cognitive flexibility, perseveration, and post-reversal recovery across 120 trials.
+
+All ten tasks are implemented as standalone web applications using jsPsych v8~\citep{deleeuw2015jspsych, deleeuw2023jspsych}, the standard JavaScript library for creating online behavioral experiments. Each task includes instruction screens, practice blocks with performance feedback, and experimental trial blocks with automatic data submission upon completion. Table~\ref{tab:tasks} provides an overview of all tasks with their cognitive domains, trial counts, response modalities, and target behavioral signatures.
+
+\begin{table}[t]
+\caption{Overview of the ten CogArena tasks. Each task targets specific cognitive phenomena that are measured as behavioral signatures in the Level~3 scoring component.}
+\label{tab:tasks}
+\centering
+\footnotesize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrcl@{}}
+\toprule
+\textbf{Task} & \textbf{Domain} & \textbf{Trials} & \textbf{Response} & \textbf{Key Signatures} \\
+\midrule
+Stroop & Percept./Attn. & 96 & Keypress & Interference, post-error slowing, Gratton \\
+Go/No-Go & Percept./Attn. & 100 & Key/withhold & Discrimination, commission $>$ omission \\
+Flanker & Percept./Attn. & 96 & Keypress & Interference, congruency sequence \\
+Risky Choice & Decision-Making & 60 & Keypress & Risk aversion, loss aversion, EV sensitivity \\
+Iowa Gambling & Decision-Making & 100 & Keypress & Learning effect, advantageous preference \\
+Horizon Bandit & Exploration & 140 & Keypress & Horizon-dependent exploration, win-stay \\
+Trust Game & Social/Strategic & 15 & Slider & Non-zero trust, reciprocity sensitivity \\
+Dictator Game & Social/Strategic & 20 & Slider & Non-zero giving, consistency \\
+N-Back (2-back) & Memory/Learning & 120 & Keypress & Discrimination, lure susceptibility \\
+Reversal Learning & Reinforcement & 120 & Keypress & Perseveration, post-reversal recovery \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Task Design Principles}
+\label{sec:design}
+
+Several design decisions distinguish CogArena tasks from tasks in related benchmarks. Unlike TurkingBench, where each task is a one-shot form that the agent fills out and submits, CogArena tasks are multi-trial experiments requiring sustained interaction with 15 to 300 sequential stimuli. The agent must remain on a single web page and respond to each stimulus within a response deadline, testing sequential decision-making and sustained engagement rather than one-shot page comprehension. Unlike WebArena, where tasks involve multi-page navigation across complex web applications, CogArena tasks are single-page applications in which the experiment runs entirely in place via jsPsych's trial management system. This design eliminates navigation complexity and isolates the cognitive demands of the experimental paradigm itself.
+
+Each evaluation session generates unique stimulus sequences from a per-session random seed, randomizing trial orders, condition assignments, reward schedules, and stimulus configurations. This prevents agents from memorizing specific trial sequences across evaluation runs. Because the experiments are self-hosted on a controlled server rather than served from crawlable external websites, the specific experimental stimuli do not appear in web training corpora. Furthermore, even if an agent has been trained on text-based descriptions of these paradigms through Psych-101 or Psych-201 data, such knowledge does not transfer directly: completing a visual Stroop experiment through a browser requires perceiving colored text on screen, mapping colors to keys under time pressure, and executing motor responses --- capabilities that text-based training does not exercise. Response deadlines are set generously (between two and fifteen seconds depending on the task) to accommodate agent inference latency while maintaining the time-pressured structure of behavioral experiments.
+
+\subsection{Three-Level Scoring Pipeline}
+\label{sec:scoring}
+
+CogArena evaluates agent performance through a hierarchical scoring pipeline comprising three levels: task completion, performance accuracy, and behavioral alignment. Each level produces a score between zero and one, and the composite CogArena Score is computed as a weighted sum scaled to a 0--100 range:
+\begin{equation}
+\text{CogArena Score} = \left(0.15 \times S_{\text{L1}} + 0.35 \times S_{\text{L2}} + 0.50 \times S_{\text{L3}}\right) \times 100
+\label{eq:composite}
+\end{equation}
+
+\paragraph{Level 1: Task Completion (weight = 0.15).}
+
+The completion level validates that the agent successfully engaged with the experiment. Five binary checks are evaluated for each task: whether trial data were received (at least one trial submitted), whether a sufficient number of trials were completed (at least 80\% of the expected count as specified in the task configuration), whether the timeout rate was acceptably low (fewer than 20\% of trials resulted in timeouts), whether responses were valid (at least 80\% of responses used valid keys or fell within the slider range), and whether the experiment was completed (the maximum trial index reached at least 80\% of the expected total). The Level~1 score is the proportion of these five checks that passed. For the Go/No-Go task, the scorer uses the explicit \texttt{timed\_out} field to distinguish correct withholding on no-go trials (where no response is the correct behavior) from genuine timeouts on go trials.
+
+\paragraph{Level 2: Performance Accuracy (weight = 0.35).}
+
+The accuracy level computes task-specific performance metrics and normalizes them against human baselines. Each task defines a set of metrics in a JSON specification, where each metric specifies a type (proportion correct, mean, median, standard deviation, or $d'$), the data field to extract, optional trial filters, and human baseline statistics (mean and standard deviation drawn from published literature). For each metric, the scorer computes the raw value from the agent's trial data, converts it to a $z$-score relative to the human baseline, and transforms the $z$-score to a percentile via the standard normal cumulative distribution function. Metrics designated as ``lower is better'' (such as mean reaction time) have their $z$-scores negated before transformation. The signal detection metric $d'$, used for the N-Back and Go/No-Go tasks, applies the Hautus correction~\citep{hautus1995corrections} to the standard signal detection framework~\citep{green1966sdt} to avoid undefined values when hit or false alarm rates reach floor or ceiling. Across ten tasks, the benchmark computes 40 accuracy metrics. The Level~2 score is the mean of all normalized metric scores for the task.
+
+\paragraph{Level 3: Behavioral Alignment (weight = 0.50).}
+
+The behavioral alignment level is the primary methodological contribution of CogArena. Rather than measuring only whether agents perform well on a task, this level tests whether their behavioral data exhibits the cognitive signatures that characterize human performance. Each task specifies a set of behavioral signatures in a JSON file, where each signature defines a statistical test, the data fields and filters to apply, an expected direction, a significance threshold (typically $p < 0.05$), and an importance weight.
+
+Six types of statistical tests are implemented. Paired $t$-tests compare a continuous outcome (typically reaction time) between two conditions, such as incongruent versus congruent trials in the Stroop task, and report Cohen's $d$~\citep{cohen1988statistical} as the effect size. Paired proportion tests compare binary accuracy or choice rates between two filtered trial groups using a two-proportion $z$-test. Sequential regression fits a linear model predicting a current-trial outcome from a lagged predictor, and is used to detect post-error slowing, in which an error on the previous trial predicts slower reaction times on the current trial. Permutation-based interaction tests assess two-factor interactions through 5,000 random permutations, and are used to detect congruency sequence effects (the Gratton effect~\citep{gratton1992cse}), in which the magnitude of the Stroop or flanker interference effect is modulated by the congruency of the preceding trial. One-sample proportion tests compare an observed proportion against a chance level, and are used for signatures such as above-chance discrimination, non-zero trust, and directed exploration. Correlation tests compute Pearson correlations between two trial-level variables, and are used for signatures such as reciprocity sensitivity and post-reversal learning curves.
+
+Each signature receives a score of 1.0 if the effect is in the expected direction and statistically significant, 0.5 if the effect is in the expected direction but does not reach significance, and 0.0 if the effect is absent or in the wrong direction. Most signatures use a threshold of $p < 0.05$ with a specified direction; one exploratory signature (giving consistency in the Dictator Game) uses $p < 0.10$ with a non-directional test, as any temporal trend in giving amounts is informative. The Level~3 score for each task is the weighted mean of its signature scores. Across ten tasks, the benchmark evaluates 32 behavioral signatures. Table~\ref{tab:signatures} summarizes the signatures organized by cognitive domain.
+
+The weighting in Equation~\ref{eq:composite} reflects the benchmark's priorities. Completion is a necessary prerequisite but does not discriminate among agents that successfully navigate the experiments, and accordingly receives the lowest weight. Accuracy captures conventional task performance and permits comparison with other benchmarks. Behavioral alignment receives the highest weight because it represents CogArena's unique contribution: measuring whether agents exhibit the cognitive phenomena that define human performance on these paradigms, rather than merely whether they press correct keys.
+
+\begin{table}[t]
+\caption{Behavioral signatures evaluated in Level~3 scoring, organized by domain. Each signature specifies a statistical test and an expected direction derived from the established human literature.}
+\label{tab:signatures}
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Domain} & \textbf{Task} & \textbf{Signature} & \textbf{Test Type} \\
+\midrule
+\multirow{11}{*}{Percept./Attn.} & Stroop & RT interference & Paired $t$-test \\
+ & Stroop & Accuracy interference & Proportion test \\
+ & Stroop & Post-error slowing & Sequential regression \\
+ & Stroop & Congruency sequence (Gratton) & Interaction test \\
+ & Go/No-Go & Above-chance discrimination & Proportion test \\
+ & Go/No-Go & Commission $>$ omission errors & Proportion test \\
+ & Go/No-Go & Post-error slowing & Sequential regression \\
+ & Flanker & RT interference & Paired $t$-test \\
+ & Flanker & Accuracy interference & Proportion test \\
+ & Flanker & Post-error slowing & Sequential regression \\
+ & Flanker & Congruency sequence effect & Interaction test \\
+\midrule
+\multirow{6}{*}{Decision-Making} & Risky Choice & Risk aversion in gains & Proportion test \\
+ & Risky Choice & Loss aversion framing & Proportion test \\
+ & Risky Choice & EV sensitivity & Correlation test \\
+ & Iowa Gambling & Learning effect (block 5 vs.\ 1) & Proportion test \\
+ & Iowa Gambling & Above-chance advantageous & Proportion test \\
+ & Iowa Gambling & Advantageous deck preference & Proportion test \\
+\midrule
+\multirow{3}{*}{Exploration} & Horizon Bandit & Horizon-dependent exploration & Paired $t$-test \\
+ & Horizon Bandit & Win-stay behavior & Proportion test \\
+ & Horizon Bandit & Directed exploration & Proportion test \\
+\midrule
+\multirow{6}{*}{Social/Strategic} & Trust Game & Non-zero trust & Proportion test \\
+ & Trust Game & Reciprocity sensitivity & Correlation test \\
+ & Trust Game & Trustee type adaptation & Paired $t$-test \\
+ & Dictator Game & Non-zero giving & Proportion test \\
+ & Dictator Game & Giving consistency & Correlation test \\
+ & Dictator Game & Moderate giving & Proportion test \\
+\midrule
+\multirow{3}{*}{Memory} & N-Back & Above-chance discrimination & Proportion test \\
+ & N-Back & Lure susceptibility & Proportion test \\
+ & N-Back & Post-error slowing & Sequential regression \\
+\midrule
+\multirow{3}{*}{Reinforcement} & Reversal & Pre-reversal learning & Proportion test \\
+ & Reversal & Perseveration effect & Proportion test \\
+ & Reversal & Post-reversal recovery & Correlation test \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================
+\section{Evaluation Infrastructure}
+\label{sec:infrastructure}
+% ============================================================
+
+\subsection{Architecture}
+
+The CogArena evaluation harness is built on FastAPI, an asynchronous Python web framework. The server hosts all ten jsPsych experiments as static files and provides a REST API for session management, data submission, scoring, and result retrieval. Tasks are auto-discovered at startup by scanning the task directory for subdirectories containing a \texttt{task\_config.json} file, enabling new tasks to be added without modifying server code.
+
+The evaluation flow proceeds as follows. An agent developer creates a new session by sending a POST request to the sessions endpoint, providing the agent name, scaffold, and model identifier. The server returns a session identifier along with a list of task URLs, each parameterized with the session identifier. The agent navigates its browser to each task URL in turn. Upon loading, jsPsych initializes the experiment and presents instruction screens, practice blocks with feedback, and experimental trial blocks. When the experiment concludes, jsPsych automatically submits the complete trial data as a JSON array to the server's data endpoint. After all tasks have been completed, the developer triggers scoring via a POST request, and the server runs the three-level scoring pipeline for each task. The full scorecard, including per-task scores at each level, individual metric values, and the composite CogArena Score, is retrieved via a GET request to the results endpoint.
+
+The critical architectural insight is that jsPsych handles all experimental logic --- stimulus presentation, response recording, timing, condition randomization, and data structuring --- so the evaluation harness need only receive structured JSON and score it. This contrasts with benchmarks like WebArena, where the harness must parse DOM state or query databases to determine whether a task was completed successfully.
+
+\subsection{Agent Interface}
+
+CogArena is agnostic to the agent's browser automation toolkit. Agents may use screenshot-based observation, DOM or accessibility tree inspection, or a combination of both, and the benchmark records the observation mode as metadata alongside the scaffold and model identifiers, following conventions established by WebArena and Mind2Web. An agent-readable skill file served at \texttt{/skill.md} provides structured instructions for completing the benchmark, including the evaluation flow, response modalities, and API reference.
+
+\subsection{Website and Leaderboard}
+
+The CogArena website serves as both the evaluation platform and a public-facing resource. A task catalog provides detailed descriptions of all ten tasks with their parameters, cognitive domains, and scoring specifications. A ``Try It Yourself'' page allows human visitors to play the same experiments that agents take, making the benchmark tangible and accessible. This feature is unique among agent benchmarks and has the additional benefit of generating ongoing human baseline data from voluntary participants. A leaderboard displays ranked agent performance across all three scoring levels and the composite score, and a submission guide provides instructions for evaluating new agents.
+
+% ============================================================
+\section{Agent Evaluation Framework}
+\label{sec:agents}
+% ============================================================
+
+\subsection{Benchmark-First Architecture}
+
+CogArena is designed as a benchmark, not a harness: agents bring their own browser automation tools and CogArena provides only the task server and scoring pipeline. This separation follows the design pattern established by HAL~\citep{arora2025hal}, in which benchmarks define evaluation criteria and agents are standalone processes that interface through a common protocol. In CogArena's case, the protocol is the REST API described in Section~\ref{sec:infrastructure}: an agent creates a session, navigates to each task URL, completes the jsPsych experiment through its browser, and the trial data auto-submit upon completion. When all tasks have been submitted, the server automatically triggers the three-level scoring pipeline. This architecture ensures compatibility with any agent framework that can control a web browser, including Browser-Use~\citep{browseruse2024}, Claude Computer Use, and agent platforms such as Clawlific that route AI agents to external study URLs.
+
+\subsection{Configurable Response Deadlines}
+
+AI agents introduce inference latency that may exceed the response deadlines of tasks designed for human participants. A human responds to a Go/No-Go stimulus in 200--400 milliseconds; an LLM-based agent that must capture a screenshot, send it to an API, receive a response, and execute a keypress may require 2--5 seconds. To accommodate this, CogArena provides configurable response deadlines via URL parameters. Each experiment calls a shared timing helper that reads an optional \texttt{no\_deadline=true} parameter (which sets \texttt{trial\_duration} to \texttt{null} in jsPsych, causing the trial to wait indefinitely for a response) or a \texttt{trial\_duration=N} parameter specifying a custom deadline in milliseconds. Crucially, jsPsych records the actual reaction time regardless of the \texttt{trial\_duration} setting, so all behavioral signatures based on reaction time comparisons remain valid. Only the stimulus response window is affected; fixation, feedback, and inter-trial interval durations remain unchanged. The default deadlines (ranging from 1,000 ms for Go/No-Go to 15,000 ms for slider tasks) apply when no override parameter is provided, preserving the standard human testing conditions for participants who access the experiments through the website.
+
+\subsection{Reference Agent Implementations}
+
+CogArena includes two reference agent implementations. The \textbf{Random Agent} is a Playwright-based baseline that requires no language model. It navigates to each task URL, detects the current page state (instruction screen, stimulus trial, slider trial, fixation, feedback, or completion) through DOM inspection, and responds randomly: pressing a randomly selected valid key on stimulus trials, setting a random slider value on slider trials, and clicking the Next button on instruction pages. For the Two-Armed Bandit forced trials, which accept only the highlighted arm's key, the agent reads the DOM to determine which arm is forced and presses the corresponding key. The Random Agent serves two purposes: validating the end-to-end benchmark pipeline (session creation, all ten tasks, data submission, auto-scoring) and providing a chance-level baseline against which to compare LLM-based agents.
+
+The \textbf{Browser-Use Agent} wraps the Browser-Use framework~\citep{browseruse2024}, which handles browser control, screenshot capture, DOM parsing, and LLM interaction through a LangChain-compatible interface. The agent receives a system prompt describing the cognitive experiment context and the available action vocabulary (keypresses, slider adjustments, button clicks) but does \emph{not} receive task-specific rules or key mappings. Like a human participant, the agent must read jsPsych's instruction screens to learn which keys correspond to which responses. This design tests instruction comprehension and transfer in addition to task performance.
+
+\subsection{Baseline Results}
+
+Table~\ref{tab:baseline} reports Random Agent performance across all ten tasks. The Random Agent achieves perfect Level~1 completion (all trials responded to, no timeouts) and Level~2 accuracy scores near chance for most tasks, as expected for random responses. The non-trivial Level~3 scores on some tasks reflect spurious statistical significance: with random data, some behavioral signatures will pass by chance at $p < 0.05$. These results establish a lower bound for meaningful agent performance and confirm that the benchmark pipeline operates correctly end-to-end.
+
+\begin{table}[t]
+\caption{Random Agent baseline results across all ten CogArena tasks. L1 = Level~1 (completion), L2 = Level~2 (accuracy), L3 = Level~3 (behavioral alignment). The composite CogArena Score is computed via Equation~\ref{eq:composite}.}
+\label{tab:baseline}
+\centering
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Task} & \textbf{Composite} & \textbf{L1} & \textbf{L2} & \textbf{L3} \\
+\midrule
+Dictator Game      & 84.05 & 1.00 & 0.86 & 0.78 \\
+Trust Game         & 62.76 & 1.00 & 0.59 & 0.55 \\
+Go/No-Go           & 56.04 & 1.00 & 0.38 & 0.56 \\
+Risky Choice       & 55.23 & 1.00 & 0.63 & 0.36 \\
+N-Back (2-back)    & 47.51 & 1.00 & 0.21 & 0.50 \\
+Reversal Learning  & 46.67 & 1.00 & 0.40 & 0.35 \\
+Iowa Gambling      & 41.86 & 1.00 & 0.45 & 0.22 \\
+Two-Armed Bandit   & 34.53 & 1.00 & 0.30 & 0.18 \\
+Flanker            & 32.84 & 1.00 & 0.25 & 0.18 \\
+Stroop             & 29.52 & 1.00 & 0.25 & 0.12 \\
+\midrule
+\textbf{Overall}   & \textbf{49.10} & \textbf{1.00} & \textbf{0.43} & \textbf{0.38} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The elevated scores for the Dictator Game and Trust Game reflect the nature of these tasks: slider-based social decisions have no ``correct'' answer, and random slider values between \$0 and \$10 produce a mean of \$5, which overlaps substantially with the moderate-giving behavior that characterizes human participants. Conversely, the Stroop and Flanker tasks show the lowest composite scores because random key presses across four response options yield approximately 25\% accuracy and no reaction-time-based interference effects.
+
+% ============================================================
+\section{Design Decisions and Discussion}
+\label{sec:discussion}
+% ============================================================
+
+\subsection{Timing and Inference Latency}
+
+Human behavioral experiments measure reaction time in milliseconds, but AI agents introduce inference latency ranging from several hundred milliseconds to several seconds depending on the model, scaffold, and observation mode. CogArena records wall-clock reaction times (the interval from stimulus onset to the registered keypress) and sets generous per-trial response deadlines to minimize timeout failures. Reaction-time-based behavioral signatures such as the Stroop interference effect and post-error slowing are defined as relative comparisons between conditions within the same agent session. Because the Stroop interference effect is computed as the difference in mean reaction time between incongruent and congruent trials, it is meaningful regardless of the absolute scale of the agent's reaction times. If an agent responds in 2,000 milliseconds on congruent trials and 2,500 milliseconds on incongruent trials, the 500-millisecond interference effect is analogous in structure to a human participant's 80-millisecond effect, even though the absolute magnitudes differ by an order of magnitude. This within-agent comparison approach ensures that behavioral signatures remain interpretable across agents with widely varying inference latencies.
+
+\subsection{Human Baselines}
+
+The Level~2 scoring component normalizes agent performance metrics against human baselines. The current implementation uses baseline statistics derived from published meta-analyses and experimental reports for each paradigm. These literature-based estimates are stored as mean and standard deviation values in JSON files with source annotations. While these estimates provide reasonable reference points for initial benchmarking, empirical validation through a calibration study is planned, in which human participants will complete all ten tasks on the same platform (via Prolific) to generate baseline distributions computed through the identical scoring pipeline. The Psych-101 and Psych-201 datasets~\citep{binz2024psych101, binz2025psych201} provide a complementary source of human behavioral data, although the text-based stimulus format of those datasets differs from the visual format of CogArena experiments.
+
+\subsection{Scoring Weight Justification}
+
+The weights in Equation~\ref{eq:composite} --- 0.15 for completion, 0.35 for accuracy, and 0.50 for behavioral alignment --- reflect the benchmark's design philosophy. Completion is a necessary prerequisite for meaningful evaluation but does not discriminate among agents that successfully navigate the experimental interface; it receives the lowest weight accordingly. Accuracy captures conventional task performance and provides comparability with other benchmarks that report percent correct or similar metrics. Behavioral alignment receives the highest weight because it represents the benchmark's unique contribution: evaluating whether agents produce the cognitive phenomena that the psychological literature has consistently documented in human participants. An agent that achieves high accuracy on the Stroop task but shows no Stroop interference effect is behaviorally anomalous, and the weighting scheme reflects this distinction.
+
+\subsection{Limitations and Future Work}
+
+CogArena has several limitations that define directions for future development. The current benchmark includes ten tasks, representing a subset of the 24 paradigms in the full task pool described in the project roadmap. Human baselines are derived from published literature rather than from empirical calibration on the platform. While we report Random Agent baseline results and provide the evaluation framework for LLM-based agents (Section~\ref{sec:agents}), a comprehensive study evaluating multiple LLM agents across different scaffolds and models is in progress. The current response modalities are limited to keypresses and sliders; future tasks may incorporate mouse tracking, typed responses, or continuous control. The scoring pipeline evaluates each task independently and does not yet assess cross-task behavioral coherence --- for instance, whether an agent that exhibits risk aversion in the Risky Choice task also exhibits it in the Iowa Gambling Task. Finally, several CogArena tasks overlap with CogBench paradigms (bandits, risky choice), enabling a direct comparison of text-based versus interactive evaluation of the same cognitive phenomena. This comparison would clarify whether behavioral signatures that emerge from text-based prompting also emerge from interactive browser-based engagement, or whether the modality of evaluation fundamentally alters the behavioral profile.
+
+% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% ============================================================
+
+We have presented CogArena, a benchmark that tests AI agents on interactive behavioral experiments through a web browser. By combining the browser-based evaluation approach of web agent benchmarks with the controlled experimental paradigms of cognitive science, CogArena provides a unique evaluation framework that measures not only whether agents complete tasks and achieve high accuracy, but whether their behavioral data exhibits the cognitive signatures that characterize human performance. The benchmark currently comprises ten tasks spanning six cognitive domains, evaluated through 40 accuracy metrics and 32 behavioral signatures using six types of statistical tests. The benchmark-first architecture ensures compatibility with any web-browsing agent framework, and configurable response deadlines accommodate agents with varying inference latencies. A random agent baseline validates the end-to-end pipeline and establishes chance-level performance at a composite score of 49.10. The evaluation infrastructure, scoring pipeline, reference agent implementations, and all task code are openly available to support reproducible evaluation and community-contributed extensions.
+
+% ============================================================
+% References
+% ============================================================
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+% ============================================================
+% Appendix
+% ============================================================
+\newpage
+\appendix
+\input{appendix}
+
+\end{document}

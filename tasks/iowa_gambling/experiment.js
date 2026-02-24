@@ -12,6 +12,7 @@
         iti_min: 300,
         iti_max: 600,
     };
+    CONFIG.response_deadline = getTrialDuration(CONFIG.response_deadline);
 
     // Deck payoff schedules (classic Bechara et al., 1994)
     // Decks A & B: High reward ($100), high penalty — net negative (bad decks)

@@ -1,4 +1,5 @@
 import json
+import logging
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,6 +12,9 @@ from harness.db.models import (
     Session, TaskResult, Score,
     SessionCreate, SessionResponse, TaskInfo, TaskScore, ScorecardResponse,
 )
+from scoring.score_session import score_task
+
+logger = logging.getLogger(__name__)
 
 
 class SessionManager:
@@ -101,6 +105,38 @@ class SessionManager:
         if session:
             session.status = "in_progress"
         await self.db.commit()
+
+        await self._auto_evaluate_if_complete(session_id)
+
+    async def _auto_evaluate_if_complete(self, session_id: str) -> None:
+        """Auto-trigger scoring when all tasks have been submitted."""
+        total_tasks = sum(
+            1 for d in self.tasks_dir.iterdir()
+            if d.is_dir() and (d / "task_config.json").exists()
+        )
+        submitted = await self.db.execute(
+            select(TaskResult.task_id).where(TaskResult.session_id == session_id)
+        )
+        submitted_ids = set(submitted.scalars().all())
+        if len(submitted_ids) < total_tasks:
+            return
+
+        logger.info("All %d tasks submitted for session %s — auto-evaluating", total_tasks, session_id)
+        task_results = await self.get_all_task_results(session_id)
+        for tr in task_results:
+            trial_data = json.loads(tr.trial_data)
+            result = score_task(trial_data, tr.task_id, self.tasks_dir)
+            composite_info = result["composite"]
+            await self.save_score(
+                session_id=session_id,
+                task_id=tr.task_id,
+                l1=result["l1"]["score"],
+                l2=result["l2"]["score"],
+                l3=result["l3"]["score"],
+                composite=composite_info["composite_score"],
+                details=result,
+            )
+        await self.mark_session_scored(session_id)
 
     async def get_session_status(self, session_id: str) -> SessionResponse:
         result = await self.db.execute(select(Session).where(Session.id == session_id))

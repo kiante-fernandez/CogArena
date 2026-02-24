@@ -4,6 +4,7 @@
         endowment: 10,
         response_deadline: 15000,
     };
+    CONFIG.response_deadline = getTrialDuration(CONFIG.response_deadline);
 
     var urlParams = new URLSearchParams(window.location.search);
     var SESSION_ID = urlParams.get("session_id") || "debug";

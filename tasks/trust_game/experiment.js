@@ -13,6 +13,7 @@
         outcome_duration: 3000,
         iti_duration: 500,
     };
+    CONFIG.response_deadline = getTrialDuration(CONFIG.response_deadline);
 
     var urlParams = new URLSearchParams(window.location.search);
     var SESSION_ID = urlParams.get("session_id") || "debug";

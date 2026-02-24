@@ -14,6 +14,7 @@
         iti_min: 300,
         iti_max: 600,
     };
+    CONFIG.response_deadline = getTrialDuration(CONFIG.response_deadline);
 
     var urlParams = new URLSearchParams(window.location.search);
     var SESSION_ID = urlParams.get("session_id") || "debug";

@@ -1,0 +1,232 @@
+\begin{thebibliography}{33}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Arora et~al.(2025)]{arora2025hal}
+Daman Arora et~al.
+\newblock {HAL}: A comprehensive benchmark for hardware-aware agent learning.
+\newblock \emph{arXiv preprint arXiv:2501.14379}, 2025.
+\newblock Princeton NLP agent evaluation framework.
+
+\bibitem[Bechara et~al.(1994)Bechara, Damasio, Damasio, and
+  Anderson]{bechara1994igt}
+Antoine Bechara, Antonio~R Damasio, Hanna Damasio, and Steven~W Anderson.
+\newblock Insensitivity to future consequences following damage to human
+  prefrontal cortex.
+\newblock \emph{Cognition}, 50\penalty0 (1-3):\penalty0 7--15, 1994.
+
+\bibitem[Berg et~al.(1995)Berg, Dickhaut, and McCabe]{berg1995trust}
+Joyce Berg, John Dickhaut, and Kevin McCabe.
+\newblock Trust, reciprocity, and social history.
+\newblock \emph{Games and Economic Behavior}, 10\penalty0 (1):\penalty0
+  122--142, 1995.
+
+\bibitem[Binz and Schulz(2023)]{binz2023using}
+Marcel Binz and Eric Schulz.
+\newblock Using cognitive psychology to understand {GPT-3}.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 120\penalty0
+  (6):\penalty0 e2218523120, 2023.
+
+\bibitem[Binz and Schulz(2024)]{binz2024psych101}
+Marcel Binz and Eric Schulz.
+\newblock Turning large language models into cognitive models.
+\newblock \emph{arXiv preprint arXiv:2306.03917}, 2024.
+\newblock Psych-101 dataset.
+
+\bibitem[Binz et~al.(2025{\natexlab{a}})Binz, Akata, Bethge, Callaway,
+  Coda-Forno, Dayan, Griffiths, Schulz, et~al.]{binz2025centaur}
+Marcel Binz, Elif Akata, Matthias Bethge, Frederik Callaway, Julian Coda-Forno,
+  Peter Dayan, Thomas~L Griffiths, Eric Schulz, et~al.
+\newblock A foundation model of human cognition.
+\newblock \emph{Nature}, 644\penalty0 (8078):\penalty0 1002--1009,
+  2025{\natexlab{a}}.
+
+\bibitem[Binz et~al.(2025{\natexlab{b}})]{binz2025psych201}
+Marcel Binz et~al.
+\newblock Psych-201: A large-scale cross-domain dataset of human behavior.
+\newblock \url{https://github.com/marcelbinz/Psych-201}, 2025{\natexlab{b}}.
+\newblock In preparation.
+
+\bibitem[{Browser-Use Contributors}(2024)]{browseruse2024}
+{Browser-Use Contributors}.
+\newblock Browser-use: Make websites accessible for {AI} agents.
+\newblock \url{https://github.com/browser-use/browser-use}, 2024.
+
+\bibitem[Clark et~al.(2004)Clark, Cools, and Robbins]{clark2004reversal}
+Luke Clark, Roshan Cools, and Trevor~W Robbins.
+\newblock The neuropsychology of ventral prefrontal cortex: Decision-making and
+  reversal learning.
+\newblock \emph{Brain and Cognition}, 55\penalty0 (1):\penalty0 41--53, 2004.
+
+\bibitem[Coda-Forno et~al.(2024)Coda-Forno, Binz, Wang, and
+  Schulz]{codaforno2024cogbench}
+Julian Coda-Forno, Marcel Binz, Jane~X Wang, and Eric Schulz.
+\newblock {CogBench}: a large language model walks into a psychology lab.
+\newblock In \emph{Proceedings of the 41st International Conference on Machine
+  Learning}, volume 235 of \emph{Proceedings of Machine Learning Research},
+  pages 9076--9108, 2024.
+
+\bibitem[Cohen(1988)]{cohen1988statistical}
+Jacob Cohen.
+\newblock \emph{Statistical Power Analysis for the Behavioral Sciences}.
+\newblock Lawrence Erlbaum Associates, 2nd edition, 1988.
+
+\bibitem[de~Leeuw(2015)]{deleeuw2015jspsych}
+Joshua~R de~Leeuw.
+\newblock {jsPsych}: A {JavaScript} library for creating behavioral experiments
+  in a web browser.
+\newblock \emph{Behavior Research Methods}, 47\penalty0 (1):\penalty0 1--12,
+  2015.
+
+\bibitem[de~Leeuw et~al.(2023)de~Leeuw, Gilbert, and
+  Luchterhandt]{deleeuw2023jspsych}
+Joshua~R de~Leeuw, Rebecca~A Gilbert, and Bj{\"o}rn Luchterhandt.
+\newblock {jsPsych}: Enabling an open-source collaborative ecosystem of
+  behavioral experiments.
+\newblock \emph{Journal of Open Source Software}, 8\penalty0 (85):\penalty0
+  5351, 2023.
+
+\bibitem[Deng et~al.(2024)Deng, Gu, Zheng, Chen, Stevens, Wang, Sun, and
+  Su]{deng2024mind2web}
+Xiang Deng, Yu~Gu, Boyuan Zheng, Shijie Chen, Sam Stevens, Boshi Wang, Huan
+  Sun, and Yu~Su.
+\newblock {Mind2Web}: Towards a generalist agent for the web.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~36, 2024.
+
+\bibitem[Donders(1969)]{donders1969reaction}
+Franciscus~C Donders.
+\newblock On the speed of mental processes.
+\newblock In W~G Koster, editor, \emph{Attention and Performance {II}}, pages
+  412--431. North-Holland, 1969.
+\newblock Translated by W.~G.~Koster from the original 1868 Dutch publication.
+
+\bibitem[Engel(2011)]{engel2011dictator}
+Christoph Engel.
+\newblock Dictator games: A meta study.
+\newblock \emph{Experimental Economics}, 14\penalty0 (4):\penalty0 583--610,
+  2011.
+
+\bibitem[Eriksen and Eriksen(1974)]{eriksen1974flanker}
+Barbara~A Eriksen and Charles~W Eriksen.
+\newblock Effects of noise letters upon the identification of a target letter
+  in a nonsearch task.
+\newblock \emph{Perception \& Psychophysics}, 16\penalty0 (1):\penalty0
+  143--149, 1974.
+
+\bibitem[Gratton et~al.(1992)Gratton, Coles, and Donchin]{gratton1992cse}
+Gabriele Gratton, Michael G~H Coles, and Emanuel Donchin.
+\newblock Optimizing the use of information: Strategic control of activation of
+  responses.
+\newblock \emph{Journal of Experimental Psychology: General}, 121\penalty0
+  (4):\penalty0 480--506, 1992.
+
+\bibitem[Green and Swets(1966)]{green1966sdt}
+David~M Green and John~A Swets.
+\newblock \emph{Signal Detection Theory and Psychophysics}.
+\newblock Wiley, 1966.
+
+\bibitem[Hautus(1995)]{hautus1995corrections}
+Michael~J Hautus.
+\newblock Corrections for extreme proportions and their biasing effects on
+  estimated values of $d'$.
+\newblock \emph{Behavior Research Methods, Instruments, \& Computers},
+  27\penalty0 (1):\penalty0 46--51, 1995.
+
+\bibitem[Kahneman and Tversky(1979)]{kahneman1979prospect}
+Daniel Kahneman and Amos Tversky.
+\newblock Prospect theory: An analysis of decision under risk.
+\newblock \emph{Econometrica}, 47\penalty0 (2):\penalty0 263--291, 1979.
+
+\bibitem[Kahneman et~al.(1986)Kahneman, Knetsch, and
+  Thaler]{kahneman1986fairness}
+Daniel Kahneman, Jack~L Knetsch, and Richard~H Thaler.
+\newblock Fairness and the assumptions of economics.
+\newblock \emph{The Journal of Business}, 59\penalty0 (4):\penalty0 S285--S300,
+  1986.
+
+\bibitem[Kirchner(1958)]{kirchner1958nback}
+Wayne~K Kirchner.
+\newblock Age differences in short-term retention of rapidly changing
+  information.
+\newblock \emph{Journal of Experimental Psychology}, 55\penalty0 (4):\penalty0
+  352--358, 1958.
+
+\bibitem[Li et~al.(2026)Li, Shi, Xiao, Jiang, Sun, Wu, Xia, Cai, Xu, Si, Li,
+  Wang, and Liu]{li2026agencybench}
+Keyu Li, Junhao Shi, Yang Xiao, Mohan Jiang, Jie Sun, Yunze Wu, Shijie Xia,
+  Xiaojie Cai, Tianze Xu, Weiye Si, Wenjie Li, Dequan Wang, and Pengfei Liu.
+\newblock {AgencyBench}: Benchmarking the frontiers of autonomous agents in
+  {1M}-token real-world contexts.
+\newblock \emph{arXiv preprint arXiv:2601.11044}, 2026.
+
+\bibitem[Liu et~al.(2025)Liu, Liu, Zhou, Cui, Zhou, Zhou, Fan, Zhang, Shi,
+  et~al.]{liu2025verigui}
+Shunyu Liu, Minghao Liu, Huichi Zhou, Zhenyu Cui, Yang Zhou, Yuhao Zhou,
+  Wendong Fan, Ge~Zhang, Jiajun Shi, et~al.
+\newblock {VeriGUI}: Verifiable long-chain {GUI} dataset.
+\newblock \emph{arXiv preprint arXiv:2508.04026}, 2025.
+
+\bibitem[Logan(1994)]{logan1994gonogo}
+Gordon~D Logan.
+\newblock On the ability to inhibit thought and action: A users' guide to the
+  stop signal paradigm.
+\newblock \emph{Inhibitory Processes in Attention, Memory, and Language}, pages
+  189--239, 1994.
+
+\bibitem[Owen et~al.(2005)Owen, McMillan, Laird, and Bullmore]{owen2005nback}
+Adrian~M Owen, Kathryn~M McMillan, Angela~R Laird, and Ed~Bullmore.
+\newblock N-back working memory paradigm: A meta-analysis of normative
+  functional neuroimaging studies.
+\newblock \emph{Human Brain Mapping}, 25\penalty0 (1):\penalty0 46--59, 2005.
+
+\bibitem[Stroop(1935)]{stroop1935}
+J~Ridley Stroop.
+\newblock Studies of interference in serial verbal reactions.
+\newblock \emph{Journal of Experimental Psychology}, 18\penalty0 (6):\penalty0
+  643--662, 1935.
+
+\bibitem[Wei et~al.(2025)Wei, Sachdeva, Coleman, He, Bei, Ning, Ai, Li, He,
+  Chi, Wang, Chen, Pereira, Kang, and Cheng]{wei2025evomemory}
+Tianxin Wei, Noveen Sachdeva, Benjamin Coleman, Zhankui He, Yuanchen Bei,
+  Xuying Ning, Mengting Ai, Yunzhe Li, Jingrui He, Ed~H Chi, Chi Wang, Shuo
+  Chen, Fernando Pereira, Wang-Cheng Kang, and Derek~Zhiyuan Cheng.
+\newblock {Evo-Memory}: Benchmarking {LLM} agent test-time learning with
+  self-evolving memory.
+\newblock \emph{arXiv preprint arXiv:2511.20857}, 2025.
+
+\bibitem[Wilson et~al.(2014)Wilson, Geana, White, Ludvig, and
+  Cohen]{wilson2014horizon}
+Robert~C Wilson, Andra Geana, John~M White, Elliot~A Ludvig, and Jonathan~D
+  Cohen.
+\newblock Humans use directed and random exploration to solve the
+  explore--exploit dilemma.
+\newblock \emph{Journal of Experimental Psychology: General}, 143\penalty0
+  (6):\penalty0 2074--2081, 2014.
+
+\bibitem[Xu et~al.(2025)Xu, Wallace, and Araki]{xu2025turkingbench}
+Kevin Xu, Byron~C Wallace, and Jun Araki.
+\newblock {TurkingBench}: A challenge benchmark for web agents.
+\newblock In \emph{Proceedings of the 2025 Conference of the North American
+  Chapter of the Association for Computational Linguistics}, 2025.
+
+\bibitem[Yao et~al.(2022)Yao, Chen, Yang, and Narasimhan]{yao2022webshop}
+Shunyu Yao, Howard Chen, John Yang, and Karthik Narasimhan.
+\newblock {WebShop}: Towards scalable real-world web interaction with grounded
+  language agents.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~35, 2022.
+
+\bibitem[Zhou et~al.(2024)Zhou, Xu, Zhu, Zhou, Lo, Sridhar, Cheng, Ou, Bisk,
+  Fried, Alon, and Neubig]{zhou2024webarena}
+Shuyan Zhou, Frank~F Xu, Hao Zhu, Xuhui Zhou, Robert Lo, Abishek Sridhar,
+  Xianyi Cheng, Tianyue Ou, Yonatan Bisk, Daniel Fried, Uri Alon, and Graham
+  Neubig.
+\newblock {WebArena}: A realistic web environment for building autonomous
+  agents.
+\newblock In \emph{International Conference on Learning Representations}, 2024.
+
+\end{thebibliography}

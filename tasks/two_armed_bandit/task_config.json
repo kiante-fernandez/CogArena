@@ -4,7 +4,8 @@
     "domain": "multi_armed_bandits",
     "description": "Explore-exploit tradeoff with horizon manipulation",
     "parameters": {
-        "n_trials": 80,
+        "n_free_choice_trials": 140,
+        "n_trials": 140,
         "n_games": 40,
         "games_per_horizon": 20,
         "horizons": [1, 6],

@@ -12,6 +12,7 @@
         iti_max: 600,
         feedback_duration: 1000,
     };
+    CONFIG.response_deadline = getTrialDuration(CONFIG.response_deadline);
 
     var urlParams = new URLSearchParams(window.location.search);
     var SESSION_ID = urlParams.get("session_id") || "debug";

@@ -15,6 +15,7 @@
         feedback_duration: 1000,
         n_practice: 12,
     };
+    CONFIG.stimulus_duration = getTrialDuration(CONFIG.stimulus_duration);
 
     var urlParams = new URLSearchParams(window.location.search);
     var SESSION_ID = urlParams.get("session_id") || "debug";
@@ -155,7 +156,7 @@
             "<h2>Response Keys</h2>" +
             "<p style='font-size:28px'><kbd>F</kbd> = <strong>Match</strong> (same as 2 back)</p>" +
             "<p style='font-size:28px'><kbd>J</kbd> = <strong>No Match</strong> (different)</p>" +
-            "<p>Respond while the letter is on screen. You have " + (CONFIG.stimulus_duration / 1000) + " seconds.</p>" +
+            "<p>Respond while the letter is on screen." + (CONFIG.stimulus_duration ? " You have " + (CONFIG.stimulus_duration / 1000) + " seconds." : "") + "</p>" +
             "<p>Press Next to start " + CONFIG.n_practice + " practice trials with feedback.</p>",
         ],
         show_clickable_nav: true,
