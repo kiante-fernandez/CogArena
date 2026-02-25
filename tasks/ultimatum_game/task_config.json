@@ -1,0 +1,14 @@
+{
+    "task_id": "ultimatum_game",
+    "task_name": "Ultimatum Game",
+    "domain": "social_strategic",
+    "description": "Propose and respond to monetary offers testing fairness norms and strategic reasoning",
+    "parameters": {
+        "n_trials": 20,
+        "endowment": 10,
+        "response_keys": ["f", "j"],
+        "response_type": "mixed",
+        "response_deadline_ms": 15000,
+        "required_fields": ["trial_index", "round_number", "role", "offer_amount", "offer_proportion", "accepted", "player_payoff", "rt"]
+    }
+}

@@ -10,6 +10,11 @@
     var SESSION_ID = urlParams.get("session_id") || "debug";
     var TASK_ID = "dictator_game";
 
+    var _nto = parseInt(urlParams.get("n_trials"));
+    if (!isNaN(_nto) && _nto > 0) {
+        CONFIG.n_rounds = _nto;
+    }
+
     var jsPsych = initJsPsych({
         experiment_width: 800,
         minimum_valid_rt: 200,

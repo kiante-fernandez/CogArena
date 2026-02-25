@@ -1,0 +1,26 @@
+{
+    "task_id": "bart",
+    "metrics": [
+        {
+            "name": "mean_adjusted_pumps",
+            "type": "mean",
+            "field": "adjusted_pumps",
+            "human_mean": 25,
+            "human_sd": 12
+        },
+        {
+            "name": "total_earnings",
+            "type": "mean",
+            "field": "balloon_earnings",
+            "human_mean": 0.80,
+            "human_sd": 0.40
+        },
+        {
+            "name": "pop_rate",
+            "type": "proportion_correct",
+            "field": "popped",
+            "human_mean": 0.35,
+            "human_sd": 0.15
+        }
+    ]
+}

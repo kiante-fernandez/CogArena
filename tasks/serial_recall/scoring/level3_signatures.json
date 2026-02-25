@@ -1,0 +1,35 @@
+{
+    "task_id": "serial_recall",
+    "signatures": [
+        {
+            "name": "primacy_effect",
+            "description": "First items recalled better than middle items",
+            "test": "paired_ttest_greater",
+            "group_a": {"filter": {}, "field": "primacy_recalled"},
+            "group_b": {"filter": {}, "field": "middle_recalled"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "recency_effect",
+            "description": "Last items recalled better than middle items",
+            "test": "paired_ttest_greater",
+            "group_a": {"filter": {}, "field": "recency_recalled"},
+            "group_b": {"filter": {}, "field": "middle_recalled"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "above_chance_recall",
+            "description": "Items recalled above random baseline",
+            "test": "proportion_test",
+            "field": "above_chance_recall",
+            "chance_level": 0.083,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

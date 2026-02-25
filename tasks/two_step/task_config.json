@@ -1,0 +1,29 @@
+{
+    "task_id": "two_step",
+    "task_name": "Two-Step Task (Model-Based vs. Model-Free RL)",
+    "domain": "reinforcement_learning",
+    "version": "1.0.0",
+    "citation": "Daw et al. (2011)",
+    "description": "Two-stage Markov decision task with common and rare transitions measuring model-based vs. model-free learning",
+    "parameters": {
+        "n_trials": 100,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 3000,
+        "common_transition_prob": 0.7,
+        "fixation_duration_ms": 500,
+        "feedback_duration_ms": 1000,
+        "required_fields": [
+            "trial_index",
+            "stage1_choice",
+            "stage1_rt",
+            "transition_type",
+            "stage2_choice",
+            "stage2_rt",
+            "rewarded",
+            "stayed",
+            "previous_rewarded",
+            "previous_transition"
+        ]
+    }
+}

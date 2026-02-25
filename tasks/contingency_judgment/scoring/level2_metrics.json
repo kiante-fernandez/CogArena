@@ -1,0 +1,28 @@
+{
+    "task_id": "contingency_judgment",
+    "metrics": [
+        {
+            "name": "mean_rating_accuracy",
+            "type": "mean",
+            "field": "rating_accuracy",
+            "human_mean": 0.65,
+            "human_sd": 0.15
+        },
+        {
+            "name": "strong_cause_rating",
+            "type": "mean",
+            "field": "rating_normalized",
+            "filter": {"block": 1},
+            "human_mean": 0.75,
+            "human_sd": 0.15
+        },
+        {
+            "name": "no_cause_rating",
+            "type": "mean",
+            "field": "rating_normalized",
+            "filter": {"block": 3},
+            "human_mean": 0.50,
+            "human_sd": 0.18
+        }
+    ]
+}

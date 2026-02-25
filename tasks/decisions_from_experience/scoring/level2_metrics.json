@@ -1,0 +1,27 @@
+{
+    "task_id": "decisions_from_experience",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "type": "proportion_correct",
+            "field": "chose_higher_ev",
+            "human_mean": 0.60,
+            "human_sd": 0.15
+        },
+        {
+            "name": "mean_total_samples",
+            "type": "mean",
+            "field": "total_samples",
+            "human_mean": 11,
+            "human_sd": 8
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "human_mean": 3000,
+            "human_sd": 1500,
+            "direction": "lower_is_better"
+        }
+    ]
+}

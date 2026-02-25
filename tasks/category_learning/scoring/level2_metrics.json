@@ -1,0 +1,38 @@
+{
+    "task_id": "category_learning",
+    "metrics": [
+        {
+            "name": "overall_training_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"phase": "training"},
+            "human_mean": 0.80,
+            "human_sd": 0.12
+        },
+        {
+            "name": "final_block_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"block": 8},
+            "human_mean": 0.92,
+            "human_sd": 0.10
+        },
+        {
+            "name": "transfer_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"phase": "transfer"},
+            "human_mean": 0.88,
+            "human_sd": 0.14
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"phase": "training"},
+            "human_mean": 1200,
+            "human_sd": 400,
+            "direction": "lower_is_better"
+        }
+    ]
+}

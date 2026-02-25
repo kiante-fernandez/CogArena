@@ -1,0 +1,35 @@
+{
+    "task_id": "probabilistic_classification",
+    "signatures": [
+        {
+            "name": "learning_curve",
+            "description": "Accuracy improves from first to last block",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"block": 5}, "field": "correct"},
+            "group_b": {"filter": {"block": 1}, "field": "correct"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "above_chance_accuracy",
+            "description": "Overall accuracy exceeds chance (50%)",
+            "test": "proportion_test",
+            "field": "correct",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        },
+        {
+            "name": "cue_utilization",
+            "description": "Accuracy higher when strong cues are present",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"strong_cue_present": true}, "field": "correct"},
+            "group_b": {"filter": {"strong_cue_present": false}, "field": "correct"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 0.75
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "task_id": "intertemporal_choice",
+    "task_name": "Intertemporal Choice (Temporal Discounting)",
+    "domain": "decision_making",
+    "description": "Binary choices between smaller-sooner and larger-later rewards measuring temporal discounting",
+    "parameters": {
+        "n_trials": 60,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 10000,
+        "required_fields": ["trial_index", "smaller_amount", "larger_amount", "delay_sooner", "delay_later", "chose_smaller", "chose_larger", "chose_sooner", "rt"]
+    }
+}

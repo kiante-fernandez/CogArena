@@ -1,0 +1,35 @@
+{
+    "task_id": "public_goods",
+    "signatures": [
+        {
+            "name": "conditional_cooperation",
+            "description": "Initial contribution above zero (non-free-riding)",
+            "test": "proportion_test",
+            "field": "positive_contribution",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "declining_contributions",
+            "description": "Negative correlation between round number and contribution",
+            "test": "correlation_test",
+            "field_x": "round_number",
+            "field_y": "player_contribution_proportion",
+            "expected_direction": "negative",
+            "threshold_p": 0.10,
+            "weight": 1.0
+        },
+        {
+            "name": "group_sensitivity",
+            "description": "Contribution correlates with others' previous contributions",
+            "test": "correlation_test",
+            "field_x": "previous_other_mean",
+            "field_y": "player_contribution",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

@@ -1,0 +1,36 @@
+{
+    "task_id": "two_step",
+    "signatures": [
+        {
+            "name": "model_based_index",
+            "description": "Reward x transition interaction: stay rate differs by transition type after reward",
+            "test": "interaction_test",
+            "outcome_field": "stayed_num",
+            "factor_a_field": "previous_rewarded_str",
+            "factor_b_field": "previous_transition",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "above_chance_reward",
+            "description": "Overall reward rate exceeds chance (0.5)",
+            "test": "proportion_test",
+            "field": "rewarded",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        },
+        {
+            "name": "win_stay",
+            "description": "Higher stay rate after reward than after no reward",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"previous_rewarded": true}, "field": "stayed"},
+            "group_b": {"filter": {"previous_rewarded": false}, "field": "stayed"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 0.75
+        }
+    ]
+}

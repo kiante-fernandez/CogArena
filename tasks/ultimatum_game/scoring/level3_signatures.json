@@ -1,0 +1,37 @@
+{
+    "task_id": "ultimatum_game",
+    "signatures": [
+        {
+            "name": "fair_offers",
+            "description": "As proposer, mean offer proportion exceeds selfish minimum",
+            "test": "proportion_test",
+            "filter": {"role": "proposer"},
+            "field": "fair_offer",
+            "chance_level": 0.3,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "rejection_of_low_offers",
+            "description": "As responder, low offers (<20%) are rejected more than accepted",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"role": "responder", "low_offer": false}, "field": "accepted"},
+            "group_b": {"filter": {"role": "responder", "low_offer": true}, "field": "accepted"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "offer_sensitivity",
+            "description": "As responder, acceptance correlates with offer size",
+            "test": "correlation_test",
+            "filter": {"role": "responder"},
+            "field_x": "offer_proportion",
+            "field_y": "accepted_num",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

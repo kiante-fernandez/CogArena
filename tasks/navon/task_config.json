@@ -1,0 +1,25 @@
+{
+    "task_id": "navon",
+    "task_name": "Navon Global/Local Task",
+    "domain": "perception_attention",
+    "version": "1.0.0",
+    "citation": "Navon, 1977",
+    "description": "Identify letters at global or local level of hierarchical Navon figures. Tests global precedence in visual attention — processing large (global) letters faster than small (local) letters.",
+    "parameters": {
+        "n_trials": 80,
+        "n_blocks": 4,
+        "trials_per_block": 20,
+        "conditions": ["congruent", "incongruent"],
+        "target_levels": ["global", "local"],
+        "stimulus_duration_ms": null,
+        "fixation_duration_ms": 500,
+        "response_deadline_ms": 3000,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "letter_key_mapping": {"H": "f", "S": "j"},
+        "required_fields": [
+            "trial_index", "block", "target_level", "global_letter",
+            "local_letter", "congruency", "correct", "rt"
+        ]
+    }
+}

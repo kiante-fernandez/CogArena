@@ -17,6 +17,13 @@
     var SESSION_ID = urlParams.get("session_id") || "debug";
     var TASK_ID = "flanker";
 
+    var _nto = parseInt(urlParams.get("n_trials"));
+    if (!isNaN(_nto) && _nto > 0) {
+        CONFIG.n_trials = _nto;
+        CONFIG.n_blocks = 1;
+        CONFIG.trials_per_block = _nto;
+    }
+
     var jsPsych = initJsPsych({
         experiment_width: 800,
         minimum_valid_rt: 100,

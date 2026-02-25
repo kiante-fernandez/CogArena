@@ -1,0 +1,36 @@
+{
+    "task_id": "prisoners_dilemma",
+    "signatures": [
+        {
+            "name": "above_chance_cooperation",
+            "description": "Cooperation rate above the minimum (defect always = 0%)",
+            "test": "proportion_test",
+            "field": "player_cooperated",
+            "chance_level": 0.25,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "tit_for_tat",
+            "description": "Player matches partner's previous choice (reciprocity)",
+            "test": "proportion_test",
+            "field": "matched_partner",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "forgiveness",
+            "description": "Cooperates after mutual defection more than chance",
+            "test": "proportion_test",
+            "filter": {"previous_mutual_defection": true},
+            "field": "player_cooperated",
+            "chance_level": 0.25,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

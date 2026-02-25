@@ -1,0 +1,35 @@
+{
+    "task_id": "intertemporal_choice",
+    "signatures": [
+        {
+            "name": "present_bias",
+            "description": "Preference for sooner rewards above chance",
+            "test": "proportion_test",
+            "field": "chose_sooner",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "delay_sensitivity",
+            "description": "More sooner choices for short delays than long delays",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"delay_category": "short"}, "field": "chose_sooner"},
+            "group_b": {"filter": {"delay_category": "long"}, "field": "chose_sooner"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "magnitude_effect",
+            "description": "Lower discount rate for larger amounts (less impatience)",
+            "test": "correlation_test",
+            "field_x": "larger_amount",
+            "field_y": "chose_larger_num",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "task_id": "probabilistic_classification",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "human_mean": 0.65,
+            "human_sd": 0.10
+        },
+        {
+            "name": "final_block_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"block": 5},
+            "human_mean": 0.72,
+            "human_sd": 0.12
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "human_mean": 2000,
+            "human_sd": 600,
+            "direction": "lower_is_better"
+        }
+    ]
+}

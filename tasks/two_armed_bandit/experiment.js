@@ -20,6 +20,12 @@
     var SESSION_ID = urlParams.get("session_id") || "debug";
     var TASK_ID = "two_armed_bandit";
 
+    var _nto = parseInt(urlParams.get("n_trials"));
+    if (!isNaN(_nto) && _nto > 0) {
+        CONFIG.n_games = _nto;
+        CONFIG.games_per_horizon = Math.ceil(_nto / 2);
+    }
+
     var jsPsych = initJsPsych({
         experiment_width: 800,
         minimum_valid_rt: 100,

@@ -1,0 +1,27 @@
+{
+    "task_id": "prisoners_dilemma",
+    "metrics": [
+        {
+            "name": "cooperation_rate",
+            "type": "proportion_correct",
+            "field": "player_cooperated",
+            "human_mean": 0.50,
+            "human_sd": 0.20
+        },
+        {
+            "name": "mean_payoff",
+            "type": "mean",
+            "field": "player_payoff",
+            "human_mean": 2.5,
+            "human_sd": 0.8
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "human_mean": 2000,
+            "human_sd": 800,
+            "direction": "lower_is_better"
+        }
+    ]
+}

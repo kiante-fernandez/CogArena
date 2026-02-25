@@ -1,0 +1,35 @@
+{
+    "task_id": "simple_choice_rt",
+    "signatures": [
+        {
+            "name": "hicks_law",
+            "description": "RT increases with log2(N alternatives)",
+            "test": "correlation_test",
+            "field_x": "log_n_alternatives",
+            "field_y": "rt",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "choice2_slower_than_simple",
+            "description": "2-choice RT slower than simple RT",
+            "test": "paired_ttest_greater",
+            "group_a": {"filter": {"condition": "choice2"}, "field": "rt"},
+            "group_b": {"filter": {"condition": "simple"}, "field": "rt"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "above_chance_accuracy",
+            "description": "Overall accuracy exceeds chance",
+            "test": "proportion_test",
+            "field": "correct",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

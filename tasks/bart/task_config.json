@@ -1,0 +1,19 @@
+{
+    "task_id": "bart",
+    "task_name": "Balloon Analog Risk Task (BART)",
+    "domain": "decision_making",
+    "version": "1.0.0",
+    "citation": "Lejuez et al. (2002)",
+    "description": "Inflate balloons for rewards with risk of popping, measuring risk propensity",
+    "parameters": {
+        "n_trials": 30,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "feedback_duration_ms": 1500,
+        "required_fields": [
+            "trial_index", "balloon_number", "n_pumps", "popped",
+            "cashed_out", "balloon_earnings", "total_earnings"
+        ]
+    }
+}

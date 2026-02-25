@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CogArena - Balloon Analog Risk Task</title>
+    <script src="/jsPsych-8.2.3/packages/jspsych/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-html-keyboard-response/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-instructions/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-call-function/dist/index.browser.js"></script>
+    <link href="/jsPsych-8.2.3/packages/jspsych/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        .bart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+        .balloon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+            margin-bottom: 10px;
+        }
+        .balloon {
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #ff6b6b, #e63946);
+            transition: width 0.15s ease, height 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .balloon-string {
+            position: absolute;
+            bottom: -30px;
+            width: 2px;
+            height: 30px;
+            background: #999;
+        }
+        .balloon-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+        .bart-info {
+            font-size: 20px;
+            color: #333;
+            margin: 8px 0;
+        }
+        .bart-earnings {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2a6;
+            margin: 8px 0;
+        }
+        .bart-controls {
+            font-size: 18px;
+            color: #666;
+            margin-top: 12px;
+        }
+        .bart-controls kbd {
+            display: inline-block;
+            padding: 4px 10px;
+            border: 2px solid #888;
+            border-radius: 5px;
+            background: #f4f4f4;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .pop-display {
+            font-size: 64px;
+            font-weight: bold;
+            color: #e63946;
+            animation: popBurst 0.4s ease-out;
+        }
+        @keyframes popBurst {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(1.0); opacity: 1; }
+        }
+        .cashout-display {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2a6;
+            animation: cashSlide 0.3s ease-out;
+        }
+        @keyframes cashSlide {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .fixation {
+            font-size: 60px;
+            color: #333;
+        }
+        .bart-header {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body></body>
+<script src="/static/js/timing.js"></script>
+<script src="experiment.js"></script>
+</html>

@@ -1,0 +1,35 @@
+{
+    "task_id": "restless_bandit",
+    "signatures": [
+        {
+            "name": "above_chance_tracking",
+            "description": "Optimal choice rate exceeds chance (50%)",
+            "test": "proportion_test",
+            "field": "chose_optimal",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "win_stay_lose_shift",
+            "description": "More staying after high rewards than after low rewards",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"previous_reward_above_median": true}, "field": "stayed"},
+            "group_b": {"filter": {"previous_reward_above_median": false}, "field": "stayed"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "recency_weighting",
+            "description": "Recent rewards predict staying more than distant rewards",
+            "test": "sequential_regression",
+            "outcome_field": "stayed_num",
+            "predictor_field": "previous_reward",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

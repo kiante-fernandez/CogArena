@@ -1,0 +1,16 @@
+{
+    "task_id": "category_learning",
+    "task_name": "Category Learning (Shepard Classification)",
+    "domain": "memory_learning",
+    "description": "Learn to classify stimuli into categories based on binary features with corrective feedback",
+    "parameters": {
+        "n_trials": 120,
+        "n_training": 96,
+        "n_transfer": 24,
+        "n_blocks": 8,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "required_fields": ["trial_index", "block", "phase", "correct", "rt"]
+    }
+}

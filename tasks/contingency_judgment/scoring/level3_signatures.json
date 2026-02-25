@@ -1,0 +1,36 @@
+{
+    "task_id": "contingency_judgment",
+    "signatures": [
+        {
+            "name": "delta_p_sensitivity",
+            "description": "Ratings correlate with actual contingency (ΔP)",
+            "test": "correlation_test",
+            "field_x": "block_delta_p",
+            "field_y": "rating_normalized",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "cause_discrimination",
+            "description": "Strong cause rated higher than no-cause",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"block": 1}, "field": "high_rating"},
+            "group_b": {"filter": {"block": 3}, "field": "high_rating"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "outcome_density_bias",
+            "description": "Ratings for zero-contingency blocks influenced by outcome base rate",
+            "test": "proportion_test",
+            "filter": {"block": 3},
+            "field": "overestimated",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.10,
+            "weight": 0.75
+        }
+    ]
+}

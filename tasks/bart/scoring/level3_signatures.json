@@ -1,0 +1,35 @@
+{
+    "task_id": "bart",
+    "signatures": [
+        {
+            "name": "risk_taking",
+            "description": "Mean adjusted pumps above minimum floor",
+            "test": "proportion_test",
+            "field": "above_floor_pumps",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "post_pop_adjustment",
+            "description": "Fewer pumps after a balloon pops (risk compensation)",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"previous_popped": false}, "field": "high_pumps"},
+            "group_b": {"filter": {"previous_popped": true}, "field": "high_pumps"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "earnings_above_zero",
+            "description": "Total earnings meaningfully above zero (not all pops)",
+            "test": "proportion_test",
+            "field": "cashed_out",
+            "chance_level": 0.3,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+{
+    "task_id": "public_goods",
+    "metrics": [
+        {
+            "name": "mean_contribution_proportion",
+            "type": "mean",
+            "field": "player_contribution_proportion",
+            "human_mean": 0.40,
+            "human_sd": 0.20
+        },
+        {
+            "name": "first_round_contribution",
+            "type": "mean",
+            "field": "player_contribution_proportion",
+            "filter": {"round_number": 1},
+            "human_mean": 0.50,
+            "human_sd": 0.22
+        },
+        {
+            "name": "mean_payoff",
+            "type": "mean",
+            "field": "player_payoff",
+            "human_mean": 22,
+            "human_sd": 4
+        }
+    ]
+}

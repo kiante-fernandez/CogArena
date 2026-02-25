@@ -1,0 +1,18 @@
+{
+    "task_id": "simple_choice_rt",
+    "task_name": "Simple and Choice Reaction Time",
+    "domain": "perception_attention",
+    "version": "1.0.0",
+    "citation": "Hick (1952); Donders (1868/1969)",
+    "description": "Respond to stimuli under 1, 2, or 4 alternatives testing Hick's Law",
+    "parameters": {
+        "n_trials": 80,
+        "response_keys": [" ", "d", "f", "j", "k"],
+        "response_keys_simple": [" "],
+        "response_keys_choice2": ["f", "j"],
+        "response_keys_choice4": ["d", "f", "j", "k"],
+        "response_type": "keypress",
+        "response_deadline_ms": 2000,
+        "required_fields": ["trial_index", "condition", "n_alternatives", "correct", "rt"]
+    }
+}

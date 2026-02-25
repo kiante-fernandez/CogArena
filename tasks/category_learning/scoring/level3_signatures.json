@@ -1,0 +1,37 @@
+{
+    "task_id": "category_learning",
+    "signatures": [
+        {
+            "name": "learning_curve",
+            "description": "Accuracy improves from first to last training block",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"block": 8}, "field": "correct"},
+            "group_b": {"filter": {"block": 1}, "field": "correct"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "above_chance_learning",
+            "description": "Final block accuracy exceeds chance (50%)",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"block": 8},
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "transfer_generalization",
+            "description": "Transfer accuracy exceeds chance, showing learned rule generalizes",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"phase": "transfer"},
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

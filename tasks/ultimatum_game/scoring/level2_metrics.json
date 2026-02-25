@@ -1,0 +1,29 @@
+{
+    "task_id": "ultimatum_game",
+    "metrics": [
+        {
+            "name": "mean_offer_as_proposer",
+            "type": "mean",
+            "field": "offer_proportion",
+            "filter": {"role": "proposer"},
+            "human_mean": 0.42,
+            "human_sd": 0.12
+        },
+        {
+            "name": "acceptance_rate_as_responder",
+            "type": "proportion_correct",
+            "field": "accepted",
+            "filter": {"role": "responder"},
+            "human_mean": 0.65,
+            "human_sd": 0.20
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "human_mean": 4000,
+            "human_sd": 2000,
+            "direction": "lower_is_better"
+        }
+    ]
+}

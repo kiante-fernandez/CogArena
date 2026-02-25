@@ -1,0 +1,22 @@
+{
+    "task_id": "probabilistic_classification",
+    "task_name": "Probabilistic Classification (Weather Prediction)",
+    "domain": "reinforcement_learning",
+    "version": "1.0.0",
+    "citation": "Knowlton, Squire & Gluck, 1994",
+    "description": "Learn to predict outcomes from probabilistic cue combinations. Four cards with different predictive validities are shown; participants must learn which combinations predict sun vs. rain.",
+    "parameters": {
+        "n_trials": 100,
+        "n_blocks": 5,
+        "trials_per_block": 20,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "fixation_duration_ms": 500,
+        "feedback_duration_ms": 1000,
+        "required_fields": [
+            "trial_index", "block", "cue1_present", "cue2_present",
+            "cue3_present", "cue4_present", "correct", "rt"
+        ]
+    }
+}

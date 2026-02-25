@@ -1,0 +1,35 @@
+{
+    "task_id": "decisions_from_experience",
+    "signatures": [
+        {
+            "name": "description_experience_gap",
+            "description": "Underweighting rare events: lower accuracy on rare-event problems",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"rare_event_present": false}, "field": "chose_higher_ev"},
+            "group_b": {"filter": {"rare_event_present": true}, "field": "chose_higher_ev"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "sampling_frugality",
+            "description": "Mean samples below 15 (humans are frugal samplers)",
+            "test": "proportion_test",
+            "field": "frugal_sampling",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        },
+        {
+            "name": "recency_in_sampling",
+            "description": "Later samples weighted more (correlation between sample recency and influence on choice)",
+            "test": "correlation_test",
+            "field_x": "last_sample_match",
+            "field_y": "chose_higher_ev_num",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

@@ -1,0 +1,39 @@
+{
+    "task_id": "simple_choice_rt",
+    "metrics": [
+        {
+            "name": "simple_rt_mean",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"condition": "simple"},
+            "human_mean": 220,
+            "human_sd": 30,
+            "direction": "lower_is_better"
+        },
+        {
+            "name": "choice2_rt_mean",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"condition": "choice2"},
+            "human_mean": 340,
+            "human_sd": 40,
+            "direction": "lower_is_better"
+        },
+        {
+            "name": "choice4_rt_mean",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"condition": "choice4"},
+            "human_mean": 450,
+            "human_sd": 50,
+            "direction": "lower_is_better"
+        },
+        {
+            "name": "overall_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "human_mean": 0.95,
+            "human_sd": 0.04
+        }
+    ]
+}

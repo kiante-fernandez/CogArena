@@ -1,0 +1,33 @@
+{
+    "task_id": "serial_recall",
+    "metrics": [
+        {
+            "name": "mean_items_recalled",
+            "type": "mean",
+            "field": "n_recalled",
+            "human_mean": 7.0,
+            "human_sd": 2.0
+        },
+        {
+            "name": "mean_correct_position",
+            "type": "mean",
+            "field": "n_correct_position",
+            "human_mean": 4.5,
+            "human_sd": 1.5
+        },
+        {
+            "name": "primacy_recall_rate",
+            "type": "mean",
+            "field": "primacy_recalled",
+            "human_mean": 0.70,
+            "human_sd": 0.15
+        },
+        {
+            "name": "recency_recall_rate",
+            "type": "mean",
+            "field": "recency_recalled",
+            "human_mean": 0.75,
+            "human_sd": 0.15
+        }
+    ]
+}

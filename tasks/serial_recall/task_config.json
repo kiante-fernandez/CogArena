@@ -1,0 +1,13 @@
+{
+    "task_id": "serial_recall",
+    "task_name": "Serial Recall (Free Recall)",
+    "domain": "memory_learning",
+    "description": "Study lists of words and recall them in order, measuring serial position effects",
+    "parameters": {
+        "n_trials": 10,
+        "list_length": 12,
+        "response_type": "button",
+        "response_deadline_ms": 60000,
+        "required_fields": ["trial_index", "list_number", "n_recalled", "n_correct_position", "primacy_recalled", "recency_recalled", "middle_recalled"]
+    }
+}

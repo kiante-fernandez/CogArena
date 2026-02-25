@@ -1,0 +1,36 @@
+{
+    "task_id": "intertemporal_choice",
+    "metrics": [
+        {
+            "name": "overall_sooner_rate",
+            "type": "proportion_correct",
+            "field": "chose_sooner",
+            "human_mean": 0.45,
+            "human_sd": 0.20
+        },
+        {
+            "name": "short_delay_sooner_rate",
+            "type": "proportion_correct",
+            "field": "chose_sooner",
+            "filter": {"delay_category": "short"},
+            "human_mean": 0.55,
+            "human_sd": 0.22
+        },
+        {
+            "name": "long_delay_sooner_rate",
+            "type": "proportion_correct",
+            "field": "chose_sooner",
+            "filter": {"delay_category": "long"},
+            "human_mean": 0.35,
+            "human_sd": 0.22
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "human_mean": 3000,
+            "human_sd": 1200,
+            "direction": "lower_is_better"
+        }
+    ]
+}

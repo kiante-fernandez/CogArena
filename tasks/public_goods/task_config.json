@@ -1,0 +1,26 @@
+{
+    "task_id": "public_goods",
+    "task_name": "Public Goods Game",
+    "domain": "social_strategic",
+    "version": "1.0.0",
+    "citation": "Fehr & Gachter, 2000; Ledyard, 1995; Chaudhuri, 2011",
+    "description": "Contribute to a shared pool with simulated co-players measuring cooperation and free-riding",
+    "parameters": {
+        "n_trials": 10,
+        "endowment": 20,
+        "multiplier": 1.6,
+        "n_players": 4,
+        "response_type": "slider",
+        "slider_range": [0, 20],
+        "response_deadline_ms": 15000,
+        "required_fields": [
+            "trial_index",
+            "round_number",
+            "player_contribution",
+            "player_contribution_proportion",
+            "other_mean_contribution",
+            "player_payoff",
+            "rt"
+        ]
+    }
+}

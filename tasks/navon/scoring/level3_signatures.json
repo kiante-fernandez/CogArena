@@ -1,0 +1,36 @@
+{
+    "task_id": "navon",
+    "signatures": [
+        {
+            "name": "global_precedence_rt",
+            "description": "Faster RT for global than local identification",
+            "test": "paired_ttest_greater",
+            "group_a": {"filter": {"target_level": "local", "correct": true}, "field": "rt"},
+            "group_b": {"filter": {"target_level": "global", "correct": true}, "field": "rt"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        },
+        {
+            "name": "global_to_local_interference",
+            "description": "Incongruent global info interferes with local processing more than vice versa",
+            "test": "interaction_test",
+            "outcome_field": "rt",
+            "factor_a_field": "target_level",
+            "factor_b_field": "congruency",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "congruency_effect",
+            "description": "Congruent trials faster than incongruent trials",
+            "test": "paired_ttest_greater",
+            "group_a": {"filter": {"congruency": "incongruent", "correct": true}, "field": "rt"},
+            "group_b": {"filter": {"congruency": "congruent", "correct": true}, "field": "rt"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 0.75
+        }
+    ]
+}

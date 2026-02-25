@@ -1,0 +1,13 @@
+{
+    "task_id": "restless_bandit",
+    "task_name": "Restless Bandit (Drifting Rewards)",
+    "domain": "exploration_exploitation",
+    "description": "Two-armed bandit with drifting reward distributions requiring continuous tracking",
+    "parameters": {
+        "n_trials": 100,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 3000,
+        "required_fields": ["trial_index", "chosen_arm", "reward", "chose_optimal", "stayed", "rt"]
+    }
+}
