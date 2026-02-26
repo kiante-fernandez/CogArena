@@ -1,0 +1,10 @@
+{
+    "task_id": "ultimatum_game",
+    "source": "Guth et al. (1982); Camerer (2003); Oosterbeek et al. (2004) meta-analysis",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "mean_offer_as_proposer": {"mean": 0.42, "sd": 0.12, "n": 200},
+        "acceptance_rate_as_responder": {"mean": 0.65, "sd": 0.20, "n": 200},
+        "mean_rt": {"mean": 4000, "sd": 2000, "n": 200}
+    }
+}

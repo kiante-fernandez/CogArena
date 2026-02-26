@@ -1,0 +1,11 @@
+{
+    "task_id": "category_learning",
+    "source": "Shepard, Hovland & Jenkins (1961); Nosofsky et al. (1994)",
+    "note": "Literature estimates for Type I (single-dimension) rule. Replace with empirical data.",
+    "baselines": {
+        "overall_training_accuracy": {"mean": 0.80, "sd": 0.12, "n": 200},
+        "final_block_accuracy": {"mean": 0.92, "sd": 0.10, "n": 200},
+        "transfer_accuracy": {"mean": 0.88, "sd": 0.14, "n": 200},
+        "mean_rt": {"mean": 1200, "sd": 400, "n": 200}
+    }
+}

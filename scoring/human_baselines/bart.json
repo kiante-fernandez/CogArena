@@ -1,0 +1,10 @@
+{
+    "task_id": "bart",
+    "source": "Lejuez et al. (2002); Hunt et al. (2005)",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "mean_adjusted_pumps": {"mean": 25, "sd": 12, "n": 200},
+        "mean_balloon_earnings": {"mean": 0.80, "sd": 0.40, "n": 200},
+        "pop_rate": {"mean": 0.35, "sd": 0.15, "n": 200}
+    }
+}

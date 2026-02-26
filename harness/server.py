@@ -43,14 +43,6 @@ def _load_tasks_meta() -> list[dict]:
             config = json.load(f)
 
         params = config.get("parameters", {})
-        response_type = params.get("response_type", "keypress")
-        response_keys = params.get("response_keys", [])
-        if response_type == "slider":
-            response_label = "Slider"
-        elif response_keys:
-            response_label = f"Keypress: {', '.join(k.upper() for k in response_keys)}"
-        else:
-            response_label = "Keypress"
 
         # Count L3 signatures
         sig_path = task_dir / "scoring" / "level3_signatures.json"
@@ -67,9 +59,7 @@ def _load_tasks_meta() -> list[dict]:
             "description": config.get("description", ""),
             "citation": config.get("citation", ""),
             "n_trials": params.get("n_trials", 0),
-            "response_label": response_label,
             "n_signatures": n_sigs,
-            "parameters": params,
         })
     return tasks
 

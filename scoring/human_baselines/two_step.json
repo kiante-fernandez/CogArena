@@ -1,0 +1,10 @@
+{
+    "task_id": "two_step",
+    "source": "Daw et al. (2011); Kool et al. (2016)",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "overall_reward_rate": {"mean": 0.55, "sd": 0.10, "n": 200},
+        "mean_stage1_rt": {"mean": 600, "sd": 200, "n": 200},
+        "stay_rate": {"mean": 0.65, "sd": 0.15, "n": 200}
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "task_id": "public_goods",
+    "source": "Fehr & Gachter (2000); Ledyard (1995); Chaudhuri (2011) survey",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "mean_contribution_proportion": {"mean": 0.40, "sd": 0.20, "n": 200},
+        "first_round_contribution": {"mean": 0.50, "sd": 0.22, "n": 200},
+        "mean_payoff": {"mean": 22, "sd": 4, "n": 200}
+    }
+}

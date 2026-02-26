@@ -1,0 +1,11 @@
+{
+    "task_id": "intertemporal_choice",
+    "source": "Green & Myerson (2004); Kirby et al. (1999)",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "overall_sooner_rate": {"mean": 0.45, "sd": 0.20, "n": 200},
+        "short_delay_sooner_rate": {"mean": 0.55, "sd": 0.22, "n": 200},
+        "long_delay_sooner_rate": {"mean": 0.35, "sd": 0.22, "n": 200},
+        "mean_rt": {"mean": 3000, "sd": 1200, "n": 200}
+    }
+}

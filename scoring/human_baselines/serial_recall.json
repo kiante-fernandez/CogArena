@@ -1,0 +1,11 @@
+{
+    "task_id": "serial_recall",
+    "source": "Murdock (1962); Howard & Kahana (2002)",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "mean_items_recalled": {"mean": 7.0, "sd": 2.0, "n": 200},
+        "mean_correct_position": {"mean": 4.5, "sd": 1.5, "n": 200},
+        "primacy_recall_rate": {"mean": 0.70, "sd": 0.15, "n": 200},
+        "recency_recall_rate": {"mean": 0.75, "sd": 0.15, "n": 200}
+    }
+}

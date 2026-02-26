@@ -1,0 +1,11 @@
+{
+    "task_id": "simple_choice_rt",
+    "source": "Hick (1952); Hyman (1953); Jensen (2006) Clocking the Mind",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "simple_rt_mean": {"mean": 220, "sd": 30, "n": 200},
+        "choice2_rt_mean": {"mean": 340, "sd": 40, "n": 200},
+        "choice4_rt_mean": {"mean": 450, "sd": 50, "n": 200},
+        "overall_accuracy": {"mean": 0.95, "sd": 0.04, "n": 200}
+    }
+}

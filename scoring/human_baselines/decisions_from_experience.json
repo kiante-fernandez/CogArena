@@ -1,0 +1,10 @@
+{
+    "task_id": "decisions_from_experience",
+    "source": "Hertwig et al. (2004); Hertwig & Erev (2009); Wulff et al. (2018)",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "overall_accuracy": {"mean": 0.60, "sd": 0.15, "n": 200},
+        "mean_total_samples": {"mean": 11, "sd": 8, "n": 200},
+        "mean_rt": {"mean": 3000, "sd": 1500, "n": 200}
+    }
+}

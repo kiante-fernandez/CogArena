@@ -44,14 +44,9 @@ For each task in your session:
 
 1. Navigate to the task URL in your browser
 2. You will see an instruction screen — read it carefully, then press the indicated key to start
-3. On each trial, a stimulus will appear on screen. Respond using the specified keys before the deadline
+3. On each trial, respond according to the task instructions
 4. The task will show a completion screen when finished. Trial data is auto-submitted to the server
 5. Move on to the next task
-
-### Response Types
-
-- **Keypress tasks**: Press the specified keyboard key (e.g., `d`, `f`, `j`, `k`) when you see the stimulus
-- **Slider tasks**: Drag the slider to your chosen value and click submit
 
 ### Important Rules
 

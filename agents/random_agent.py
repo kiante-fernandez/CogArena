@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Task-specific valid keys (from task_config.json files)
 TASK_KEYS = {
+    # Original 10 tasks
     "stroop": ["d", "f", "j", "k"],
     "flanker": ["f", "j"],
     "go_nogo": ["f"],
@@ -29,12 +30,29 @@ TASK_KEYS = {
     "iowa_gambling": ["d", "f", "j", "k"],
     "two_armed_bandit": ["f", "j"],
     "risky_choice": ["f", "j"],
-    # Slider tasks have no keys — handled separately
-    "trust_game": [],
-    "dictator_game": [],
+    "trust_game": [],       # Slider task
+    "dictator_game": [],    # Slider task
+    # New tasks (Phase 7)
+    "intertemporal_choice": ["f", "j"],
+    "two_step": ["f", "j"],
+    "decisions_from_experience": ["f", "j", " "],  # F/J for deck choice, SPACE to stop sampling
+    "prisoners_dilemma": ["f", "j"],
+    "probabilistic_classification": ["f", "j"],
+    "category_learning": ["f", "j"],
+    "restless_bandit": ["f", "j"],
+    "serial_recall": [],    # Button response task
+    "ultimatum_game": ["f", "j"],  # Mixed: slider (proposer) + keypress (responder)
+    "public_goods": [],     # Slider task
+    "contingency_judgment": [],  # Slider task (ratings)
+    "simple_choice_rt": ["d", "f", "j", "k", " "],  # SPACE for simple, D/F/J/K for choice
+    "bart": ["f", "j"],
+    "navon": ["f", "j"],
 }
 
-SLIDER_TASKS = {"trust_game", "dictator_game"}
+SLIDER_TASKS = {
+    "trust_game", "dictator_game",
+    "public_goods", "contingency_judgment", "serial_recall",
+}
 
 
 async def wait_for_jspsych_content(page: Page, timeout: float = 30.0):

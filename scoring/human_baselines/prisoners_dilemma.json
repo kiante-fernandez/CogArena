@@ -1,0 +1,10 @@
+{
+    "task_id": "prisoners_dilemma",
+    "source": "Dal Bo & Frechette (2011); Rand et al. (2012)",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "cooperation_rate": {"mean": 0.50, "sd": 0.20, "n": 200},
+        "mean_payoff": {"mean": 2.5, "sd": 0.8, "n": 200},
+        "mean_rt": {"mean": 2000, "sd": 800, "n": 200}
+    }
+}

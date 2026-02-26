@@ -1,0 +1,10 @@
+{
+    "task_id": "contingency_judgment",
+    "source": "Shanks (1995); Allan (1993); Cheng (1997)",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "mean_rating_accuracy": {"mean": 0.65, "sd": 0.15, "n": 200},
+        "strong_cause_rating": {"mean": 0.75, "sd": 0.15, "n": 200},
+        "no_cause_rating": {"mean": 0.50, "sd": 0.18, "n": 200}
+    }
+}

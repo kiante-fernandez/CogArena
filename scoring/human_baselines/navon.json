@@ -1,0 +1,11 @@
+{
+    "task_id": "navon",
+    "source": "Navon (1977); Kimchi (1992)",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "overall_accuracy": {"mean": 0.92, "sd": 0.05, "n": 200},
+        "global_accuracy": {"mean": 0.95, "sd": 0.04, "n": 200},
+        "local_accuracy": {"mean": 0.89, "sd": 0.06, "n": 200},
+        "mean_correct_rt": {"mean": 550, "sd": 100, "n": 200}
+    }
+}

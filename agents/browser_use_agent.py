@@ -2,85 +2,98 @@
 CogArena Browser-Use Agent
 
 Uses the Browser-Use framework (https://github.com/browser-use/browser-use)
-to control a browser with an LLM. The LLM sees the page, reads instructions,
-and decides what keys to press or slider values to set.
+to control a browser with an LLM. The agent receives only the task URL and
+the public skill.md reference — it must read jsPsych's on-screen instructions
+to learn task rules and key mappings, just like a human participant would.
 
-The system prompt tells the LLM it's in a cognitive experiment and provides the
-action vocabulary, but does NOT teach task rules — the agent must read jsPsych's
-instruction screens to learn key mappings, just like a human would.
+Supported providers (auto-detected from model name):
+    - OpenAI:    gpt-*, o3, o4-* (requires OPENAI_API_KEY)
+    - Google:    gemini-*        (requires GOOGLE_API_KEY)
+    - Anthropic: claude-*        (requires ANTHROPIC_API_KEY)
 
 Requirements:
-    pip install browser-use langchain-anthropic
+    pip install browser-use
 
 Usage:
+    python -m agents.browser_use_agent --base-url http://localhost:8000 --model o3
+    python -m agents.browser_use_agent --base-url http://localhost:8000 --model gemini-flash-latest
     python -m agents.browser_use_agent --base-url http://localhost:8000 --model claude-sonnet-4-20250514
 """
 import asyncio
 import json
 import logging
+import os
 import time
 
+from dotenv import load_dotenv
 import httpx
+
+load_dotenv()  # Load .env so API keys are available to LLM providers
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """You are an AI agent participating in a cognitive behavioral experiment called CogArena.
-
-You are navigating a web browser to complete interactive psychology experiments built with jsPsych.
-
-## How to interact
-
-Each experiment has:
-1. **Instruction screens** — Read them carefully to learn the task rules and key mappings. Click "Next" to advance.
-2. **Stimulus trials** — A stimulus appears on screen. Press the correct keyboard key as instructed.
-3. **Slider trials** — Drag the slider to your chosen value and click the submit button.
-4. **Fixation/feedback screens** — These advance automatically. Wait for them.
-5. **Completion screen** — Says "Task Complete" when done.
-
-## Important rules
-- Read ALL instruction pages before starting. They tell you which keys to press.
-- Respond to every trial — missed responses count as timeouts.
-- For keyboard tasks: press the exact key shown in the instructions (e.g., 'd', 'f', 'j', 'k').
-- For slider tasks: set a value and click the submit/send button.
-- Do NOT refresh the page.
-- When you see "Task Complete", the task is done.
-
-## Your goal
-Complete each trial as accurately as you can based on the instructions you read.
-"""
+# Load skill instructions from static/skill.md
+_SKILL_PATH = os.path.join(os.path.dirname(__file__), "..", "static", "skill.md")
+try:
+    with open(_SKILL_PATH) as f:
+        _SKILL_INSTRUCTIONS = f.read()
+except FileNotFoundError:
+    _SKILL_INSTRUCTIONS = ""
 
 
-async def run_task_with_browser_use(task_url: str, task_id: str, model_name: str, timeout: float = 600.0):
-    """Run a single CogArena task using Browser-Use."""
+def _make_llm(model_name: str):
+    """Create the appropriate LangChain LLM based on model name prefix."""
     try:
-        from browser_use import Agent
-        from langchain_anthropic import ChatAnthropic
+        from browser_use import Agent  # noqa: F401 — validate browser-use is installed
     except ImportError:
-        raise ImportError(
-            "browser-use and langchain-anthropic are required. "
-            "Install with: pip install browser-use langchain-anthropic"
-        )
+        raise ImportError("browser-use is required. Install with: pip install browser-use")
 
-    llm = ChatAnthropic(model=model_name)
+    name = model_name.lower()
+    if name.startswith("gpt-") or name.startswith("o3") or name.startswith("o4"):
+        from browser_use import ChatOpenAI
+        return ChatOpenAI(model=model_name)
+    elif name.startswith("gemini"):
+        from browser_use import ChatGoogle
+        return ChatGoogle(model=model_name)
+    elif name.startswith("claude"):
+        from browser_use import ChatAnthropic
+        return ChatAnthropic(model=model_name)
+    else:
+        # Default to OpenAI-compatible
+        from browser_use import ChatOpenAI
+        return ChatOpenAI(model=model_name)
+
+
+async def run_task_with_browser_use(
+    task_url: str, task_id: str, model_name: str,
+    timeout: float = 600.0, browser_session=None,
+):
+    """Run a single CogArena task using Browser-Use."""
+    from browser_use import Agent
+
+    llm = _make_llm(model_name)
 
     task_description = (
-        f"Navigate to {task_url} and complete the cognitive experiment. "
-        f"Read the instruction screens carefully to learn the task rules and key mappings. "
-        f"Then respond to each trial according to the instructions. "
-        f"When you see 'Task Complete', you are done."
+        f"Navigate to {task_url} and complete the experiment you find there.\n\n"
+        f"{_SKILL_INSTRUCTIONS}"
     )
 
-    agent = Agent(
+    agent_kwargs = dict(
         task=task_description,
         llm=llm,
-        system_prompt_class=None,  # We'll provide our own via the task description
+        max_actions_per_step=5,
+        loop_detection_enabled=False,
     )
+    if browser_session is not None:
+        agent_kwargs["browser_session"] = browser_session
+
+    agent = Agent(**agent_kwargs)
 
     logger.info("Starting Browser-Use agent for task: %s", task_id)
     start = time.time()
 
     try:
-        result = await asyncio.wait_for(agent.run(), timeout=timeout)
+        result = await asyncio.wait_for(agent.run(max_steps=200), timeout=timeout)
         elapsed = time.time() - start
         logger.info("Task %s completed in %.1fs", task_id, elapsed)
         return True
@@ -88,7 +101,7 @@ async def run_task_with_browser_use(task_url: str, task_id: str, model_name: str
         logger.warning("Task %s timed out after %.0fs", task_id, timeout)
         return False
     except Exception as e:
-        logger.error("Task %s failed: %s", task_id, e)
+        logger.error("Task %s failed: %s", task_id, e, exc_info=True)
         return False
 
 
@@ -97,7 +110,9 @@ async def run_all_tasks(
     agent_name: str = "BrowserUseAgent",
     model_name: str = "claude-sonnet-4-20250514",
     no_deadline: bool = True,
-    task_timeout: float = 600.0,  # 10 minutes per task
+    task_timeout: float = 10000.0,  # 10 minutes per task
+    tasks_filter: list[str] | None = None,
+    short: bool = False,
 ):
     """Run the Browser-Use agent through all CogArena tasks."""
     client = httpx.Client(base_url=base_url, timeout=30.0)
@@ -119,6 +134,8 @@ async def run_all_tasks(
     logger.info("Session created: %s", session_id)
 
     tasks = session["tasks"]
+    if tasks_filter:
+        tasks = [t for t in tasks if t["task_id"] in tasks_filter]
     logger.info("Tasks to complete: %d", len(tasks))
 
     completed = []
@@ -129,8 +146,12 @@ async def run_all_tasks(
         url = f"{base_url}{task_info['url']}"
         if no_deadline:
             url += "&no_deadline=true"
+        if short:
+            url += "&n_trials=20"
 
-        success = await run_task_with_browser_use(url, task_id, model_name, timeout=task_timeout)
+        success = await run_task_with_browser_use(
+            url, task_id, model_name, timeout=task_timeout,
+        )
         if success:
             completed.append(task_id)
         else:
@@ -184,6 +205,10 @@ def main():
     parser.add_argument("--no-deadline", action="store_true", default=True)
     parser.add_argument("--use-deadline", action="store_true")
     parser.add_argument("--task-timeout", type=float, default=600.0)
+    parser.add_argument("--tasks", nargs="*", default=None,
+                        help="Only run specific tasks (e.g., --tasks stroop n_back)")
+    parser.add_argument("--short", action="store_true",
+                        help="Use reduced trial counts (n_trials=20) for faster runs")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
@@ -199,6 +224,8 @@ def main():
         model_name=args.model,
         no_deadline=no_deadline,
         task_timeout=args.task_timeout,
+        tasks_filter=args.tasks,
+        short=args.short,
     ))
 
 

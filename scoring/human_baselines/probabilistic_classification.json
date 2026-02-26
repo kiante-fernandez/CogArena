@@ -1,0 +1,10 @@
+{
+    "task_id": "probabilistic_classification",
+    "source": "Knowlton, Squire & Gluck (1994); Shohamy et al. (2004)",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "overall_accuracy": {"mean": 0.65, "sd": 0.10, "n": 200},
+        "final_block_accuracy": {"mean": 0.72, "sd": 0.12, "n": 200},
+        "mean_rt": {"mean": 2000, "sd": 600, "n": 200}
+    }
+}

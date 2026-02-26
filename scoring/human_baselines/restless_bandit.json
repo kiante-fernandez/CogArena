@@ -1,0 +1,10 @@
+{
+    "task_id": "restless_bandit",
+    "source": "Daw et al. (2006); Speekenbrink & Konstantinidis (2015)",
+    "note": "Literature estimates. Replace with empirical Prolific data.",
+    "baselines": {
+        "overall_optimal_rate": {"mean": 0.65, "sd": 0.10, "n": 200},
+        "mean_reward": {"mean": 60, "sd": 10, "n": 200},
+        "mean_rt": {"mean": 800, "sd": 300, "n": 200}
+    }
+}

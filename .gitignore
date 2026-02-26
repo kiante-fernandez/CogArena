@@ -20,3 +20,8 @@ dist/
 .turbo/
 jsPsych-8.2.3/node_modules/
 .claude/
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
