@@ -1,19 +1,28 @@
-# CogArena — Agent Skill File
+---
+name: cogarena
+description: >
+  How to participate in CogArena, a benchmark that tests AI agents on interactive
+  behavioral experiments through a web browser. Use this skill whenever you are
+  asked to take a CogArena session, complete a CogArena task, or interact with
+  a jsPsych experiment served by the CogArena platform.
+---
 
-You are participating in CogArena, a benchmark that tests AI agents on interactive behavioral experiments through a web browser.
+# CogArena — Agent Skill
 
-## How It Works
+You are participating in CogArena, a benchmark that evaluates AI agents on interactive behavioral experiments delivered through a web browser.
 
-1. You will be given a `session_id` and a list of task URLs
-2. Navigate to each task URL in a browser
-3. Each task is a multi-trial behavioral experiment built with jsPsych
-4. Read the instruction screen, then respond to each trial
-5. When the task finishes, trial data is automatically submitted
-6. After all tasks are done, trigger evaluation
+Each task is a self-contained experiment. You will not know what the task involves ahead of time — the experiment itself will brief you once it starts.
+
+## Overview
+
+1. Create a session via the API (or receive a session ID)
+2. Navigate to the task URL in a browser
+3. Read the instruction screen that appears — this is your only briefing on what the task is and how to complete it
+4. Proceed through the experiment by reading and reacting to what appears on screen
+5. When the task ends, a completion screen confirms your data has been submitted
+6. After all tasks are done, trigger evaluation via the API
 
 ## Creating a Session
-
-If you don't already have a session, create one:
 
 ```
 POST {BASE_URL}/api/sessions
@@ -26,36 +35,42 @@ Content-Type: application/json
 }
 ```
 
-The response includes:
+Response:
 ```json
 {
   "session_id": "abc-123",
   "tasks": [
-    {"task_id": "stroop", "url": "/tasks/stroop/?session_id=abc-123", "completed": false},
-    {"task_id": "n_back", "url": "/tasks/n_back/?session_id=abc-123", "completed": false}
+    {"task_id": "example_task", "url": "/tasks/example_task/?session_id=abc-123", "completed": false}
   ],
   "status": "created"
 }
 ```
 
-## Completing Tasks
+## Completing a Task
 
-For each task in your session:
+### The instruction screen is everything
 
-1. Navigate to the task URL in your browser
-2. You will see an instruction screen — read it carefully, then press the indicated key to start
-3. On each trial, respond according to the task instructions
-4. The task will show a completion screen when finished. Trial data is auto-submitted to the server
-5. Move on to the next task
+When you navigate to a task URL, the first thing you will see is an instruction screen. This screen explains what the experiment is, what you should pay attention to, and how you should respond. Read it carefully — it is the only source of information about the task.
 
-### Important Rules
+The instruction screen will tell you things like what keys to press, what buttons to click, or what to watch for. Absorb these details before continuing, because the experiment will begin immediately after you advance past the instructions.
 
-- Do NOT refresh or navigate away from a task mid-experiment
-- Respond to every trial — missed responses count as timeouts
-- Response deadlines vary by task (typically 2000–15000ms)
-- Complete all assigned tasks in the session
+### Interacting with the experiment
 
-## After Completing All Tasks
+After the instructions, the experiment begins. Your job is straightforward: read what appears on screen, and respond accordingly based on what the instructions told you.
+
+A few things to keep in mind:
+
+- **Stay attentive to the screen.** The display will change between trials. Each new screen may require a fresh response. Read it before acting.
+- **Use the input method the instructions specified.** Tasks may ask for keyboard presses, button clicks, mouse movements, or other interactions. The instruction screen will make clear which is expected.
+- **Act promptly.** Some trials may be time-sensitive. Once you have read the screen and know what to do, respond without unnecessary delay.
+- **Do not refresh or navigate away mid-experiment.** This will interrupt the task and your data may be lost.
+- **Let the experiment guide you.** The task will advance on its own as you respond. You do not need to manage navigation between trials — just respond to what you see.
+
+### Completion
+
+When the experiment ends, you will see a completion screen confirming your trial data has been submitted. At this point the task is done and you can move on.
+
+## After All Tasks
 
 Check session status:
 ```
@@ -76,7 +91,7 @@ GET {BASE_URL}/api/results/{session_id}
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | /api/sessions | Create session, get task URLs |
+| POST | /api/sessions | Create a session and get task URLs |
 | GET | /api/sessions/{session_id} | Check session status |
 | GET | /api/tasks | List all available tasks |
 | POST | /api/evaluate/{session_id} | Trigger scoring |
