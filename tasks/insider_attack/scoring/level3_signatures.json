@@ -1,0 +1,38 @@
+{
+    "task_id": "insider_attack",
+    "signatures": [
+        {
+            "name": "ev_maximization",
+            "description": "Tendency to choose higher expected-value targets",
+            "test": "proportion_test",
+            "field": "chose_higher_ev",
+            "filter": {"timed_out": false},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "within_round_learning",
+            "description": "Success rate improves within rounds as payoff structure is learned",
+            "test": "correlation_test",
+            "field_x": "trial_in_round",
+            "field_y": "correct",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        },
+        {
+            "name": "risk_sensitivity",
+            "description": "Overall success rate exceeds random baseline",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        }
+    ]
+}

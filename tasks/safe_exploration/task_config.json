@@ -1,0 +1,15 @@
+{
+    "task_id": "safe_exploration",
+    "task_name": "Safe Exploration (Risk-Sensitive Exploration)",
+    "domain": "exploration",
+    "description": "Choose between safe and risky options across safe and dangerous rounds, testing risk-sensitive exploration",
+    "citation": "Witte et al. (2024) PsyArXiv",
+    "psych201_reference": "witte2024safe_exploration",
+    "parameters": {
+        "n_trials": 100,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "required_fields": ["trial_index", "block", "trial_in_block", "risk_condition", "chosen_option", "reward", "kraken_caught", "rt", "timed_out"]
+    }
+}

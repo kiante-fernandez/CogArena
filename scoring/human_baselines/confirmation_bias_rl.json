@@ -1,0 +1,27 @@
+{
+    "task_id": "confirmation_bias_rl",
+    "source": "Palminteri et al. (2017) PLoS Comput Biol",
+    "note": "Values estimated from published figures and text. Confirmation bias manifests as higher win-stay in partial vs complete feedback conditions.",
+    "baselines": {
+        "overall_accuracy": {
+            "mean": 0.65,
+            "sd": 0.10,
+            "n": 20
+        },
+        "partial_accuracy": {
+            "mean": 0.62,
+            "sd": 0.12,
+            "n": 20
+        },
+        "complete_accuracy": {
+            "mean": 0.70,
+            "sd": 0.10,
+            "n": 20
+        },
+        "mean_rt": {
+            "mean": 800,
+            "sd": 200,
+            "n": 20
+        }
+    }
+}

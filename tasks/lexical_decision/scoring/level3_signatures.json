@@ -1,0 +1,38 @@
+{
+    "task_id": "lexical_decision",
+    "signatures": [
+        {
+            "name": "word_frequency_effect",
+            "description": "High-frequency words are classified faster than low-frequency words",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false, "word_frequency": "high"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "lexicality_effect",
+            "description": "Overall accuracy exceeds chance for word/nonword discrimination",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        },
+        {
+            "name": "nonword_rejection",
+            "description": "Nonword rejection accuracy is above chance",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false, "stimulus_type": "nonword"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        }
+    ]
+}

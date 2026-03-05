@@ -6,6 +6,7 @@ scores correctly through the full L1/L2/L3 pipeline. Catches mismatches
 between experiment field names and scoring spec expectations.
 """
 import json
+import math
 import random
 from pathlib import Path
 
@@ -903,7 +904,6 @@ def _make_simple_choice_rt_aligned(n=80):
     Tests Hick's Law: RT increases with log2(N).
     """
     rng = random.Random(42)
-    import math
 
     conditions = ["simple"] * 20 + ["choice2"] * 30 + ["choice4"] * 30
     rng.shuffle(conditions)
@@ -1927,7 +1927,7 @@ def _make_probclass_aligned(n=100):
         cue2 = rng.random() < 0.50
         cue3 = rng.random() < 0.50
         cue4 = rng.random() < 0.50
-        if not any([cue1, cue2, cue3, cue4]):
+        if not any((cue1, cue2, cue3, cue4)):
             cue1 = True  # ensure at least one cue
 
         strong_cue_present = cue1 or cue2
@@ -1981,3 +1981,929 @@ def test_probclass_alignment():
     assert l2["score"] > 0.0, f"L2 zero: {l2}"
     assert l3["score"] > 0.0, f"L3 zero: {l3}"
     assert comp["composite_score"] > 15.0
+
+
+# ── Loss Aversion ───────────────────────────────────────────────────────
+
+def _make_loss_aversion_aligned(n=60):
+    """Generate data matching exact loss_aversion/experiment.js on_finish output."""
+    rng = random.Random(42)
+
+    gains = [5, 10, 15, 20, 25, 30, 35, 40]
+    losses = [5, 10, 15, 20, 25, 30, 35, 40]
+    all_pairs = [(g, l) for g in gains for l in losses]
+    rng.shuffle(all_pairs)
+    selected = all_pairs[:n]
+
+    trials = []
+    lambda_loss = 2.0
+    for i in range(n):
+        gain, loss = selected[i]
+        ev_gamble = (gain - loss) / 2.0
+        ev_positive = ev_gamble > 0
+        loss_gain_ratio = round(loss / gain, 3)
+        ev_abs = abs(ev_gamble)
+
+        subjective_value = gain - lambda_loss * loss
+        accept_prob = 1.0 / (1.0 + math.exp(-subjective_value / 17.5))
+        accept_prob = max(0.05, min(0.95, accept_prob))
+        accept = rng.random() < accept_prob
+        reject = not accept
+
+        base_rt = 1500 - ev_abs * 20
+        rt = round(max(300, rng.gauss(base_rt, 400)), 1)
+
+        trials.append({
+            "trial_part": "stimulus",
+            "trial_index": i + 1,
+            "gain": gain,
+            "loss": loss,
+            "ev_gamble": ev_gamble,
+            "ev_positive": ev_positive,
+            "loss_gain_ratio": loss_gain_ratio,
+            "ev_abs": ev_abs,
+            "accept": accept,
+            "reject": reject,
+            "accept_num": 1 if accept else 0,
+            "response": "f" if accept else "j",
+            "rt": rt,
+            "timed_out": False,
+        })
+    return trials
+
+
+def test_loss_aversion_alignment():
+    task_id = "loss_aversion"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_loss_aversion_aligned()
+
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert l3["score"] > 0.0, f"L3 zero: {l3}"
+    assert comp["composite_score"] > 15.0
+
+
+# ── Context Effects ─────────────────────────────────────────────────────
+
+def _make_context_effects_aligned(n=90):
+    rng = random.Random(42)
+    trials = []
+    n_training = n // 3
+    target_mean = 70
+    competitor_mean = 65
+
+    for i in range(n_training):
+        t_reward = round(target_mean + (rng.random() - 0.5) * 20)
+        c_reward = round(competitor_mean + (rng.random() - 0.5) * 20)
+        chose_target = rng.random() < (0.5 + 0.15 * i / n_training)
+
+        trials.append({
+            "trial_part": "stimulus",
+            "trial_index": i + 1,
+            "phase": "training",
+            "effect_type": "none",
+            "block": 1,
+            "n_options": 2,
+            "reward_0": t_reward,
+            "reward_1": c_reward,
+            "reward_2": None,
+            "target_idx": 0,
+            "option_chosen": 0 if chose_target else 1,
+            "reward_chosen": t_reward if chose_target else c_reward,
+            "is_target": chose_target,
+            "trial_in_block": i + 1,
+            "response": "f" if chose_target else "j",
+            "rt": round(max(300, rng.gauss(1500, 400)), 1),
+            "timed_out": False,
+        })
+
+    n_test = n - n_training
+    effects = ["attraction", "compromise"]
+    for i in range(n_test):
+        effect = effects[i % 2]
+        t_reward = round(target_mean + (rng.random() - 0.5) * 20)
+        c_reward = round(competitor_mean + (rng.random() - 0.5) * 20)
+        d_reward = round(t_reward * 0.75) if effect == "attraction" else round(target_mean * 1.3)
+
+        prob_target = 0.50 if effect == "attraction" else 0.45
+        r = rng.random()
+        if r < prob_target:
+            option_chosen = 0
+        elif r < prob_target + 0.35:
+            option_chosen = 1
+        else:
+            option_chosen = 2
+
+        rewards = [t_reward, c_reward, d_reward]
+        trials.append({
+            "trial_part": "stimulus",
+            "trial_index": n_training + i + 1,
+            "phase": "test",
+            "effect_type": effect,
+            "block": 2 if effect == "attraction" else 3,
+            "n_options": 3,
+            "reward_0": t_reward,
+            "reward_1": c_reward,
+            "reward_2": d_reward,
+            "target_idx": 0,
+            "option_chosen": option_chosen,
+            "reward_chosen": rewards[option_chosen],
+            "is_target": option_chosen == 0,
+            "trial_in_block": i + 1,
+            "response": ["d", "f", "j"][option_chosen],
+            "rt": round(max(300, rng.gauss(1500, 400)), 1),
+            "timed_out": False,
+        })
+
+    return trials
+
+
+def test_context_effects_alignment():
+    task_id = "context_effects"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_context_effects_aligned()
+
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ── Moral Judgment ──────────────────────────────────────────────────────
+
+def _make_moral_judgment_aligned(n=26):
+    rng = random.Random(42)
+    trials = []
+    scenario_types = ["quantity", "age", "gender", "status", "species", "intervention"]
+
+    for i in range(n):
+        scenario_type = scenario_types[i % len(scenario_types)]
+        intervention = rng.random() > 0.5
+        action_a = "swerve" if intervention else "continue ahead"
+        action_b = "continue ahead" if intervention else "swerve"
+
+        if scenario_type == "quantity":
+            n_a = 1 + rng.randint(0, 1)
+            n_b = n_a + 1 + rng.randint(0, 2)
+        else:
+            n_a = 1 + rng.randint(0, 2)
+            n_b = 1 + rng.randint(0, 2)
+
+        death_diff = abs(n_a - n_b)
+        fewer_deaths_is_a = n_a < n_b
+
+        # Simulate utilitarian with omission bias
+        p_util = 0.65 + 0.05 * death_diff
+        if fewer_deaths_is_a:
+            chose_a = rng.random() < p_util
+        elif n_b < n_a:
+            chose_a = rng.random() > p_util
+        else:
+            chose_a = rng.random() < 0.45 if action_a == "swerve" else rng.random() < 0.55
+
+        chose_fewer = (chose_a and fewer_deaths_is_a) or (not chose_a and n_b < n_a)
+        if n_a == n_b:
+            chose_fewer = True
+
+        chose_intervention_val = (chose_a and action_a == "swerve") or (not chose_a and action_b == "swerve")
+        chose_inaction_val = not chose_intervention_val
+
+        trials.append({
+            "trial_part": "stimulus",
+            "trial_index": i + 1,
+            "scenario_type": scenario_type,
+            "intervention": intervention,
+            "n_killed_a": n_a,
+            "n_killed_b": n_b,
+            "action_a": action_a,
+            "action_b": action_b,
+            "n_saved_a": n_b,
+            "n_saved_b": n_a,
+            "chose_fewer_deaths": chose_fewer,
+            "chose_fewer_deaths_num": 1 if chose_fewer else 0,
+            "death_difference": death_diff,
+            "chose_intervention": chose_intervention_val,
+            "chose_inaction": chose_inaction_val,
+            "response": "f" if chose_a else "j",
+            "rt": round(max(500, rng.gauss(5000, 2000)), 1),
+            "timed_out": False,
+        })
+
+    return trials
+
+
+def test_moral_judgment_alignment():
+    task_id = "moral_judgment"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_moral_judgment_aligned()
+
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Confirmation Bias RL ----------
+
+def _make_confirmation_bias_rl_aligned(n_per_context=24):
+    """Generate data matching confirmation_bias_rl/experiment.js on_finish output."""
+    rng = random.Random(42)
+    trials = []
+    contexts = [
+        {"id": 0, "feedback_type": "partial",  "p_left": 0.75, "p_right": 0.25},
+        {"id": 1, "feedback_type": "partial",  "p_left": 0.25, "p_right": 0.75},
+        {"id": 2, "feedback_type": "complete", "p_left": 0.75, "p_right": 0.25},
+        {"id": 3, "feedback_type": "complete", "p_left": 0.25, "p_right": 0.75},
+    ]
+
+    trial_idx = 0
+    for ctx in contexts:
+        for t in range(n_per_context):
+            trial_idx += 1
+            arm = "left" if rng.random() > 0.5 else "right"
+            p_chosen = ctx["p_left"] if arm == "left" else ctx["p_right"]
+            p_unchosen = ctx["p_right"] if arm == "left" else ctx["p_left"]
+            reward = 1 if rng.random() < p_chosen else -1
+            unchosen_reward = 1 if rng.random() < p_unchosen else -1
+            correct = (ctx["p_left"] >= ctx["p_right"] and arm == "left") or \
+                      (ctx["p_right"] > ctx["p_left"] and arm == "right")
+
+            trials.append({
+                "trial_part": "stimulus",
+                "trial_index": trial_idx,
+                "context": ctx["id"],
+                "feedback_type": ctx["feedback_type"],
+                "arm_chosen": arm,
+                "reward": reward,
+                "unchosen_reward": unchosen_reward,
+                "correct": correct,
+                "stayed": rng.random() > 0.5,
+                "prev_reward": rng.choice([-1, 1]),
+                "response": "f" if arm == "left" else "j",
+                "rt": round(max(200, rng.gauss(800, 150)), 1),
+                "timed_out": False,
+            })
+
+    return trials
+
+
+def test_confirmation_bias_rl_alignment():
+    task_id = "confirmation_bias_rl"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_confirmation_bias_rl_aligned()
+
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Magnitude RL ----------
+
+def _make_magnitude_rl_aligned(trials_per_pair=24, n_transfer=24):
+    """Generate data matching magnitude_rl/experiment.js on_finish output."""
+    rng = random.Random(42)
+    trials = []
+
+    pairs = [
+        {"id": 0, "reward_magnitude": "high", "mag_value": 10, "p_left": 0.75, "p_right": 0.25},
+        {"id": 1, "reward_magnitude": "high", "mag_value": 10, "p_left": 0.25, "p_right": 0.75},
+        {"id": 2, "reward_magnitude": "low",  "mag_value": 1,  "p_left": 0.75, "p_right": 0.25},
+        {"id": 3, "reward_magnitude": "low",  "mag_value": 1,  "p_left": 0.25, "p_right": 0.75},
+    ]
+
+    trial_idx = 0
+    for pair in pairs:
+        for t in range(trials_per_pair):
+            trial_idx += 1
+            arm = "left" if rng.random() > 0.5 else "right"
+            p_chosen = pair["p_left"] if arm == "left" else pair["p_right"]
+            win = rng.random() < p_chosen
+            reward = pair["mag_value"] if win else -pair["mag_value"]
+            correct = (pair["p_left"] >= pair["p_right"] and arm == "left") or \
+                      (pair["p_right"] > pair["p_left"] and arm == "right")
+
+            trials.append({
+                "trial_part": "stimulus",
+                "trial_index": trial_idx,
+                "phase": "learning",
+                "context": pair["id"],
+                "reward_magnitude": pair["reward_magnitude"],
+                "mag_value": pair["mag_value"],
+                "arm_chosen": arm,
+                "reward": reward,
+                "correct": correct,
+                "response": "f" if arm == "left" else "j",
+                "rt": round(max(200, rng.gauss(700, 150)), 1),
+                "timed_out": False,
+            })
+
+    # Transfer trials
+    for t in range(n_transfer):
+        trial_idx += 1
+        chose_high = rng.random() > 0.4  # slight high-mag preference
+        trials.append({
+            "trial_part": "stimulus",
+            "trial_index": trial_idx,
+            "phase": "transfer",
+            "context": "transfer",
+            "reward_magnitude": "mixed",
+            "mag_value": 0,
+            "arm_chosen": "left" if rng.random() > 0.5 else "right",
+            "reward": 0,
+            "correct": True,
+            "chose_high_magnitude": chose_high,
+            "response": "f" if rng.random() > 0.5 else "j",
+            "rt": round(max(200, rng.gauss(800, 200)), 1),
+            "timed_out": False,
+        })
+
+    return trials
+
+
+def test_magnitude_rl_alignment():
+    task_id = "magnitude_rl"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_magnitude_rl_aligned()
+
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Probability Learning ----------
+
+def _make_probability_learning_aligned(n=100):
+    """Generate data matching probability_learning/experiment.js on_finish output."""
+    rng = random.Random(42)
+    trials = []
+    p_left = 0.70
+    p_right = 0.30
+    optimal_side = "left"
+
+    prev_choice = None
+    prev_reward = None
+
+    for i in range(n):
+        left_outcome = 1 if rng.random() < p_left else 0
+        right_outcome = 1 if rng.random() < p_right else 0
+
+        # Probability matching with some learning
+        p_choose_left = 0.5 + 0.2 * (i / n)  # gradually learns
+        choice = "left" if rng.random() < p_choose_left else "right"
+        reward = left_outcome if choice == "left" else right_outcome
+        correct = reward == 1
+        chose_optimal = choice == optimal_side
+        stayed = choice == prev_choice if prev_choice is not None else False
+
+        trials.append({
+            "trial_part": "stimulus",
+            "trial_index": i + 1,
+            "choice": choice,
+            "reward": reward,
+            "correct": correct,
+            "chose_optimal": chose_optimal,
+            "optimal_side": optimal_side,
+            "left_outcome": left_outcome,
+            "right_outcome": right_outcome,
+            "stayed": stayed,
+            "prev_reward": prev_reward,
+            "response": "f" if choice == "left" else "j",
+            "rt": round(max(200, rng.gauss(650, 150)), 1),
+            "timed_out": False,
+        })
+        prev_choice = choice
+        prev_reward = reward
+
+    return trials
+
+
+def test_probability_learning_alignment():
+    task_id = "probability_learning"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_probability_learning_aligned()
+
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Novelty Exploration ----------
+
+def _make_novelty_exploration_aligned(n_blocks=10, trials_per_block=15):
+    rng = random.Random(42)
+    trials = []
+    trial_idx = 0
+    seen = set()
+
+    for b in range(n_blocks):
+        for t in range(trials_per_block):
+            trial_idx += 1
+            opt_id = "opt_%d_%d" % (b, rng.randint(0, 5))
+            is_novel = opt_id not in seen
+            seen.add(opt_id)
+            reward = 1 if rng.random() < 0.5 else 0
+            trials.append({
+                "trial_part": "stimulus", "trial_index": trial_idx,
+                "block": b, "trial_in_block": t,
+                "chosen_option": opt_id,
+                "chosen_novelty": "novel" if is_novel else "familiar",
+                "chose_novel": is_novel,
+                "reward": reward, "correct": reward == 1,
+                "response": "f" if rng.random() > 0.5 else "j",
+                "rt": round(max(200, rng.gauss(900, 200)), 1),
+                "timed_out": False,
+            })
+    return trials
+
+
+def test_novelty_exploration_alignment():
+    task_id = "novelty_exploration"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_novelty_exploration_aligned()
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Safe Exploration ----------
+
+def _make_safe_exploration_aligned(n_blocks=10, trials_per_block=10):
+    rng = random.Random(42)
+    trials = []
+    trial_idx = 0
+    for b in range(n_blocks):
+        risk = "risky" if b % 2 == 1 else "safe"
+        for t in range(trials_per_block):
+            trial_idx += 1
+            side = "left" if rng.random() > 0.5 else "right"
+            reward = round(max(0, rng.gauss(50, 15)))
+            correct = rng.random() > 0.4
+            kraken = risk == "risky" and reward < 40 and rng.random() < 0.3
+            trials.append({
+                "trial_part": "stimulus", "trial_index": trial_idx,
+                "block": b, "trial_in_block": t,
+                "risk_condition": risk,
+                "chosen_option": side, "reward": reward, "correct": correct,
+                "kraken_caught": kraken,
+                "response": "f" if side == "left" else "j",
+                "rt": round(max(200, rng.gauss(800, 200)), 1),
+                "timed_out": False,
+            })
+    return trials
+
+
+def test_safe_exploration_alignment():
+    task_id = "safe_exploration"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_safe_exploration_aligned()
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Observe or Bet ----------
+
+def _make_observe_or_bet_aligned(n=125):
+    rng = random.Random(42)
+    trials = []
+    block_sizes = [25, 50, 50]
+    block_probs = [0.70, 0.30, 0.80]
+    trial_idx = 0
+    for b in range(3):
+        for t in range(block_sizes[b]):
+            trial_idx += 1
+            p_blue = block_probs[b]
+            light = "blue" if rng.random() < p_blue else "red"
+            is_observe = rng.random() < 0.3
+            if is_observe:
+                action = "observe"
+                correct = False
+                reward = 0
+            else:
+                guess_blue = rng.random() < 0.6
+                action = "guess_blue" if guess_blue else "guess_red"
+                correct = (action == "guess_blue" and light == "blue") or (action == "guess_red" and light == "red")
+                reward = 1 if correct else -1
+            trials.append({
+                "trial_part": "stimulus", "trial_index": trial_idx,
+                "block": b, "trial_in_block": t, "is_practice": b == 0,
+                "action": action, "light_color": light,
+                "reward": reward, "correct": correct,
+                "is_observe": is_observe, "is_observe_num": 1 if is_observe else 0,
+                "is_bet": not is_observe,
+                "response": "k" if is_observe else ("f" if action == "guess_blue" else "j"),
+                "rt": round(max(200, rng.gauss(1200, 300)), 1),
+                "timed_out": False,
+            })
+    return trials
+
+
+def test_observe_or_bet_alignment():
+    task_id = "observe_or_bet"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_observe_or_bet_aligned()
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Random Dot Motion ----------
+
+def _make_random_dot_motion_aligned(n=120):
+    rng = random.Random(42)
+    conditions = ["easy", "medium", "hard"]
+    ratios = {"easy": [1.8, 2.0], "medium": [1.4, 1.5], "hard": [1.1, 1.2]}
+    acc_map = {"easy": 0.90, "medium": 0.75, "hard": 0.60}
+    trials = []
+    for i in range(n):
+        cond = conditions[i % 3]
+        ratio = rng.choice(ratios[cond])
+        base = rng.randint(10, 30)
+        n_left, n_right = base, round(base * ratio)
+        correct_side = "right"
+        if rng.random() < 0.5:
+            n_left, n_right = n_right, n_left
+            correct_side = "left"
+        correct_key = "f" if correct_side == "left" else "j"
+        is_correct = rng.random() < acc_map[cond]
+        response = correct_key if is_correct else ("f" if correct_key == "j" else "j")
+        rt = max(200, rng.gauss(850 - 200 * (ratio - 1.0), 150))
+        trials.append({
+            "trial_part": "stimulus", "trial_index": i + 1,
+            "condition": cond, "n_left": n_left, "n_right": n_right,
+            "ratio": ratio, "correct_side": correct_side,
+            "correct": is_correct, "response": response,
+            "rt": round(rt, 1), "timed_out": False,
+        })
+    return trials
+
+
+def test_random_dot_motion_alignment():
+    task_id = "random_dot_motion"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_random_dot_motion_aligned()
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Lexical Decision ----------
+
+def _make_lexical_decision_aligned(n=120):
+    rng = random.Random(42)
+    high_words = ["table", "house", "water", "money", "light"]
+    low_words = ["plumb", "glyph", "trove", "fjord", "knoll"]
+    nonwords = ["flirp", "glomb", "snarp", "brive", "clunt"]
+    trials = []
+    half = n // 2
+    word_half = half // 2
+    for i in range(n):
+        if i < word_half:
+            stim = high_words[i % len(high_words)]
+            stype, wfreq = "word", "high"
+            correct_key = "f"
+            acc = 0.96
+        elif i < half:
+            stim = low_words[(i - word_half) % len(low_words)]
+            stype, wfreq = "word", "low"
+            correct_key = "f"
+            acc = 0.92
+        else:
+            stim = nonwords[(i - half) % len(nonwords)]
+            stype, wfreq = "nonword", "none"
+            correct_key = "j"
+            acc = 0.94
+        is_correct = rng.random() < acc
+        response = correct_key if is_correct else ("f" if correct_key == "j" else "j")
+        rt = max(200, rng.gauss(600, 100))
+        trials.append({
+            "trial_part": "stimulus", "trial_index": i + 1,
+            "stimulus": stim, "stimulus_type": stype,
+            "word_frequency": wfreq, "correct": is_correct,
+            "response": response, "rt": round(rt, 1), "timed_out": False,
+        })
+    return trials
+
+
+def test_lexical_decision_alignment():
+    task_id = "lexical_decision"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_lexical_decision_aligned()
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Heuristics & Biases ----------
+
+def _make_heuristics_biases_aligned(n=40):
+    rng = random.Random(42)
+    n_tasks = 10
+    tpt = n // n_tasks
+    trials = []
+    for t in range(n_tasks):
+        weights = [rng.random() * 2 - 1 for _ in range(4)]
+        best_cue = max(range(4), key=lambda c: abs(weights[c]))
+        for s in range(tpt):
+            cues_a = [rng.randint(10, 90) for _ in range(4)]
+            cues_b = [rng.randint(10, 90) for _ in range(4)]
+            score_a = sum(w * c for w, c in zip(weights, cues_a)) + rng.gauss(0, 5)
+            score_b = sum(w * c for w, c in zip(weights, cues_b)) + rng.gauss(0, 5)
+            correct_answer = "f" if score_a > score_b else "j"
+            ttb_choice = "f" if (weights[best_cue] > 0) == (cues_a[best_cue] > cues_b[best_cue]) else "j"
+            ttb_correct = ttb_choice == correct_answer
+            accuracy = 0.5 + 0.3 * (s / max(1, tpt - 1))
+            is_correct = rng.random() < accuracy
+            response = correct_answer if is_correct else ("f" if correct_answer == "j" else "j")
+            used_ttb = (response == correct_answer) == ttb_correct
+            cue_diff = [cues_a[i] - cues_b[i] for i in range(4)]
+            rt = max(500, rng.gauss(3200, 800))
+            trials.append({
+                "trial_part": "stimulus", "trial_index": len(trials) + 1,
+                "block": t, "trial_in_block": s,
+                "cue_values": json.dumps(cue_diff), "correct_answer": correct_answer,
+                "dominant_cue": best_cue, "ttb_correct": ttb_correct,
+                "correct": is_correct, "used_ttb": used_ttb,
+                "response": response, "rt": round(rt, 1), "timed_out": False,
+            })
+    return trials
+
+
+def test_heuristics_biases_alignment():
+    task_id = "heuristics_biases"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_heuristics_biases_aligned()
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Phishing Detection ----------
+
+def _make_phishing_detection_aligned(n=60):
+    rng = random.Random(42)
+    phases = [("pre", 10), ("train", 40), ("post", 10)]
+    acc_map = {"pre": 0.70, "train": 0.80, "post": 0.85}
+    trials = []
+    idx = 0
+    for phase_name, count in phases:
+        for i in range(count):
+            idx += 1
+            email_type = "phishing" if rng.random() < 0.3 else "ham"
+            is_correct = rng.random() < acc_map[phase_name]
+            correct_key = "j" if email_type == "phishing" else "f"
+            response = correct_key if is_correct else ("f" if correct_key == "j" else "j")
+            trials.append({
+                "trial_part": "stimulus", "trial_index": idx,
+                "phase": phase_name, "email_type": email_type,
+                "show_feedback": phase_name == "train",
+                "correct": is_correct, "response": response,
+                "rt": round(max(500, rng.gauss(5000, 1500)), 1), "timed_out": False,
+            })
+    return trials
+
+
+def test_phishing_detection_alignment():
+    task_id = "phishing_detection"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_phishing_detection_aligned()
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Causal Reasoning ----------
+
+def _make_causal_reasoning_aligned(n=150):
+    rng = random.Random(42)
+    conditions = ["robber", "millionaire", "sheriff"]
+    trials = []
+    tpb = n // 3
+    for b in range(3):
+        for t in range(tpb):
+            pref_a = 0.5 + 0.15 * (t / max(1, tpb - 1))
+            chose_a = rng.random() < pref_a
+            agent_active = rng.random() < 0.3
+            mine_a_gold = rng.random() < 0.7
+            mine_b_gold = rng.random() < 0.3
+            if agent_active:
+                if conditions[b] == "robber":
+                    mine_a_gold = mine_b_gold = False
+                elif conditions[b] == "millionaire":
+                    mine_a_gold = mine_b_gold = True
+                else:
+                    mine_a_gold, mine_b_gold = mine_b_gold, mine_a_gold
+            feedback = mine_a_gold if chose_a else mine_b_gold
+            trials.append({
+                "trial_part": "stimulus", "trial_index": len(trials) + 1,
+                "block": b, "condition": conditions[b], "trial_in_block": t,
+                "agent_active": agent_active, "mine_a_gold": mine_a_gold, "mine_b_gold": mine_b_gold,
+                "choice": "A" if chose_a else "B", "feedback": feedback,
+                "correct": feedback, "chose_better_mine": chose_a,
+                "response": "f" if chose_a else "j",
+                "rt": round(max(300, rng.gauss(1500, 400)), 1), "timed_out": False,
+            })
+    return trials
+
+
+def test_causal_reasoning_alignment():
+    task_id = "causal_reasoning"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_causal_reasoning_aligned()
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Insider Attack ----------
+
+def _make_insider_attack_aligned(n=100):
+    rng = random.Random(42)
+    trials = []
+    tpr = n // 4
+    for r in range(4):
+        for t in range(tpr):
+            left_reward = rng.randint(2, 9)
+            left_penalty = -rng.randint(1, 8)
+            left_mprob = round(rng.random() * 0.55 + 0.05, 2)
+            right_reward = rng.randint(2, 9)
+            right_penalty = -rng.randint(1, 8)
+            right_mprob = round(rng.random() * 0.55 + 0.05, 2)
+            left_ev = left_reward * (1 - left_mprob) + left_penalty * left_mprob
+            right_ev = right_reward * (1 - right_mprob) + right_penalty * right_mprob
+            chose_left = (left_ev >= right_ev and rng.random() < 0.65) or (left_ev < right_ev and rng.random() > 0.65)
+            chose_higher_ev = (chose_left and left_ev >= right_ev) or (not chose_left and right_ev >= left_ev)
+            chosen_mprob = left_mprob if chose_left else right_mprob
+            monitored = rng.random() < chosen_mprob
+            reward = (left_penalty if chose_left else right_penalty) if monitored else (left_reward if chose_left else right_reward)
+            trials.append({
+                "trial_part": "stimulus", "trial_index": len(trials) + 1,
+                "round": r, "trial_in_round": t,
+                "left_reward": left_reward, "right_reward": right_reward,
+                "left_penalty": left_penalty, "right_penalty": right_penalty,
+                "left_mprob": left_mprob, "right_mprob": right_mprob,
+                "left_ev": round(left_ev, 2), "right_ev": round(right_ev, 2),
+                "target": 0 if chose_left else 1, "monitored": monitored,
+                "warning": monitored and rng.random() < 0.7,
+                "reward": reward, "correct": not monitored,
+                "chose_higher_ev": chose_higher_ev,
+                "response": "f" if chose_left else "j",
+                "rt": round(max(500, rng.gauss(3000, 800)), 1), "timed_out": False,
+            })
+    return trials
+
+
+def test_insider_attack_alignment():
+    task_id = "insider_attack"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_insider_attack_aligned()
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0
+
+
+# ---------- Function Estimation ----------
+
+
+def _make_function_estimation_aligned(n=40):
+    rng = random.Random(42)
+    n_blocks = 8
+    tpb = n // n_blocks
+    func_types = ["linear", "quadratic", "sinusoidal", "exponential"]
+    trials = []
+    for b in range(n_blocks):
+        ft = func_types[b % len(func_types)]
+        a = (rng.random() * 1.5 + 0.5) * (1 if rng.random() < 0.5 else -1)
+        bc = rng.random() * 0.4 - 0.2
+        for t in range(tpb):
+            x = round(-0.9 + 1.8 * t / max(1, tpb - 1), 2)
+            if ft == "linear":
+                cy = a * x + bc
+            elif ft == "quadratic":
+                cy = a * x * x + bc
+            elif ft == "sinusoidal":
+                cy = a * math.sin(3 * x) + bc
+            else:
+                cy = a * (math.exp(x) - 1) + bc
+            cy = max(-1, min(1, round(cy, 2)))
+            noise = rng.gauss(0, 0.12)
+            resp = max(-1, min(1, round(cy + noise, 2)))
+            err = round(abs(resp - cy), 4)
+            trials.append({
+                "trial_part": "stimulus", "trial_index": len(trials) + 1,
+                "block": b, "trial_in_block": t, "x_value": x,
+                "correct_y": cy, "func_type": ft,
+                "response": resp, "estimation_error": err,
+                "correct": err < 0.3,
+                "rt": round(max(1000, rng.gauss(5000, 1500)), 1), "timed_out": False,
+            })
+    return trials
+
+
+def test_function_estimation_alignment():
+    task_id = "function_estimation"
+    config = _load_config(task_id)
+    metrics = _load_spec(task_id, "level2_metrics.json")
+    sigs = _load_spec(task_id, "level3_signatures.json")
+    trials = _make_function_estimation_aligned()
+    l1 = score_completion(trials, config)
+    l2 = score_accuracy(trials, metrics)
+    l3 = score_behavioral(trials, sigs)
+    comp = compute_composite(l1["score"], l2["score"], l3["score"])
+    assert l1["score"] == 1.0, f"L1 failed: {l1}"
+    assert l2["score"] > 0.0, f"L2 zero: {l2}"
+    assert comp["composite_score"] > 0.0

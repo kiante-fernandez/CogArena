@@ -1,0 +1,42 @@
+{
+    "task_id": "random_dot_motion",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "description": "Proportion of correct magnitude judgments",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.78,
+            "human_sd": 0.08
+        },
+        {
+            "name": "easy_accuracy",
+            "description": "Accuracy on easy (high ratio) trials",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false, "condition": "easy"},
+            "human_mean": 0.92,
+            "human_sd": 0.05
+        },
+        {
+            "name": "hard_accuracy",
+            "description": "Accuracy on hard (low ratio) trials",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false, "condition": "hard"},
+            "human_mean": 0.62,
+            "human_sd": 0.10
+        },
+        {
+            "name": "mean_rt",
+            "description": "Mean reaction time on correct trials",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false, "correct": true},
+            "human_mean": 850,
+            "human_sd": 180,
+            "direction": "lower_is_better"
+        }
+    ]
+}

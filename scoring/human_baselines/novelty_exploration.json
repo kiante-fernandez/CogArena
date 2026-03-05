@@ -1,0 +1,10 @@
+{
+    "task_id": "novelty_exploration",
+    "source": "Nussenbaum et al. (2023) eLife",
+    "note": "Adults show moderate novelty preference (~55-60% when novel available). Children show stronger novelty seeking.",
+    "baselines": {
+        "overall_reward_rate": { "mean": 0.55, "sd": 0.08, "n": 122 },
+        "novel_choice_rate": { "mean": 0.45, "sd": 0.12, "n": 122 },
+        "mean_rt": { "mean": 900, "sd": 250, "n": 122 }
+    }
+}

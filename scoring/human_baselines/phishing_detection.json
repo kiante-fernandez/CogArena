@@ -1,0 +1,11 @@
+{
+    "task_id": "phishing_detection",
+    "source": "Singh et al. (2019) - Phishing detection with feedback learning",
+    "n_participants": 60,
+    "metrics": {
+        "overall_accuracy": {"mean": 0.75, "sd": 0.10},
+        "train_accuracy": {"mean": 0.80, "sd": 0.08},
+        "post_accuracy": {"mean": 0.82, "sd": 0.10},
+        "mean_rt": {"mean": 5000, "sd": 2000}
+    }
+}

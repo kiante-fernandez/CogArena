@@ -1,0 +1,33 @@
+{
+    "task_id": "causal_reasoning",
+    "metrics": [
+        {
+            "name": "overall_gold_rate",
+            "description": "Proportion of trials finding gold",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.60,
+            "human_sd": 0.08
+        },
+        {
+            "name": "better_mine_rate",
+            "description": "Proportion choosing the higher-probability mine",
+            "type": "proportion_correct",
+            "field": "chose_better_mine",
+            "filter": {"timed_out": false},
+            "human_mean": 0.65,
+            "human_sd": 0.12
+        },
+        {
+            "name": "mean_rt",
+            "description": "Mean reaction time on responded trials",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false},
+            "human_mean": 1500,
+            "human_sd": 500,
+            "direction": "lower_is_better"
+        }
+    ]
+}

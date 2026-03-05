@@ -47,10 +47,27 @@ TASK_KEYS = {
     "simple_choice_rt": ["d", "f", "j", "k", " "],  # SPACE for simple, D/F/J/K for choice
     "bart": ["f", "j"],
     "navon": ["f", "j"],
+    # New tasks (Phase 8)
+    "loss_aversion": ["f", "j"],
+    "context_effects": ["d", "f", "j"],
+    "moral_judgment": ["f", "j"],
+    "confirmation_bias_rl": ["f", "j"],
+    "magnitude_rl": ["f", "j"],
+    "probability_learning": ["f", "j"],
+    "novelty_exploration": ["f", "j"],
+    "safe_exploration": ["f", "j"],
+    "observe_or_bet": ["f", "j", "k"],
+    "random_dot_motion": ["f", "j"],
+    "lexical_decision": ["f", "j"],
+    "heuristics_biases": ["f", "j"],
+    "phishing_detection": ["f", "j"],
+    "causal_reasoning": ["f", "j"],
+    "insider_attack": ["f", "j"],
+    "function_estimation": [],  # Slider task
 }
 
 SLIDER_TASKS = {
-    "trust_game", "dictator_game",
+    "trust_game", "dictator_game", "function_estimation",
     "public_goods", "contingency_judgment", "serial_recall",
 }
 

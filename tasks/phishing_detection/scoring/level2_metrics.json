@@ -1,0 +1,42 @@
+{
+    "task_id": "phishing_detection",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "description": "Proportion of correct email classifications",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.75,
+            "human_sd": 0.10
+        },
+        {
+            "name": "train_accuracy",
+            "description": "Accuracy during training phase",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false, "phase": "train"},
+            "human_mean": 0.80,
+            "human_sd": 0.08
+        },
+        {
+            "name": "post_accuracy",
+            "description": "Accuracy during post-training phase",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false, "phase": "post"},
+            "human_mean": 0.82,
+            "human_sd": 0.10
+        },
+        {
+            "name": "mean_rt",
+            "description": "Mean reaction time on responded trials",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false},
+            "human_mean": 5000,
+            "human_sd": 2000,
+            "direction": "lower_is_better"
+        }
+    ]
+}

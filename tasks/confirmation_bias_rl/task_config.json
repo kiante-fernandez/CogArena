@@ -1,0 +1,15 @@
+{
+    "task_id": "confirmation_bias_rl",
+    "task_name": "Confirmation Bias RL (Counterfactual Feedback)",
+    "domain": "reinforcement_learning",
+    "description": "Two-armed bandit with partial vs complete feedback to measure confirmation bias in learning",
+    "citation": "Palminteri et al. (2017) PLoS Comput Biol",
+    "psych201_reference": "palminteri2017confirmation",
+    "parameters": {
+        "n_trials": 96,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "required_fields": ["trial_index", "context", "feedback_type", "arm_chosen", "reward", "correct", "rt", "timed_out"]
+    }
+}

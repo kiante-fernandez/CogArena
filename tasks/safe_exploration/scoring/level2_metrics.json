@@ -1,0 +1,32 @@
+{
+    "task_id": "safe_exploration",
+    "metrics": [
+        {
+            "name": "overall_reward",
+            "type": "mean",
+            "field": "reward",
+            "filter": {"timed_out": false},
+            "human_mean": 50,
+            "human_sd": 15,
+            "direction": "higher_better"
+        },
+        {
+            "name": "optimal_choice_rate",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.65,
+            "human_sd": 0.10,
+            "direction": "higher_better"
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false},
+            "human_mean": 800,
+            "human_sd": 250,
+            "direction": "neutral"
+        }
+    ]
+}

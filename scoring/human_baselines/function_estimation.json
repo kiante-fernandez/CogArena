@@ -1,0 +1,10 @@
+{
+    "task_id": "function_estimation",
+    "source": "Little et al. (2024) - Function estimation task",
+    "n_participants": 171,
+    "metrics": {
+        "mean_estimation_error": {"mean": 0.18, "sd": 0.08},
+        "accuracy_rate": {"mean": 0.70, "sd": 0.12},
+        "mean_rt": {"mean": 5000, "sd": 2000}
+    }
+}

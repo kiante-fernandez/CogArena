@@ -1,0 +1,10 @@
+{
+    "task_id": "safe_exploration",
+    "source": "Witte et al. (2024) PsyArXiv",
+    "note": "Humans explore more cautiously in risky conditions. Kraken presence reduces exploration of uncertain options.",
+    "baselines": {
+        "overall_reward": { "mean": 50, "sd": 15, "n": 200 },
+        "optimal_choice_rate": { "mean": 0.65, "sd": 0.10, "n": 200 },
+        "mean_rt": { "mean": 800, "sd": 250, "n": 200 }
+    }
+}

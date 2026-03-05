@@ -1,0 +1,38 @@
+{
+    "task_id": "causal_reasoning",
+    "signatures": [
+        {
+            "name": "mine_preference_learning",
+            "description": "Preference for better mine increases over trials within blocks",
+            "test": "correlation_test",
+            "field_x": "trial_in_block",
+            "field_y": "chose_better_mine",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.5
+        },
+        {
+            "name": "above_chance_mine_selection",
+            "description": "Better mine chosen above chance (50%)",
+            "test": "proportion_test",
+            "field": "chose_better_mine",
+            "filter": {"timed_out": false},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        },
+        {
+            "name": "reward_learning",
+            "description": "Gold rate improves over trials within blocks",
+            "test": "correlation_test",
+            "field_x": "trial_in_block",
+            "field_y": "correct",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        }
+    ]
+}

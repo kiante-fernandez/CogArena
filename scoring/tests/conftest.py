@@ -1,3 +1,5 @@
+import json
+import math
 import random
 import pytest
 import numpy as np
@@ -1597,7 +1599,6 @@ def _generate_simple_choice_rt_trials(
 
     Tests Hick's Law: RT increases with log2(N alternatives).
     """
-    import math
     rng = random.Random(seed)
     np_rng = np.random.RandomState(seed)
 
@@ -3385,7 +3386,7 @@ def _generate_probclass_trials(
         cue2 = rng.random() < 0.50
         cue3 = rng.random() < 0.50
         cue4 = rng.random() < 0.50
-        if not any([cue1, cue2, cue3, cue4]):
+        if not any((cue1, cue2, cue3, cue4)):
             cue1 = True
 
         strong_cue_present = cue1 or cue2
@@ -3507,3 +3508,1963 @@ def human_like_probclass_data():
 @pytest.fixture
 def random_probclass_data():
     return _generate_probclass_trials(initial_accuracy=0.50, learning_rate=0.0, strong_cue_bonus=0.0, seed=99)
+
+
+# ── Loss Aversion ───────────────────────────────────────────────────────
+
+def _generate_loss_aversion_trials(
+    n_trials=60,
+    lambda_loss=2.0,
+    noise=0.15,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Generate synthetic mixed-gamble loss aversion data.
+
+    lambda_loss: loss aversion coefficient. >1 means losses loom larger.
+    Human-like ~2.0, random ~1.0.
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+
+    gains = [5, 10, 15, 20, 25, 30, 35, 40]
+    losses = [5, 10, 15, 20, 25, 30, 35, 40]
+
+    all_pairs = [(g, l) for g in gains for l in losses]
+    rng.shuffle(all_pairs)
+    selected = all_pairs[:n_trials]
+
+    for i in range(n_trials):
+        gain, loss = selected[i]
+        ev_gamble = (gain - loss) / 2.0
+        ev_positive = ev_gamble > 0
+        loss_gain_ratio = loss / gain
+        ev_abs = abs(ev_gamble)
+
+        # Decision based on subjective utility: accept if gain > lambda * loss
+        subjective_value = gain - lambda_loss * loss
+        accept_prob = 1.0 / (1.0 + np.exp(-subjective_value / (10.0 + noise * 50)))
+        accept_prob = max(0.05, min(0.95, accept_prob))
+
+        timed_out = rng.random() < timeout_rate
+
+        if timed_out:
+            accept = False
+            reject = False
+            rt = None
+        else:
+            accept = rng.random() < accept_prob
+            reject = not accept
+            base_rt = 1500 - ev_abs * 20
+            rt = round(max(300, float(np_rng.normal(base_rt, 400))), 1)
+
+        trial = {
+            "trial_index": i + 1,
+            "trial_part": "stimulus",
+            "gain": gain,
+            "loss": loss,
+            "ev_gamble": ev_gamble,
+            "ev_positive": ev_positive,
+            "loss_gain_ratio": round(loss_gain_ratio, 3),
+            "ev_abs": ev_abs,
+            "accept": accept,
+            "reject": reject,
+            "accept_num": 1 if accept else 0,
+            "response": "f" if accept else "j",
+            "rt": rt,
+            "timed_out": timed_out,
+        }
+        trials.append(trial)
+
+    return trials
+
+
+@pytest.fixture
+def loss_aversion_config():
+    return {
+        "task_id": "loss_aversion",
+        "parameters": {
+            "n_trials": 60,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+        },
+    }
+
+
+@pytest.fixture
+def loss_aversion_metrics():
+    return {
+        "task_id": "loss_aversion",
+        "metrics": [
+            {"name": "overall_accept_rate", "type": "proportion_correct", "field": "accept", "human_mean": 0.45, "human_sd": 0.15},
+            {"name": "accept_rate_positive_ev", "type": "proportion_correct", "field": "accept", "filter": {"ev_positive": True}, "human_mean": 0.60, "human_sd": 0.15},
+            {"name": "mean_rt", "type": "mean", "field": "rt", "human_mean": 1500, "human_sd": 500, "direction": "lower_is_better"},
+        ],
+    }
+
+
+@pytest.fixture
+def loss_aversion_signatures():
+    return {
+        "task_id": "loss_aversion",
+        "signatures": [
+            {
+                "name": "loss_aversion_effect",
+                "test": "correlation_test",
+                "field_x": "loss_gain_ratio",
+                "field_y": "accept_num",
+                "expected_direction": "negative",
+                "threshold_p": 0.05,
+                "weight": 1.0,
+            },
+            {
+                "name": "status_quo_bias",
+                "test": "proportion_test",
+                "field": "reject",
+                "chance_level": 0.5,
+                "expected_direction": "above_chance",
+                "threshold_p": 0.05,
+                "weight": 0.75,
+            },
+            {
+                "name": "rt_conflict_effect",
+                "test": "correlation_test",
+                "field_x": "ev_abs",
+                "field_y": "rt",
+                "expected_direction": "negative",
+                "threshold_p": 0.05,
+                "weight": 0.5,
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def human_like_loss_aversion_data():
+    return _generate_loss_aversion_trials(lambda_loss=2.0, noise=0.15)
+
+
+@pytest.fixture
+def random_loss_aversion_data():
+    return _generate_loss_aversion_trials(lambda_loss=1.0, noise=0.5, seed=99)
+
+
+# ── Context Effects ─────────────────────────────────────────────────────
+
+def _generate_context_effects_trials(
+    n_trials=90,
+    n_training=30,
+    target_bias=0.15,
+    learning_rate=0.3,
+    timeout_rate=0.0,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+
+    target_mean = 70
+    competitor_mean = 65
+
+    # Training phase (2-option)
+    for i in range(n_training):
+        t_reward = round(target_mean + (rng.random() - 0.5) * 20)
+        c_reward = round(competitor_mean + (rng.random() - 0.5) * 20)
+
+        # Learning: prefer better option more over time
+        prob_target = 0.5 + learning_rate * (i / n_training) * 0.3
+        chose_target = rng.random() < prob_target
+
+        trials.append({
+            "trial_index": i + 1,
+            "trial_part": "stimulus",
+            "phase": "training",
+            "effect_type": "none",
+            "block": 1,
+            "n_options": 2,
+            "reward_0": t_reward,
+            "reward_1": c_reward,
+            "reward_2": None,
+            "target_idx": 0,
+            "option_chosen": 0 if chose_target else 1,
+            "reward_chosen": t_reward if chose_target else c_reward,
+            "is_target": chose_target,
+            "trial_in_block": i + 1,
+            "response": "f" if chose_target else "j",
+            "rt": round(max(300, float(np_rng.normal(1500, 400))), 1),
+            "timed_out": False,
+        })
+
+    # Test phase (3-option with decoy)
+    n_test = n_trials - n_training
+    effects = ["attraction", "compromise"]
+    trial_idx = n_training
+
+    for i in range(n_test):
+        effect = effects[i % 2]
+        t_reward = round(target_mean + (rng.random() - 0.5) * 20)
+        c_reward = round(competitor_mean + (rng.random() - 0.5) * 20)
+
+        if effect == "attraction":
+            d_reward = round(t_reward * 0.75 + (rng.random() - 0.5) * 5)
+            # Attraction effect: target chosen more than 1/3
+            prob_target = 0.333 + target_bias + 0.1
+        else:
+            d_reward = round(target_mean * 1.3 + (rng.random() - 0.5) * 10)
+            prob_target = 0.333 + target_bias
+
+        prob_target = max(0.1, min(0.8, prob_target))
+        timed_out = rng.random() < timeout_rate
+        trial_idx += 1
+
+        if timed_out:
+            option_chosen = None
+            reward_chosen = 0
+            is_target = False
+        else:
+            r = rng.random()
+            if r < prob_target:
+                option_chosen = 0
+            elif r < prob_target + (1 - prob_target) * 0.6:
+                option_chosen = 1
+            else:
+                option_chosen = 2
+            rewards = [t_reward, c_reward, d_reward]
+            reward_chosen = rewards[option_chosen]
+            is_target = option_chosen == 0
+
+        block = 2 if effect == "attraction" else 3
+        trials.append({
+            "trial_index": trial_idx,
+            "trial_part": "stimulus",
+            "phase": "test",
+            "effect_type": effect,
+            "block": block,
+            "n_options": 3,
+            "reward_0": t_reward,
+            "reward_1": c_reward,
+            "reward_2": d_reward,
+            "target_idx": 0,
+            "option_chosen": option_chosen,
+            "reward_chosen": reward_chosen,
+            "is_target": is_target,
+            "trial_in_block": i + 1,
+            "response": ["d", "f", "j"][option_chosen] if option_chosen is not None else None,
+            "rt": round(max(300, float(np_rng.normal(1500, 400))), 1) if not timed_out else None,
+            "timed_out": timed_out,
+        })
+
+    return trials
+
+
+@pytest.fixture
+def context_effects_config():
+    return {
+        "task_id": "context_effects",
+        "parameters": {
+            "n_trials": 90,
+            "response_keys": ["d", "f", "j"],
+            "response_type": "keypress",
+        },
+    }
+
+
+@pytest.fixture
+def context_effects_metrics():
+    return {
+        "task_id": "context_effects",
+        "metrics": [
+            {"name": "overall_reward", "type": "mean", "field": "reward_chosen", "human_mean": 65, "human_sd": 15},
+            {"name": "target_choice_rate", "type": "proportion_correct", "field": "is_target", "filter": {"phase": "test"}, "human_mean": 0.45, "human_sd": 0.12},
+            {"name": "mean_rt", "type": "mean", "field": "rt", "human_mean": 1500, "human_sd": 500, "direction": "lower_is_better"},
+        ],
+    }
+
+
+@pytest.fixture
+def context_effects_signatures():
+    return {
+        "task_id": "context_effects",
+        "signatures": [
+            {
+                "name": "attraction_effect",
+                "test": "proportion_test",
+                "filter": {"effect_type": "attraction"},
+                "field": "is_target",
+                "chance_level": 0.333,
+                "expected_direction": "above_chance",
+                "threshold_p": 0.05,
+                "weight": 1.0,
+            },
+            {
+                "name": "compromise_effect",
+                "test": "proportion_test",
+                "filter": {"effect_type": "compromise"},
+                "field": "is_target",
+                "chance_level": 0.333,
+                "expected_direction": "above_chance",
+                "threshold_p": 0.05,
+                "weight": 1.0,
+            },
+            {
+                "name": "learning_improvement",
+                "test": "correlation_test",
+                "field_x": "trial_in_block",
+                "field_y": "reward_chosen",
+                "expected_direction": "positive",
+                "threshold_p": 0.05,
+                "weight": 0.5,
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def human_like_context_effects_data():
+    return _generate_context_effects_trials(target_bias=0.15, learning_rate=0.3)
+
+
+@pytest.fixture
+def random_context_effects_data():
+    return _generate_context_effects_trials(target_bias=0.0, learning_rate=0.0, seed=99)
+
+
+# ── Moral Judgment ──────────────────────────────────────────────────────
+
+def _generate_moral_judgment_trials(
+    n_trials=26,
+    utilitarian_bias=0.65,
+    omission_bias=0.55,
+    death_sensitivity=0.1,
+    timeout_rate=0.0,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+
+    scenario_types = ["quantity", "age", "gender", "status", "species", "intervention"]
+
+    for i in range(n_trials):
+        scenario_type = scenario_types[i % len(scenario_types)]
+        intervention = rng.random() > 0.5
+        action_a = "swerve" if intervention else "continue ahead"
+        action_b = "continue ahead" if intervention else "swerve"
+
+        if scenario_type == "quantity":
+            n_a = 1 + rng.randint(0, 1)
+            n_b = n_a + 1 + rng.randint(0, 2)
+        else:
+            n_a = 1 + rng.randint(0, 2)
+            n_b = 1 + rng.randint(0, 2)
+
+        death_diff = abs(n_a - n_b)
+        fewer_deaths_is_a = n_a < n_b
+
+        # Utilitarian: choose fewer deaths, modulated by death_difference
+        p_util = utilitarian_bias + death_sensitivity * death_diff
+        p_util = max(0.3, min(0.9, p_util))
+
+        timed_out = rng.random() < timeout_rate
+
+        if timed_out:
+            chose_a = False
+            chose_fewer = False
+            chose_intervention = False
+            chose_inaction = False
+            rt = None
+        else:
+            if fewer_deaths_is_a:
+                chose_a = rng.random() < p_util
+            elif n_b < n_a:
+                chose_a = rng.random() > p_util
+            else:
+                # Equal deaths: slight omission bias
+                chose_a = rng.random() < (1 - omission_bias) if action_a == "swerve" else rng.random() < omission_bias
+
+            chose_fewer = (chose_a and fewer_deaths_is_a) or (not chose_a and n_b < n_a)
+            if n_a == n_b:
+                chose_fewer = True
+
+            chose_intervention = (chose_a and action_a == "swerve") or (not chose_a and action_b == "swerve")
+            chose_inaction = not chose_intervention
+            rt = round(max(500, float(np_rng.normal(5000, 2000))), 1)
+
+        trials.append({
+            "trial_index": i + 1,
+            "trial_part": "stimulus",
+            "scenario_type": scenario_type,
+            "intervention": intervention,
+            "n_killed_a": n_a,
+            "n_killed_b": n_b,
+            "action_a": action_a,
+            "action_b": action_b,
+            "n_saved_a": n_b if not timed_out else 0,
+            "n_saved_b": n_a if not timed_out else 0,
+            "chose_fewer_deaths": chose_fewer,
+            "chose_fewer_deaths_num": 1 if chose_fewer else 0,
+            "death_difference": death_diff,
+            "chose_intervention": chose_intervention,
+            "chose_inaction": chose_inaction,
+            "response": "f" if chose_a else "j" if not timed_out else None,
+            "rt": rt,
+            "timed_out": timed_out,
+        })
+
+    return trials
+
+
+@pytest.fixture
+def moral_judgment_config():
+    return {
+        "task_id": "moral_judgment",
+        "parameters": {
+            "n_trials": 26,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+        },
+    }
+
+
+@pytest.fixture
+def moral_judgment_metrics():
+    return {
+        "task_id": "moral_judgment",
+        "metrics": [
+            {"name": "utilitarian_rate", "type": "proportion_correct", "field": "chose_fewer_deaths", "human_mean": 0.63, "human_sd": 0.15},
+            {"name": "mean_rt", "type": "mean", "field": "rt", "human_mean": 5000, "human_sd": 3000, "direction": "lower_is_better"},
+        ],
+    }
+
+
+@pytest.fixture
+def moral_judgment_signatures():
+    return {
+        "task_id": "moral_judgment",
+        "signatures": [
+            {
+                "name": "utilitarian_preference",
+                "test": "proportion_test",
+                "field": "chose_fewer_deaths",
+                "chance_level": 0.5,
+                "expected_direction": "above_chance",
+                "threshold_p": 0.05,
+                "weight": 1.0,
+            },
+            {
+                "name": "omission_bias",
+                "test": "proportion_test",
+                "field": "chose_inaction",
+                "chance_level": 0.5,
+                "expected_direction": "above_chance",
+                "threshold_p": 0.05,
+                "weight": 0.75,
+            },
+            {
+                "name": "death_count_sensitivity",
+                "test": "correlation_test",
+                "field_x": "death_difference",
+                "field_y": "chose_fewer_deaths_num",
+                "expected_direction": "positive",
+                "threshold_p": 0.05,
+                "weight": 0.75,
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def human_like_moral_judgment_data():
+    return _generate_moral_judgment_trials(utilitarian_bias=0.65, omission_bias=0.55, death_sensitivity=0.1)
+
+
+@pytest.fixture
+def random_moral_judgment_data():
+    return _generate_moral_judgment_trials(utilitarian_bias=0.50, omission_bias=0.50, death_sensitivity=0.0, seed=99)
+
+
+# ── Confirmation Bias RL ──────────────────────────────────────────────
+
+
+def _generate_confirmation_bias_rl_trials(
+    n_per_context=24,
+    learning_rate=0.1,
+    confirmation_bias_strength=0.3,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Generate synthetic confirmation bias RL data.
+
+    Contexts 0-1: partial feedback (see chosen only)
+    Contexts 2-3: complete feedback (see both chosen and unchosen)
+    Each context has one arm p=0.75, other p=0.25.
+    confirmation_bias_strength: extra win-stay tendency in partial vs complete.
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+
+    contexts = [
+        {"id": 0, "feedback_type": "partial",  "p_left": 0.75, "p_right": 0.25},
+        {"id": 1, "feedback_type": "partial",  "p_left": 0.25, "p_right": 0.75},
+        {"id": 2, "feedback_type": "complete", "p_left": 0.75, "p_right": 0.25},
+        {"id": 3, "feedback_type": "complete", "p_left": 0.25, "p_right": 0.75},
+    ]
+
+    trial_index = 0
+    for ctx in contexts:
+        q_left = 0.5
+        q_right = 0.5
+        prev_arm = None
+        prev_reward = None
+
+        for t in range(n_per_context):
+            timed_out = rng.random() < timeout_rate
+            trial_index += 1
+
+            if timed_out:
+                trials.append({
+                    "trial_index": trial_index,
+                    "trial_part": "stimulus",
+                    "context": ctx["id"],
+                    "feedback_type": ctx["feedback_type"],
+                    "arm_chosen": None,
+                    "reward": 0,
+                    "unchosen_reward": 0,
+                    "correct": False,
+                    "stayed": False,
+                    "prev_reward": None,
+                    "response": None,
+                    "rt": None,
+                    "timed_out": True,
+                })
+                continue
+
+            # Softmax choice
+            diff = q_left - q_right
+            p_left = 1.0 / (1.0 + np.exp(-5.0 * diff))
+            arm = "left" if rng.random() < p_left else "right"
+
+            p_chosen = ctx["p_left"] if arm == "left" else ctx["p_right"]
+            p_unchosen = ctx["p_right"] if arm == "left" else ctx["p_left"]
+            reward = 1 if rng.random() < p_chosen else -1
+            unchosen_reward = 1 if rng.random() < p_unchosen else -1
+
+            correct = (ctx["p_left"] >= ctx["p_right"] and arm == "left") or \
+                      (ctx["p_right"] > ctx["p_left"] and arm == "right")
+
+            # Update Q values
+            if arm == "left":
+                q_left += learning_rate * (reward - q_left)
+                if ctx["feedback_type"] == "complete":
+                    q_right += learning_rate * (unchosen_reward - q_right)
+            else:
+                q_right += learning_rate * (reward - q_right)
+                if ctx["feedback_type"] == "complete":
+                    q_left += learning_rate * (unchosen_reward - q_left)
+
+            stayed = arm == prev_arm if prev_arm is not None else False
+            base_rt = 800
+            rt = round(max(200, float(np_rng.normal(base_rt, 150))), 1)
+
+            trials.append({
+                "trial_index": trial_index,
+                "trial_part": "stimulus",
+                "context": ctx["id"],
+                "feedback_type": ctx["feedback_type"],
+                "arm_chosen": arm,
+                "reward": reward,
+                "unchosen_reward": unchosen_reward,
+                "correct": correct,
+                "stayed": stayed,
+                "prev_reward": prev_reward,
+                "response": "f" if arm == "left" else "j",
+                "rt": rt,
+                "timed_out": False,
+            })
+            prev_arm = arm
+            prev_reward = reward
+
+    rng.shuffle(trials)
+    # Re-index after shuffle
+    for i, t in enumerate(trials):
+        t["trial_index"] = i + 1
+    return trials
+
+
+@pytest.fixture
+def confirmation_bias_rl_config():
+    return {
+        "task_id": "confirmation_bias_rl",
+        "parameters": {
+            "n_trials": 96,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+        },
+    }
+
+
+@pytest.fixture
+def confirmation_bias_rl_metrics():
+    return {
+        "task_id": "confirmation_bias_rl",
+        "metrics": [
+            {"name": "overall_accuracy", "type": "proportion_correct", "field": "correct", "filter": {"timed_out": False}, "human_mean": 0.65, "human_sd": 0.10},
+            {"name": "partial_accuracy", "type": "proportion_correct", "field": "correct", "filter": {"timed_out": False, "feedback_type": "partial"}, "human_mean": 0.62, "human_sd": 0.12},
+            {"name": "complete_accuracy", "type": "proportion_correct", "field": "correct", "filter": {"timed_out": False, "feedback_type": "complete"}, "human_mean": 0.70, "human_sd": 0.10},
+            {"name": "mean_rt", "type": "mean", "field": "rt", "filter": {"timed_out": False}, "human_mean": 800, "human_sd": 200},
+        ],
+    }
+
+
+@pytest.fixture
+def confirmation_bias_rl_signatures():
+    return {
+        "task_id": "confirmation_bias_rl",
+        "signatures": [
+            {
+                "name": "counterfactual_learning",
+                "test": "proportion_test",
+                "field": "correct",
+                "filter": {"timed_out": False, "feedback_type": "complete"},
+                "chance_level": 0.5,
+                "threshold_p": 0.05,
+                "expected_direction": "above_chance",
+                "weight": 1.5,
+            },
+            {
+                "name": "partial_above_chance",
+                "test": "proportion_test",
+                "field": "correct",
+                "filter": {"timed_out": False, "feedback_type": "partial"},
+                "chance_level": 0.5,
+                "threshold_p": 0.05,
+                "expected_direction": "above_chance",
+                "weight": 1.0,
+            },
+            {
+                "name": "learning_curve",
+                "test": "correlation_test",
+                "field_x": "trial_index",
+                "field_y": "correct",
+                "filter": {"timed_out": False},
+                "threshold_p": 0.05,
+                "expected_direction": "positive",
+                "weight": 1.0,
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def human_like_confirmation_bias_rl_data():
+    return _generate_confirmation_bias_rl_trials(learning_rate=0.15, confirmation_bias_strength=0.3)
+
+
+@pytest.fixture
+def random_confirmation_bias_rl_data():
+    return _generate_confirmation_bias_rl_trials(learning_rate=0.0, confirmation_bias_strength=0.0, seed=99)
+
+
+# ── Magnitude RL ──────────────────────────────────────────────────────
+
+
+def _generate_magnitude_rl_trials(
+    trials_per_pair=24,
+    n_transfer=24,
+    learning_rate=0.1,
+    magnitude_bonus=0.15,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Generate synthetic magnitude RL data.
+
+    Pairs 0-1: high magnitude (±10), Pairs 2-3: low magnitude (±1).
+    Each pair has one 75%/25% split.
+    magnitude_bonus: extra accuracy boost for high magnitude pairs.
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+
+    pairs = [
+        {"id": 0, "reward_magnitude": "high", "mag_value": 10, "p_left": 0.75, "p_right": 0.25},
+        {"id": 1, "reward_magnitude": "high", "mag_value": 10, "p_left": 0.25, "p_right": 0.75},
+        {"id": 2, "reward_magnitude": "low",  "mag_value": 1,  "p_left": 0.75, "p_right": 0.25},
+        {"id": 3, "reward_magnitude": "low",  "mag_value": 1,  "p_left": 0.25, "p_right": 0.75},
+    ]
+
+    trial_index = 0
+
+    # Learning phase
+    for pair in pairs:
+        q_left = 0.0
+        q_right = 0.0
+        lr = learning_rate
+        if pair["reward_magnitude"] == "high":
+            lr += magnitude_bonus
+
+        for t in range(trials_per_pair):
+            timed_out = rng.random() < timeout_rate
+            trial_index += 1
+
+            if timed_out:
+                trials.append({
+                    "trial_index": trial_index,
+                    "trial_part": "stimulus",
+                    "phase": "learning",
+                    "context": pair["id"],
+                    "reward_magnitude": pair["reward_magnitude"],
+                    "mag_value": pair["mag_value"],
+                    "arm_chosen": None,
+                    "reward": 0,
+                    "correct": False,
+                    "stayed": False,
+                    "prev_reward": None,
+                    "response": None,
+                    "rt": None,
+                    "timed_out": True,
+                })
+                continue
+
+            diff = q_left - q_right
+            p_left = 1.0 / (1.0 + np.exp(-3.0 * diff))
+            arm = "left" if rng.random() < p_left else "right"
+
+            p_chosen = pair["p_left"] if arm == "left" else pair["p_right"]
+            win = rng.random() < p_chosen
+            reward = pair["mag_value"] if win else -pair["mag_value"]
+            correct = (pair["p_left"] >= pair["p_right"] and arm == "left") or \
+                      (pair["p_right"] > pair["p_left"] and arm == "right")
+
+            if arm == "left":
+                q_left += lr * (reward - q_left)
+            else:
+                q_right += lr * (reward - q_right)
+
+            rt = round(max(200, float(np_rng.normal(700, 150))), 1)
+
+            trials.append({
+                "trial_index": trial_index,
+                "trial_part": "stimulus",
+                "phase": "learning",
+                "context": pair["id"],
+                "reward_magnitude": pair["reward_magnitude"],
+                "mag_value": pair["mag_value"],
+                "arm_chosen": arm,
+                "reward": reward,
+                "correct": correct,
+                "stayed": False,
+                "prev_reward": None,
+                "response": "f" if arm == "left" else "j",
+                "rt": rt,
+                "timed_out": False,
+            })
+
+    # Shuffle learning trials
+    rng.shuffle(trials)
+    for i, t in enumerate(trials):
+        t["trial_index"] = i + 1
+
+    # Transfer phase
+    high_mag_preference = 0.5 + magnitude_bonus * 2
+    for t in range(n_transfer):
+        trial_index = len(trials) + 1
+        timed_out = rng.random() < timeout_rate
+
+        if timed_out:
+            trials.append({
+                "trial_index": trial_index,
+                "trial_part": "stimulus",
+                "phase": "transfer",
+                "context": "transfer",
+                "reward_magnitude": "mixed",
+                "mag_value": 0,
+                "arm_chosen": None,
+                "reward": 0,
+                "correct": False,
+                "chose_high_magnitude": False,
+                "response": None,
+                "rt": None,
+                "timed_out": True,
+            })
+            continue
+
+        chose_high = rng.random() < high_mag_preference
+        rt = round(max(200, float(np_rng.normal(800, 200))), 1)
+
+        trials.append({
+            "trial_index": trial_index,
+            "trial_part": "stimulus",
+            "phase": "transfer",
+            "context": "transfer",
+            "reward_magnitude": "mixed",
+            "mag_value": 0,
+            "arm_chosen": "left" if rng.random() > 0.5 else "right",
+            "reward": 0,
+            "correct": True,  # Both have same original p
+            "chose_high_magnitude": chose_high,
+            "response": "f" if rng.random() > 0.5 else "j",
+            "rt": rt,
+            "timed_out": False,
+        })
+
+    return trials
+
+
+@pytest.fixture
+def magnitude_rl_config():
+    return {
+        "task_id": "magnitude_rl",
+        "parameters": {
+            "n_trials": 120,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+        },
+    }
+
+
+@pytest.fixture
+def magnitude_rl_metrics():
+    return {
+        "task_id": "magnitude_rl",
+        "metrics": [
+            {"name": "learning_accuracy", "type": "proportion_correct", "field": "correct", "filter": {"timed_out": False, "phase": "learning"}, "human_mean": 0.68, "human_sd": 0.10},
+            {"name": "high_magnitude_accuracy", "type": "proportion_correct", "field": "correct", "filter": {"timed_out": False, "phase": "learning", "reward_magnitude": "high"}, "human_mean": 0.72, "human_sd": 0.10},
+            {"name": "transfer_accuracy", "type": "proportion_correct", "field": "correct", "filter": {"timed_out": False, "phase": "transfer"}, "human_mean": 0.65, "human_sd": 0.12},
+            {"name": "mean_rt", "type": "mean", "field": "rt", "filter": {"timed_out": False, "phase": "learning"}, "human_mean": 700, "human_sd": 200},
+        ],
+    }
+
+
+@pytest.fixture
+def magnitude_rl_signatures():
+    return {
+        "task_id": "magnitude_rl",
+        "signatures": [
+            {
+                "name": "magnitude_effect",
+                "test": "proportion_test",
+                "field": "correct",
+                "filter": {"timed_out": False, "phase": "learning", "reward_magnitude": "high"},
+                "chance_level": 0.5,
+                "threshold_p": 0.05,
+                "expected_direction": "above_chance",
+                "weight": 1.5,
+            },
+            {
+                "name": "reference_point_adaptation",
+                "test": "proportion_test",
+                "field": "chose_high_magnitude",
+                "filter": {"timed_out": False, "phase": "transfer"},
+                "chance_level": 0.5,
+                "threshold_p": 0.05,
+                "expected_direction": "above_chance",
+                "weight": 1.5,
+            },
+            {
+                "name": "learning_improvement",
+                "test": "correlation_test",
+                "field_x": "trial_index",
+                "field_y": "correct",
+                "filter": {"timed_out": False, "phase": "learning"},
+                "threshold_p": 0.05,
+                "expected_direction": "positive",
+                "weight": 1.0,
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def human_like_magnitude_rl_data():
+    return _generate_magnitude_rl_trials(learning_rate=0.15, magnitude_bonus=0.15)
+
+
+@pytest.fixture
+def random_magnitude_rl_data():
+    return _generate_magnitude_rl_trials(learning_rate=0.0, magnitude_bonus=0.0, seed=99)
+
+
+# ── Probability Learning ─────────────────────────────────────────────
+
+
+def _generate_probability_learning_trials(
+    n_trials=100,
+    p_optimal=0.70,
+    matching_tendency=0.8,
+    win_stay_rate=0.70,
+    lose_shift_rate=0.30,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Generate synthetic probability learning data.
+
+    matching_tendency: how closely choice rate matches reward probability.
+    1.0 = perfect matching, 0.0 = random, >1 would be maximizing.
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+
+    optimal_side = "left"
+    p_left = p_optimal
+    p_right = 1.0 - p_optimal
+
+    prev_choice = None
+    prev_reward = None
+
+    for i in range(n_trials):
+        timed_out = rng.random() < timeout_rate
+
+        # Pre-determine outcomes
+        left_outcome = 1 if rng.random() < p_left else 0
+        right_outcome = 1 if rng.random() < p_right else 0
+
+        if timed_out:
+            trials.append({
+                "trial_index": i + 1,
+                "trial_part": "stimulus",
+                "choice": None,
+                "reward": 0,
+                "correct": False,
+                "chose_optimal": False,
+                "optimal_side": optimal_side,
+                "left_outcome": left_outcome,
+                "right_outcome": right_outcome,
+                "stayed": False,
+                "prev_reward": prev_reward,
+                "response": None,
+                "rt": None,
+                "timed_out": True,
+            })
+            continue
+
+        # Choice model: probability matching with win-stay/lose-shift
+        if prev_choice is not None and prev_reward is not None:
+            if prev_reward == 1:
+                choice = prev_choice if rng.random() < win_stay_rate else ("right" if prev_choice == "left" else "left")
+            else:
+                choice = ("right" if prev_choice == "left" else "left") if rng.random() < lose_shift_rate else prev_choice
+        else:
+            # First trial: probability matching
+            choice = "left" if rng.random() < (p_optimal * matching_tendency + 0.5 * (1 - matching_tendency)) else "right"
+
+        reward = left_outcome if choice == "left" else right_outcome
+        correct = reward == 1
+        chose_optimal = choice == optimal_side
+        stayed = choice == prev_choice if prev_choice is not None else False
+
+        base_rt = 700 - i * 0.5  # slight speedup over trials
+        rt = round(max(200, float(np_rng.normal(base_rt, 150))), 1)
+
+        trials.append({
+            "trial_index": i + 1,
+            "trial_part": "stimulus",
+            "choice": choice,
+            "reward": reward,
+            "correct": correct,
+            "chose_optimal": chose_optimal,
+            "optimal_side": optimal_side,
+            "left_outcome": left_outcome,
+            "right_outcome": right_outcome,
+            "stayed": stayed,
+            "prev_reward": prev_reward,
+            "response": "f" if choice == "left" else "j",
+            "rt": rt,
+            "timed_out": False,
+        })
+        prev_choice = choice
+        prev_reward = reward
+
+    return trials
+
+
+@pytest.fixture
+def probability_learning_config():
+    return {
+        "task_id": "probability_learning",
+        "parameters": {
+            "n_trials": 100,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+        },
+    }
+
+
+@pytest.fixture
+def probability_learning_metrics():
+    return {
+        "task_id": "probability_learning",
+        "metrics": [
+            {"name": "overall_accuracy", "type": "proportion_correct", "field": "correct", "filter": {"timed_out": False}, "human_mean": 0.62, "human_sd": 0.08},
+            {"name": "optimal_choice_rate", "type": "proportion_correct", "field": "chose_optimal", "filter": {"timed_out": False}, "human_mean": 0.72, "human_sd": 0.12},
+            {"name": "mean_rt", "type": "mean", "field": "rt", "filter": {"timed_out": False}, "human_mean": 650, "human_sd": 200},
+        ],
+    }
+
+
+@pytest.fixture
+def probability_learning_signatures():
+    return {
+        "task_id": "probability_learning",
+        "signatures": [
+            {
+                "name": "probability_matching",
+                "test": "proportion_test",
+                "field": "chose_optimal",
+                "filter": {"timed_out": False},
+                "chance_level": 0.5,
+                "threshold_p": 0.05,
+                "expected_direction": "above_chance",
+                "weight": 1.5,
+            },
+            {
+                "name": "win_stay_effect",
+                "test": "proportion_test",
+                "field": "stayed",
+                "filter": {"timed_out": False, "prev_reward": 1},
+                "chance_level": 0.5,
+                "threshold_p": 0.05,
+                "expected_direction": "above_chance",
+                "weight": 1.0,
+            },
+            {
+                "name": "learning_curve",
+                "test": "correlation_test",
+                "field_x": "trial_index",
+                "field_y": "chose_optimal",
+                "filter": {"timed_out": False},
+                "threshold_p": 0.05,
+                "expected_direction": "positive",
+                "weight": 1.0,
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def human_like_probability_learning_data():
+    return _generate_probability_learning_trials(matching_tendency=0.8, win_stay_rate=0.70, lose_shift_rate=0.30)
+
+
+@pytest.fixture
+def random_probability_learning_data():
+    return _generate_probability_learning_trials(matching_tendency=0.0, win_stay_rate=0.50, lose_shift_rate=0.50, seed=99)
+
+
+# ── Novelty Exploration ──────────────────────────────────────────────
+
+
+def _generate_novelty_exploration_trials(
+    n_blocks=10,
+    trials_per_block=15,
+    novelty_preference=0.55,
+    base_reward_prob=0.45,
+    timeout_rate=0.0,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+    trial_idx = 0
+    seen = set()
+
+    for b in range(n_blocks):
+        for t in range(trials_per_block):
+            trial_idx += 1
+            timed_out = rng.random() < timeout_rate
+            left_id = "opt_%d_%d" % (b, rng.randint(0, 5))
+            right_id = "opt_%d_%d" % (b, rng.randint(0, 5))
+            while right_id == left_id:
+                right_id = "opt_%d_%d" % (b, rng.randint(0, 5))
+
+            left_novel = left_id not in seen
+            right_novel = right_id not in seen
+
+            if timed_out:
+                trials.append({
+                    "trial_index": trial_idx, "trial_part": "stimulus",
+                    "block": b, "trial_in_block": t,
+                    "chosen_option": None, "chosen_novelty": None,
+                    "chose_novel": False, "reward": 0, "correct": False,
+                    "response": None, "rt": None, "timed_out": True,
+                })
+                continue
+
+            # Choose based on novelty preference
+            if left_novel and not right_novel:
+                choose_left = rng.random() < novelty_preference
+            elif right_novel and not left_novel:
+                choose_left = rng.random() > novelty_preference
+            else:
+                choose_left = rng.random() > 0.5
+
+            chosen_id = left_id if choose_left else right_id
+            chosen_novel = (left_novel if choose_left else right_novel)
+            reward = 1 if rng.random() < base_reward_prob else 0
+            seen.add(chosen_id)
+
+            rt = round(max(200, float(np_rng.normal(900, 200))), 1)
+
+            trials.append({
+                "trial_index": trial_idx, "trial_part": "stimulus",
+                "block": b, "trial_in_block": t,
+                "chosen_option": chosen_id,
+                "chosen_novelty": "novel" if chosen_novel else "familiar",
+                "chose_novel": chosen_novel,
+                "reward": reward, "correct": reward == 1,
+                "response": "f" if choose_left else "j",
+                "rt": rt, "timed_out": False,
+            })
+
+    return trials
+
+
+@pytest.fixture
+def novelty_exploration_config():
+    return {"task_id": "novelty_exploration", "parameters": {"n_trials": 150, "response_keys": ["f", "j"], "response_type": "keypress"}}
+
+@pytest.fixture
+def novelty_exploration_metrics():
+    return {"task_id": "novelty_exploration", "metrics": [
+        {"name": "overall_reward_rate", "type": "proportion_correct", "field": "correct", "filter": {"timed_out": False}, "human_mean": 0.55, "human_sd": 0.08},
+        {"name": "novel_choice_rate", "type": "proportion_correct", "field": "chose_novel", "filter": {"timed_out": False}, "human_mean": 0.45, "human_sd": 0.12},
+        {"name": "mean_rt", "type": "mean", "field": "rt", "filter": {"timed_out": False}, "human_mean": 900, "human_sd": 250},
+    ]}
+
+@pytest.fixture
+def novelty_exploration_signatures():
+    return {"task_id": "novelty_exploration", "signatures": [
+        {"name": "novelty_bonus", "test": "proportion_test", "field": "chose_novel", "filter": {"timed_out": False}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.5},
+        {"name": "reward_learning", "test": "correlation_test", "field_x": "trial_in_block", "field_y": "correct", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.0},
+        {"name": "above_chance_reward", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False}, "chance_level": 0.35, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.0},
+    ]}
+
+@pytest.fixture
+def human_like_novelty_exploration_data():
+    return _generate_novelty_exploration_trials(novelty_preference=0.80, base_reward_prob=0.50)
+
+@pytest.fixture
+def random_novelty_exploration_data():
+    return _generate_novelty_exploration_trials(novelty_preference=0.50, base_reward_prob=0.35, seed=99)
+
+
+# ── Safe Exploration ─────────────────────────────────────────────────
+
+
+def _generate_safe_exploration_trials(
+    n_blocks=10,
+    trials_per_block=10,
+    learning_rate=0.15,
+    risk_sensitivity=0.2,
+    timeout_rate=0.0,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+    trial_idx = 0
+
+    for b in range(n_blocks):
+        risk_condition = "risky" if b % 2 == 1 else "safe"
+        left_mean = 60 + rng.random() * 20 if rng.random() > 0.5 else 20 + rng.random() * 20
+        right_mean = 80 - left_mean + 20 + rng.random() * 10
+        q_left = 50.0
+        q_right = 50.0
+
+        for t in range(trials_per_block):
+            trial_idx += 1
+            timed_out = rng.random() < timeout_rate
+
+            if timed_out:
+                trials.append({
+                    "trial_index": trial_idx, "trial_part": "stimulus",
+                    "block": b, "trial_in_block": t,
+                    "risk_condition": risk_condition,
+                    "chosen_option": None, "reward": 0, "correct": False,
+                    "kraken_caught": False,
+                    "response": None, "rt": None, "timed_out": True,
+                })
+                continue
+
+            diff = q_left - q_right
+            if risk_condition == "risky":
+                diff += risk_sensitivity * 10
+            p_left = 1.0 / (1.0 + np.exp(-0.05 * diff))
+            choose_left = rng.random() < p_left
+
+            side = "left" if choose_left else "right"
+            mean = left_mean if choose_left else right_mean
+            reward = round(max(0, mean + (rng.random() - 0.5) * 20))
+            correct = (left_mean >= right_mean and choose_left) or (right_mean > left_mean and not choose_left)
+
+            kraken = False
+            if risk_condition == "risky" and reward < 40 and rng.random() < 0.5:
+                kraken = True
+
+            if choose_left:
+                q_left += learning_rate * (reward - q_left)
+            else:
+                q_right += learning_rate * (reward - q_right)
+
+            rt = round(max(200, float(np_rng.normal(800, 200))), 1)
+
+            trials.append({
+                "trial_index": trial_idx, "trial_part": "stimulus",
+                "block": b, "trial_in_block": t,
+                "risk_condition": risk_condition,
+                "chosen_option": side, "reward": reward, "correct": correct,
+                "kraken_caught": kraken,
+                "response": "f" if choose_left else "j",
+                "rt": rt, "timed_out": False,
+            })
+
+    return trials
+
+
+@pytest.fixture
+def safe_exploration_config():
+    return {"task_id": "safe_exploration", "parameters": {"n_trials": 100, "response_keys": ["f", "j"], "response_type": "keypress"}}
+
+@pytest.fixture
+def safe_exploration_metrics():
+    return {"task_id": "safe_exploration", "metrics": [
+        {"name": "overall_reward", "type": "mean", "field": "reward", "filter": {"timed_out": False}, "human_mean": 50, "human_sd": 15},
+        {"name": "optimal_choice_rate", "type": "proportion_correct", "field": "correct", "filter": {"timed_out": False}, "human_mean": 0.65, "human_sd": 0.10},
+        {"name": "mean_rt", "type": "mean", "field": "rt", "filter": {"timed_out": False}, "human_mean": 800, "human_sd": 250},
+    ]}
+
+@pytest.fixture
+def safe_exploration_signatures():
+    return {"task_id": "safe_exploration", "signatures": [
+        {"name": "risk_sensitivity", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False, "risk_condition": "risky"}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.5},
+        {"name": "exploration_learning", "test": "correlation_test", "field_x": "trial_in_block", "field_y": "correct", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.0},
+        {"name": "above_chance_performance", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.0},
+    ]}
+
+@pytest.fixture
+def human_like_safe_exploration_data():
+    return _generate_safe_exploration_trials(learning_rate=0.2, risk_sensitivity=0.3)
+
+@pytest.fixture
+def random_safe_exploration_data():
+    return _generate_safe_exploration_trials(learning_rate=0.0, risk_sensitivity=0.0, seed=99)
+
+
+# ── Observe or Bet ───────────────────────────────────────────────────
+
+
+def _generate_observe_or_bet_trials(
+    n_blocks=3,
+    trials_per_block=None,
+    observation_rate=0.30,
+    learning_speed=0.02,
+    timeout_rate=0.0,
+    seed=42,
+):
+    if trials_per_block is None:
+        trials_per_block = [25, 50, 50]
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+    trial_idx = 0
+    block_probs = [0.70, 0.30, 0.80]
+
+    for b in range(n_blocks):
+        p_blue = block_probs[b]
+        obs_rate = observation_rate
+
+        for t in range(trials_per_block[b]):
+            trial_idx += 1
+            timed_out = rng.random() < timeout_rate
+            light_color = "blue" if rng.random() < p_blue else "red"
+            is_practice = b == 0
+
+            if timed_out:
+                trials.append({
+                    "trial_index": trial_idx, "trial_part": "stimulus",
+                    "block": b, "trial_in_block": t, "is_practice": is_practice,
+                    "action": "timeout", "light_color": light_color,
+                    "reward": 0, "correct": False,
+                    "is_observe": False, "is_observe_num": 0, "is_bet": False,
+                    "response": None, "rt": None, "timed_out": True,
+                })
+                continue
+
+            # Decrease observation over trials
+            current_obs = max(0.05, obs_rate - learning_speed * t)
+
+            if rng.random() < current_obs:
+                action = "observe"
+                reward = 0
+                correct = False
+                is_observe = True
+                is_bet = False
+            else:
+                # Bet on majority color (learned from observations)
+                if p_blue > 0.5:
+                    guess_blue = rng.random() < (0.5 + 0.3 * min(1, t / 20))
+                else:
+                    guess_blue = rng.random() < (0.5 - 0.3 * min(1, t / 20))
+
+                if guess_blue:
+                    action = "guess_blue"
+                    correct = light_color == "blue"
+                else:
+                    action = "guess_red"
+                    correct = light_color == "red"
+                reward = 1 if correct else -1
+                is_observe = False
+                is_bet = True
+
+            rt = round(max(200, float(np_rng.normal(1200, 300))), 1)
+
+            trials.append({
+                "trial_index": trial_idx, "trial_part": "stimulus",
+                "block": b, "trial_in_block": t, "is_practice": is_practice,
+                "action": action, "light_color": light_color,
+                "reward": reward, "correct": correct,
+                "is_observe": is_observe, "is_observe_num": 1 if is_observe else 0,
+                "is_bet": is_bet,
+                "response": "k" if is_observe else ("f" if action == "guess_blue" else "j"),
+                "rt": rt, "timed_out": False,
+            })
+
+    return trials
+
+
+@pytest.fixture
+def observe_or_bet_config():
+    return {"task_id": "observe_or_bet", "parameters": {"n_trials": 125, "response_keys": ["f", "j", "k"], "response_type": "keypress"}}
+
+@pytest.fixture
+def observe_or_bet_metrics():
+    return {"task_id": "observe_or_bet", "metrics": [
+        {"name": "observation_rate", "type": "proportion_correct", "field": "is_observe", "filter": {"timed_out": False}, "human_mean": 0.30, "human_sd": 0.12},
+        {"name": "bet_accuracy", "type": "proportion_correct", "field": "correct", "filter": {"timed_out": False, "is_bet": True}, "human_mean": 0.70, "human_sd": 0.10},
+        {"name": "mean_rt", "type": "mean", "field": "rt", "filter": {"timed_out": False}, "human_mean": 1200, "human_sd": 400},
+    ]}
+
+@pytest.fixture
+def observe_or_bet_signatures():
+    return {"task_id": "observe_or_bet", "signatures": [
+        {"name": "adaptive_observation", "test": "correlation_test", "field_x": "trial_in_block", "field_y": "is_observe_num", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "negative", "weight": 1.5},
+        {"name": "bet_above_chance", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False, "is_bet": True}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.0},
+        {"name": "information_use", "test": "correlation_test", "field_x": "trial_in_block", "field_y": "correct", "filter": {"timed_out": False, "is_bet": True}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.0},
+    ]}
+
+@pytest.fixture
+def human_like_observe_or_bet_data():
+    return _generate_observe_or_bet_trials(observation_rate=0.35, learning_speed=0.03)
+
+@pytest.fixture
+def random_observe_or_bet_data():
+    return _generate_observe_or_bet_trials(observation_rate=0.33, learning_speed=0.0, seed=99)
+
+
+# ---------- Random Dot Motion ----------
+
+def _generate_random_dot_motion_trials(
+    n_trials=120,
+    accuracy_easy=0.90,
+    accuracy_hard=0.60,
+    mean_rt=850,
+    rt_ratio_effect=-200,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+
+    conditions = ["easy", "medium", "hard"]
+    ratios = {"easy": [1.8, 2.0], "medium": [1.4, 1.5], "hard": [1.1, 1.2]}
+    accuracy_map = {"easy": accuracy_easy, "medium": (accuracy_easy + accuracy_hard) / 2, "hard": accuracy_hard}
+
+    trials = []
+    for i in range(n_trials):
+        condition = conditions[i % 3]
+        ratio = rng.choice(ratios[condition])
+        base_dots = rng.randint(10, 30)
+        n_left = base_dots
+        n_right = round(base_dots * ratio)
+        correct_side = "right"
+        correct_key = "j"
+
+        if rng.random() < 0.5:
+            n_left, n_right = n_right, n_left
+            correct_side = "left"
+            correct_key = "f"
+
+        acc = accuracy_map[condition]
+        is_correct = rng.random() < acc
+        response = correct_key if is_correct else ("f" if correct_key == "j" else "j")
+
+        base_rt = mean_rt + rt_ratio_effect * (ratio - 1.0)
+        rt = max(200, float(np_rng.normal(base_rt, 150)))
+
+        trials.append({
+            "trial_part": "stimulus",
+            "trial_index": i + 1,
+            "condition": condition,
+            "n_left": n_left,
+            "n_right": n_right,
+            "ratio": ratio,
+            "correct_side": correct_side,
+            "correct": is_correct,
+            "response": response,
+            "rt": round(rt, 1),
+            "timed_out": False,
+        })
+
+    return trials
+
+
+@pytest.fixture
+def random_dot_motion_config():
+    return {"task_id": "random_dot_motion", "parameters": {"n_trials": 120, "response_keys": ["f", "j"], "response_type": "keypress"}}
+
+@pytest.fixture
+def random_dot_motion_metrics():
+    return {"task_id": "random_dot_motion", "metrics": [
+        {"name": "overall_accuracy", "field": "correct", "filter": {"timed_out": False}, "human_mean": 0.78, "human_sd": 0.08},
+        {"name": "easy_accuracy", "field": "correct", "filter": {"timed_out": False, "condition": "easy"}, "human_mean": 0.92, "human_sd": 0.05},
+        {"name": "hard_accuracy", "field": "correct", "filter": {"timed_out": False, "condition": "hard"}, "human_mean": 0.62, "human_sd": 0.10},
+        {"name": "mean_rt", "field": "rt", "filter": {"timed_out": False, "correct": True}, "human_mean": 850, "human_sd": 180},
+    ]}
+
+@pytest.fixture
+def random_dot_motion_signatures():
+    return {"task_id": "random_dot_motion", "signatures": [
+        {"name": "ratio_accuracy_effect", "test": "correlation_test", "field_x": "ratio", "field_y": "correct", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.5},
+        {"name": "above_chance_accuracy", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.0},
+        {"name": "speed_accuracy_tradeoff", "test": "correlation_test", "field_x": "ratio", "field_y": "rt", "filter": {"timed_out": False, "correct": True}, "threshold_p": 0.05, "expected_direction": "negative", "weight": 1.0},
+    ]}
+
+@pytest.fixture
+def human_like_random_dot_motion_data():
+    return _generate_random_dot_motion_trials(accuracy_easy=0.90, accuracy_hard=0.60, rt_ratio_effect=-200)
+
+@pytest.fixture
+def random_random_dot_motion_data():
+    return _generate_random_dot_motion_trials(accuracy_easy=0.50, accuracy_hard=0.50, rt_ratio_effect=0, seed=99)
+
+
+# ---------- Lexical Decision ----------
+
+def _generate_lexical_decision_trials(
+    n_trials=120,
+    word_accuracy=0.95,
+    nonword_accuracy=0.92,
+    high_freq_rt=550,
+    low_freq_rt=650,
+    nonword_rt=700,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+
+    high_words = ["table", "house", "water", "money", "light", "world", "place", "think"]
+    low_words = ["plumb", "glyph", "trove", "fjord", "knoll", "qualm", "girth", "demur"]
+    nonwords = ["flirp", "glomb", "snarp", "brive", "clunt", "drafe", "spalk", "trund"]
+
+    trials = []
+    half = n_trials // 2
+    word_trials = half // 2
+
+    for i in range(n_trials):
+        if i < word_trials:
+            stimulus = high_words[i % len(high_words)]
+            stimulus_type = "word"
+            word_frequency = "high"
+            acc = word_accuracy
+            base_rt = high_freq_rt
+        elif i < half:
+            stimulus = low_words[(i - word_trials) % len(low_words)]
+            stimulus_type = "word"
+            word_frequency = "low"
+            acc = word_accuracy * 0.95
+            base_rt = low_freq_rt
+        else:
+            stimulus = nonwords[(i - half) % len(nonwords)]
+            stimulus_type = "nonword"
+            word_frequency = "none"
+            acc = nonword_accuracy
+            base_rt = nonword_rt
+
+        is_correct = rng.random() < acc
+        if stimulus_type == "word":
+            correct_key = "f"
+        else:
+            correct_key = "j"
+        response = correct_key if is_correct else ("f" if correct_key == "j" else "j")
+        rt = max(200, float(np_rng.normal(base_rt, 100)))
+
+        trials.append({
+            "trial_part": "stimulus",
+            "trial_index": i + 1,
+            "stimulus": stimulus,
+            "stimulus_type": stimulus_type,
+            "word_frequency": word_frequency,
+            "correct": is_correct,
+            "response": response,
+            "rt": round(rt, 1),
+            "timed_out": False,
+        })
+
+    rng2 = random.Random(seed + 1)
+    for m in range(len(trials) - 1, 0, -1):
+        n = rng2.randint(0, m)
+        trials[m], trials[n] = trials[n], trials[m]
+
+    return trials
+
+
+@pytest.fixture
+def lexical_decision_config():
+    return {"task_id": "lexical_decision", "parameters": {"n_trials": 120, "response_keys": ["f", "j"], "response_type": "keypress"}}
+
+@pytest.fixture
+def lexical_decision_metrics():
+    return {"task_id": "lexical_decision", "metrics": [
+        {"name": "overall_accuracy", "field": "correct", "filter": {"timed_out": False}, "human_mean": 0.95, "human_sd": 0.03},
+        {"name": "word_accuracy", "field": "correct", "filter": {"timed_out": False, "stimulus_type": "word"}, "human_mean": 0.96, "human_sd": 0.03},
+        {"name": "nonword_accuracy", "field": "correct", "filter": {"timed_out": False, "stimulus_type": "nonword"}, "human_mean": 0.94, "human_sd": 0.04},
+        {"name": "mean_rt", "field": "rt", "filter": {"timed_out": False, "correct": True}, "human_mean": 620, "human_sd": 90},
+    ]}
+
+@pytest.fixture
+def lexical_decision_signatures():
+    return {"task_id": "lexical_decision", "signatures": [
+        {"name": "word_frequency_effect", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False, "word_frequency": "high"}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.5},
+        {"name": "lexicality_effect", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.0},
+        {"name": "nonword_rejection", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False, "stimulus_type": "nonword"}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.0},
+    ]}
+
+@pytest.fixture
+def human_like_lexical_decision_data():
+    return _generate_lexical_decision_trials(word_accuracy=0.95, nonword_accuracy=0.92)
+
+@pytest.fixture
+def random_lexical_decision_data():
+    return _generate_lexical_decision_trials(word_accuracy=0.50, nonword_accuracy=0.50, high_freq_rt=600, low_freq_rt=600, nonword_rt=600, seed=99)
+
+
+# ---------- Heuristics & Biases ----------
+
+def _generate_heuristics_biases_trials(
+    n_trials=40,
+    n_tasks=10,
+    learning_rate=0.3,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+
+    trials_per_task = n_trials // n_tasks
+    trials = []
+
+    for t in range(n_tasks):
+        # Generate random weights for this block
+        weights = [rng.random() * 2 - 1 for _ in range(4)]
+        best_cue = max(range(4), key=lambda c: abs(weights[c]))
+
+        for s in range(trials_per_task):
+            cues_a = [rng.randint(10, 90) for _ in range(4)]
+            cues_b = [rng.randint(10, 90) for _ in range(4)]
+
+            score_a = sum(w * c for w, c in zip(weights, cues_a)) + rng.gauss(0, 5)
+            score_b = sum(w * c for w, c in zip(weights, cues_b)) + rng.gauss(0, 5)
+            correct_answer = "f" if score_a > score_b else "j"
+
+            ttb_choice = "f" if (weights[best_cue] > 0) == (cues_a[best_cue] > cues_b[best_cue]) else "j"
+            ttb_correct = ttb_choice == correct_answer
+
+            # Accuracy improves within block
+            accuracy = 0.5 + learning_rate * (s / max(1, trials_per_task - 1))
+            is_correct = rng.random() < accuracy
+            response = correct_answer if is_correct else ("f" if correct_answer == "j" else "j")
+            used_ttb = (response == correct_answer) == ttb_correct
+
+            cue_diff = [cues_a[i] - cues_b[i] for i in range(4)]
+            rt = max(500, float(np_rng.normal(3200, 800)))
+
+            trials.append({
+                "trial_part": "stimulus",
+                "trial_index": len(trials) + 1,
+                "block": t,
+                "trial_in_block": s,
+                "cue_values": json.dumps(cue_diff),
+                "correct_answer": correct_answer,
+                "dominant_cue": best_cue,
+                "ttb_correct": ttb_correct,
+                "correct": is_correct,
+                "used_ttb": used_ttb,
+                "response": response,
+                "rt": round(rt, 1),
+                "timed_out": False,
+            })
+
+    return trials
+
+
+@pytest.fixture
+def heuristics_biases_config():
+    return {"task_id": "heuristics_biases", "parameters": {"n_trials": 40, "response_keys": ["f", "j"], "response_type": "keypress"}}
+
+@pytest.fixture
+def heuristics_biases_metrics():
+    return {"task_id": "heuristics_biases", "metrics": [
+        {"name": "overall_accuracy", "field": "correct", "filter": {"timed_out": False}, "human_mean": 0.68, "human_sd": 0.10},
+        {"name": "late_block_accuracy", "field": "correct", "filter": {"timed_out": False, "trial_in_block": [2, 3]}, "human_mean": 0.75, "human_sd": 0.12},
+        {"name": "ttb_usage", "field": "used_ttb", "filter": {"timed_out": False}, "human_mean": 0.55, "human_sd": 0.15},
+        {"name": "mean_rt", "field": "rt", "filter": {"timed_out": False}, "human_mean": 3200, "human_sd": 800},
+    ]}
+
+@pytest.fixture
+def heuristics_biases_signatures():
+    return {"task_id": "heuristics_biases", "signatures": [
+        {"name": "above_chance_accuracy", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.5},
+        {"name": "within_block_learning", "test": "correlation_test", "field_x": "trial_in_block", "field_y": "correct", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.0},
+        {"name": "overall_learning", "test": "correlation_test", "field_x": "block", "field_y": "correct", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.0},
+    ]}
+
+@pytest.fixture
+def human_like_heuristics_biases_data():
+    return _generate_heuristics_biases_trials(learning_rate=0.3)
+
+@pytest.fixture
+def random_heuristics_biases_data():
+    return _generate_heuristics_biases_trials(learning_rate=0.0, seed=99)
+
+
+# ---------- Phishing Detection ----------
+
+def _generate_phishing_detection_trials(
+    n_trials=60,
+    phishing_rate=0.3,
+    pre_accuracy=0.65,
+    train_accuracy=0.80,
+    post_accuracy=0.82,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+
+    phases = [("pre", 10), ("train", 40), ("post", 10)]
+    acc_map = {"pre": pre_accuracy, "train": train_accuracy, "post": post_accuracy}
+    trials = []
+    trial_idx = 0
+
+    for phase_name, phase_count in phases:
+        for i in range(phase_count):
+            trial_idx += 1
+            email_type = "phishing" if rng.random() < phishing_rate else "ham"
+            acc = acc_map[phase_name]
+            # Slight improvement within training
+            if phase_name == "train":
+                acc = acc + 0.1 * (i / max(1, phase_count - 1))
+            is_correct = rng.random() < acc
+            if email_type == "phishing":
+                correct_key = "j"
+            else:
+                correct_key = "f"
+            response = correct_key if is_correct else ("f" if correct_key == "j" else "j")
+            rt = max(500, float(np_rng.normal(5000, 1500)))
+
+            trials.append({
+                "trial_part": "stimulus",
+                "trial_index": trial_idx,
+                "phase": phase_name,
+                "email_type": email_type,
+                "show_feedback": phase_name == "train",
+                "correct": is_correct,
+                "response": response,
+                "rt": round(rt, 1),
+                "timed_out": False,
+            })
+
+    return trials
+
+
+@pytest.fixture
+def phishing_detection_config():
+    return {"task_id": "phishing_detection", "parameters": {"n_trials": 60, "response_keys": ["f", "j"], "response_type": "keypress"}}
+
+@pytest.fixture
+def phishing_detection_signatures():
+    return {"task_id": "phishing_detection", "signatures": [
+        {"name": "learning_from_feedback", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False, "phase": "post"}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.5},
+        {"name": "above_chance_classification", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.0},
+        {"name": "training_improvement", "test": "correlation_test", "field_x": "trial_index", "field_y": "correct", "filter": {"timed_out": False, "phase": "train"}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.0},
+    ]}
+
+@pytest.fixture
+def human_like_phishing_detection_data():
+    return _generate_phishing_detection_trials(pre_accuracy=0.65, train_accuracy=0.75, post_accuracy=0.82)
+
+@pytest.fixture
+def random_phishing_detection_data():
+    return _generate_phishing_detection_trials(pre_accuracy=0.50, train_accuracy=0.50, post_accuracy=0.50, seed=99)
+
+
+# ---------- Causal Reasoning ----------
+
+def _generate_causal_reasoning_trials(
+    n_trials=150,
+    n_blocks=3,
+    learning_rate=0.15,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+
+    conditions = ["robber", "millionaire", "sheriff"]
+    rng_cond = random.Random(seed + 100)
+    rng_cond.shuffle(conditions)
+
+    trials_per_block = n_trials // n_blocks
+    mine_probs = [0.7, 0.3]
+    trials = []
+
+    for b in range(n_blocks):
+        cond = conditions[b]
+        # Track learned preference for mine A
+        pref_a = 0.5
+
+        for t in range(trials_per_block):
+            agent_active = rng.random() < 0.3
+
+            mine_a_gold = rng.random() < mine_probs[0]
+            mine_b_gold = rng.random() < mine_probs[1]
+
+            if agent_active:
+                if cond == "robber":
+                    mine_a_gold = False
+                    mine_b_gold = False
+                elif cond == "millionaire":
+                    mine_a_gold = True
+                    mine_b_gold = True
+                else:
+                    mine_a_gold, mine_b_gold = mine_b_gold, mine_a_gold
+
+            # Learning: increase pref for mine A over trials
+            pref_a = 0.5 + learning_rate * (t / max(1, trials_per_block - 1))
+            chose_a = rng.random() < pref_a
+            choice = "A" if chose_a else "B"
+            feedback = mine_a_gold if chose_a else mine_b_gold
+
+            rt = max(300, float(np_rng.normal(1500, 400)))
+
+            trials.append({
+                "trial_part": "stimulus",
+                "trial_index": len(trials) + 1,
+                "block": b,
+                "condition": cond,
+                "trial_in_block": t,
+                "agent_active": agent_active,
+                "mine_a_gold": mine_a_gold,
+                "mine_b_gold": mine_b_gold,
+                "choice": choice,
+                "feedback": feedback,
+                "correct": feedback,
+                "chose_better_mine": chose_a,
+                "response": "f" if chose_a else "j",
+                "rt": round(rt, 1),
+                "timed_out": False,
+            })
+
+    return trials
+
+
+@pytest.fixture
+def causal_reasoning_config():
+    return {"task_id": "causal_reasoning", "parameters": {"n_trials": 150, "response_keys": ["f", "j"], "response_type": "keypress"}}
+
+@pytest.fixture
+def causal_reasoning_signatures():
+    return {"task_id": "causal_reasoning", "signatures": [
+        {"name": "mine_preference_learning", "test": "correlation_test", "field_x": "trial_in_block", "field_y": "chose_better_mine", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.5},
+        {"name": "above_chance_mine_selection", "test": "proportion_test", "field": "chose_better_mine", "filter": {"timed_out": False}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.0},
+        {"name": "reward_learning", "test": "correlation_test", "field_x": "trial_in_block", "field_y": "correct", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.0},
+    ]}
+
+@pytest.fixture
+def human_like_causal_reasoning_data():
+    return _generate_causal_reasoning_trials(learning_rate=0.15)
+
+@pytest.fixture
+def random_causal_reasoning_data():
+    return _generate_causal_reasoning_trials(learning_rate=0.0, seed=99)
+
+
+# ---------- Insider Attack ----------
+
+def _generate_insider_attack_trials(
+    n_trials=100,
+    n_rounds=4,
+    ev_sensitivity=0.6,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+
+    trials_per_round = n_trials // n_rounds
+    trials = []
+
+    for r in range(n_rounds):
+        for t in range(trials_per_round):
+            # Generate two targets
+            left_reward = rng.randint(2, 9)
+            left_penalty = -rng.randint(1, 8)
+            left_mprob = round(rng.random() * 0.55 + 0.05, 2)
+            right_reward = rng.randint(2, 9)
+            right_penalty = -rng.randint(1, 8)
+            right_mprob = round(rng.random() * 0.55 + 0.05, 2)
+
+            left_ev = left_reward * (1 - left_mprob) + left_penalty * left_mprob
+            right_ev = right_reward * (1 - right_mprob) + right_penalty * right_mprob
+
+            # Choose based on EV sensitivity + learning
+            ev_pref = ev_sensitivity + 0.1 * (t / max(1, trials_per_round - 1))
+            chose_left = (left_ev >= right_ev and rng.random() < ev_pref) or (left_ev < right_ev and rng.random() > ev_pref)
+            chose_higher_ev = (chose_left and left_ev >= right_ev) or (not chose_left and right_ev >= left_ev)
+
+            chosen_mprob = left_mprob if chose_left else right_mprob
+            chosen_reward = left_reward if chose_left else right_reward
+            chosen_penalty = left_penalty if chose_left else right_penalty
+
+            monitored = rng.random() < chosen_mprob
+            reward = chosen_penalty if monitored else chosen_reward
+            warning = monitored and rng.random() < 0.7
+
+            rt = max(500, float(np_rng.normal(3000, 800)))
+
+            trials.append({
+                "trial_part": "stimulus",
+                "trial_index": len(trials) + 1,
+                "round": r,
+                "trial_in_round": t,
+                "left_reward": left_reward,
+                "right_reward": right_reward,
+                "left_penalty": left_penalty,
+                "right_penalty": right_penalty,
+                "left_mprob": left_mprob,
+                "right_mprob": right_mprob,
+                "left_ev": round(left_ev, 2),
+                "right_ev": round(right_ev, 2),
+                "target": 0 if chose_left else 1,
+                "monitored": monitored,
+                "warning": warning,
+                "reward": reward,
+                "correct": not monitored,
+                "chose_higher_ev": chose_higher_ev,
+                "response": "f" if chose_left else "j",
+                "rt": round(rt, 1),
+                "timed_out": False,
+            })
+
+    return trials
+
+
+@pytest.fixture
+def insider_attack_config():
+    return {"task_id": "insider_attack", "parameters": {"n_trials": 100, "response_keys": ["f", "j"], "response_type": "keypress"}}
+
+@pytest.fixture
+def insider_attack_signatures():
+    return {"task_id": "insider_attack", "signatures": [
+        {"name": "ev_maximization", "test": "proportion_test", "field": "chose_higher_ev", "filter": {"timed_out": False}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.5},
+        {"name": "within_round_learning", "test": "correlation_test", "field_x": "trial_in_round", "field_y": "correct", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.0},
+        {"name": "risk_sensitivity", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False}, "chance_level": 0.5, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.0},
+    ]}
+
+@pytest.fixture
+def human_like_insider_attack_data():
+    return _generate_insider_attack_trials(ev_sensitivity=0.6)
+
+@pytest.fixture
+def random_insider_attack_data():
+    return _generate_insider_attack_trials(ev_sensitivity=0.5, seed=99)
+
+
+# ---------- Function Estimation ----------
+
+def _generate_function_estimation_trials(
+    n_trials=40,
+    n_blocks=8,
+    base_error=0.15,
+    seed=42,
+):
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+
+    trials_per_block = n_trials // n_blocks
+    func_types = ["linear", "quadratic", "sinusoidal", "exponential"]
+    trials = []
+
+    for b in range(n_blocks):
+        func_type = func_types[b % len(func_types)]
+        a = (rng.random() * 1.5 + 0.5) * (1 if rng.random() < 0.5 else -1)
+        bcoeff = rng.random() * 0.4 - 0.2
+
+        for t in range(trials_per_block):
+            x_value = round(-0.9 + 1.8 * t / max(1, trials_per_block - 1), 2)
+            if func_type == "linear":
+                correct_y = a * x_value + bcoeff
+            elif func_type == "quadratic":
+                correct_y = a * x_value * x_value + bcoeff
+            elif func_type == "sinusoidal":
+                correct_y = a * math.sin(3 * x_value) + bcoeff
+            else:
+                correct_y = a * (math.exp(x_value) - 1) + bcoeff
+            correct_y = max(-1, min(1, correct_y))
+            correct_y = round(correct_y, 2)
+
+            # Estimation with noise, improving within block
+            error_scale = base_error * (1 - 0.3 * t / max(1, trials_per_block - 1))
+            estimation_noise = rng.gauss(0, error_scale)
+            response = correct_y + estimation_noise
+            response = max(-1, min(1, round(response, 2)))
+            estimation_error = round(abs(response - correct_y), 4)
+            is_correct = estimation_error < 0.3
+
+            rt = max(1000, float(np_rng.normal(5000, 1500)))
+
+            trials.append({
+                "trial_part": "stimulus",
+                "trial_index": len(trials) + 1,
+                "block": b,
+                "trial_in_block": t,
+                "x_value": x_value,
+                "correct_y": correct_y,
+                "func_type": func_type,
+                "response": response,
+                "estimation_error": estimation_error,
+                "correct": is_correct,
+                "rt": round(rt, 1),
+                "timed_out": False,
+            })
+
+    return trials
+
+
+@pytest.fixture
+def function_estimation_config():
+    return {"task_id": "function_estimation", "parameters": {"n_trials": 40, "response_keys": [], "response_type": "slider", "response_field": "response", "slider_range": [-100, 100]}}
+
+@pytest.fixture
+def function_estimation_signatures():
+    return {"task_id": "function_estimation", "signatures": [
+        {"name": "above_chance_estimation", "test": "proportion_test", "field": "correct", "filter": {"timed_out": False}, "chance_level": 0.3, "threshold_p": 0.05, "expected_direction": "above_chance", "weight": 1.5},
+        {"name": "within_block_improvement", "test": "correlation_test", "field_x": "trial_in_block", "field_y": "estimation_error", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "negative", "weight": 1.0},
+        {"name": "across_block_improvement", "test": "correlation_test", "field_x": "block", "field_y": "correct", "filter": {"timed_out": False}, "threshold_p": 0.05, "expected_direction": "positive", "weight": 1.0},
+    ]}
+
+@pytest.fixture
+def human_like_function_estimation_data():
+    return _generate_function_estimation_trials(base_error=0.15)
+
+@pytest.fixture
+def random_function_estimation_data():
+    return _generate_function_estimation_trials(base_error=0.5, seed=99)

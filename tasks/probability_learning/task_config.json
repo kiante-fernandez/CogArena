@@ -1,0 +1,15 @@
+{
+    "task_id": "probability_learning",
+    "task_name": "Probability Learning (Binary Choice)",
+    "domain": "reinforcement_learning",
+    "description": "Repeated binary choice task where one option has higher reward probability, testing probability matching vs maximizing",
+    "citation": "Thoma et al. (2025) J Exp Psychol Gen",
+    "psych201_reference": "thoma2025problearn",
+    "parameters": {
+        "n_trials": 100,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "required_fields": ["trial_index", "choice", "reward", "correct", "optimal_side", "rt", "timed_out"]
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "task_id": "loss_aversion",
+    "signatures": [
+        {
+            "name": "loss_aversion_effect",
+            "description": "Higher loss/gain ratio leads to lower acceptance — losses loom larger than gains",
+            "test": "correlation_test",
+            "field_x": "loss_gain_ratio",
+            "field_y": "accept_num",
+            "expected_direction": "negative",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "status_quo_bias",
+            "description": "Overall tendency to reject gambles (prefer status quo) above chance",
+            "test": "proportion_test",
+            "field": "reject",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        },
+        {
+            "name": "rt_conflict_effect",
+            "description": "Slower responses when EV is closer to zero (harder decisions)",
+            "test": "correlation_test",
+            "field_x": "ev_abs",
+            "field_y": "rt",
+            "expected_direction": "negative",
+            "threshold_p": 0.05,
+            "weight": 0.5
+        }
+    ]
+}

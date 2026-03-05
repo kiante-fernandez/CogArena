@@ -1,0 +1,42 @@
+{
+    "task_id": "lexical_decision",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "description": "Proportion of correct word/nonword classifications",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.95,
+            "human_sd": 0.03
+        },
+        {
+            "name": "word_accuracy",
+            "description": "Accuracy for real word stimuli",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false, "stimulus_type": "word"},
+            "human_mean": 0.96,
+            "human_sd": 0.03
+        },
+        {
+            "name": "nonword_accuracy",
+            "description": "Accuracy for nonword stimuli",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false, "stimulus_type": "nonword"},
+            "human_mean": 0.94,
+            "human_sd": 0.04
+        },
+        {
+            "name": "mean_rt",
+            "description": "Mean reaction time on correct trials",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false, "correct": true},
+            "human_mean": 620,
+            "human_sd": 90,
+            "direction": "lower_is_better"
+        }
+    ]
+}

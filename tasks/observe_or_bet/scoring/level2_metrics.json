@@ -1,0 +1,32 @@
+{
+    "task_id": "observe_or_bet",
+    "metrics": [
+        {
+            "name": "observation_rate",
+            "type": "proportion_correct",
+            "field": "is_observe",
+            "filter": {"timed_out": false},
+            "human_mean": 0.30,
+            "human_sd": 0.12,
+            "direction": "neutral"
+        },
+        {
+            "name": "bet_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false, "is_bet": true},
+            "human_mean": 0.70,
+            "human_sd": 0.10,
+            "direction": "higher_better"
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false},
+            "human_mean": 1200,
+            "human_sd": 400,
+            "direction": "neutral"
+        }
+    ]
+}

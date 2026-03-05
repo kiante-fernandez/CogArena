@@ -1,0 +1,35 @@
+{
+    "task_id": "moral_judgment",
+    "signatures": [
+        {
+            "name": "utilitarian_preference",
+            "description": "Preference for saving more lives above chance",
+            "test": "proportion_test",
+            "field": "chose_fewer_deaths",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "omission_bias",
+            "description": "Tendency to prefer inaction (not swerving) over action",
+            "test": "proportion_test",
+            "field": "chose_inaction",
+            "chance_level": 0.5,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        },
+        {
+            "name": "death_count_sensitivity",
+            "description": "Larger difference in death count leads to more utilitarian choice",
+            "test": "correlation_test",
+            "field_x": "death_difference",
+            "field_y": "chose_fewer_deaths_num",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 0.75
+        }
+    ]
+}

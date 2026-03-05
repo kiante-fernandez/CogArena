@@ -1,0 +1,38 @@
+{
+    "task_id": "safe_exploration",
+    "signatures": [
+        {
+            "name": "risk_sensitivity",
+            "description": "Higher optimal choice rate in risky vs safe conditions (more conservative when kraken present)",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false, "risk_condition": "risky"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "exploration_learning",
+            "description": "Optimal choice rate increases over trials within blocks",
+            "test": "correlation_test",
+            "field_x": "trial_in_block",
+            "field_y": "correct",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        },
+        {
+            "name": "above_chance_performance",
+            "description": "Overall performance exceeds chance",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        }
+    ]
+}

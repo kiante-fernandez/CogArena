@@ -1,0 +1,15 @@
+{
+    "task_id": "magnitude_rl",
+    "task_name": "Magnitude RL (Reference-Point Learning)",
+    "domain": "reinforcement_learning",
+    "description": "Two-armed bandit with varying reward magnitudes testing range adaptation and reference-point effects",
+    "citation": "Bavard et al. (2018) Nat Commun",
+    "psych201_reference": "bavard2018magnitude",
+    "parameters": {
+        "n_trials": 120,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "required_fields": ["trial_index", "phase", "context", "reward_magnitude", "arm_chosen", "reward", "correct", "rt", "timed_out"]
+    }
+}

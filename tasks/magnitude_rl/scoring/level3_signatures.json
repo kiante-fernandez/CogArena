@@ -1,0 +1,38 @@
+{
+    "task_id": "magnitude_rl",
+    "signatures": [
+        {
+            "name": "magnitude_effect",
+            "description": "Higher accuracy for high-magnitude reward pairs than chance during learning",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false, "phase": "learning", "reward_magnitude": "high"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "reference_point_adaptation",
+            "description": "In transfer, preference for high-magnitude best symbol over low-magnitude best symbol",
+            "test": "proportion_test",
+            "field": "chose_high_magnitude",
+            "filter": {"timed_out": false, "phase": "transfer"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "learning_improvement",
+            "description": "Accuracy improves over learning trials",
+            "test": "correlation_test",
+            "field_x": "trial_index",
+            "field_y": "correct",
+            "filter": {"timed_out": false, "phase": "learning"},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        }
+    ]
+}

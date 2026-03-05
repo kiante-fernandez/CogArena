@@ -1,0 +1,10 @@
+{
+    "task_id": "insider_attack",
+    "source": "Aggarwal et al. (2023) - Insider Attack Game",
+    "n_participants": 50,
+    "metrics": {
+        "success_rate": {"mean": 0.65, "sd": 0.10},
+        "ev_sensitivity": {"mean": 0.62, "sd": 0.12},
+        "mean_rt": {"mean": 3000, "sd": 1000}
+    }
+}

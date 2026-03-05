@@ -1,0 +1,15 @@
+{
+    "task_id": "loss_aversion",
+    "task_name": "Loss Aversion (Mixed Gambles)",
+    "domain": "decision_making",
+    "description": "Accept or reject mixed gambles with both potential gains and losses to measure loss aversion",
+    "citation": "Spektor et al. (2024) J Exp Psychol Gen",
+    "psych201_reference": "spektor2024lossaversion",
+    "parameters": {
+        "n_trials": 60,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 10000,
+        "required_fields": ["trial_index", "gain", "loss", "ev_gamble", "accept", "accept_num", "rt", "timed_out"]
+    }
+}

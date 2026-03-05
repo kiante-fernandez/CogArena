@@ -1,0 +1,38 @@
+{
+    "task_id": "random_dot_motion",
+    "signatures": [
+        {
+            "name": "ratio_accuracy_effect",
+            "description": "Higher dot ratios (easier discrimination) produce higher accuracy",
+            "test": "correlation_test",
+            "field_x": "ratio",
+            "field_y": "correct",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.5
+        },
+        {
+            "name": "above_chance_accuracy",
+            "description": "Overall accuracy exceeds chance (50%)",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        },
+        {
+            "name": "speed_accuracy_tradeoff",
+            "description": "Faster RTs on easy trials than hard trials (negative correlation between difficulty and RT)",
+            "test": "correlation_test",
+            "field_x": "ratio",
+            "field_y": "rt",
+            "filter": {"timed_out": false, "correct": true},
+            "threshold_p": 0.05,
+            "expected_direction": "negative",
+            "weight": 1.0
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+{
+    "task_id": "moral_judgment",
+    "task_name": "Moral Judgment (Trolley Dilemmas)",
+    "domain": "social_strategic",
+    "description": "Forced-choice moral dilemmas involving autonomous vehicle scenarios with varying victim characteristics",
+    "citation": "Awad et al. (2018) Nature",
+    "psych201_reference": "awad2018moral",
+    "parameters": {
+        "n_trials": 26,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 30000,
+        "required_fields": ["trial_index", "scenario_type", "n_saved_a", "n_saved_b", "chose_fewer_deaths", "chose_intervention", "rt", "timed_out"]
+    }
+}

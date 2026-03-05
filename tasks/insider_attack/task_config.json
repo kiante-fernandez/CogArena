@@ -1,0 +1,15 @@
+{
+    "task_id": "insider_attack",
+    "task_name": "Insider Attack Game",
+    "domain": "strategic_cognition",
+    "description": "Select targets to attack while avoiding monitored computers, adapting to warnings and changing payoffs",
+    "citation": "Aggarwal et al. (2023)",
+    "psych201_reference": "aggarwal2023iag",
+    "parameters": {
+        "n_trials": 100,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 10000,
+        "required_fields": ["trial_index", "round", "trial_in_round", "target", "warning", "action", "reward", "rt", "timed_out"]
+    }
+}

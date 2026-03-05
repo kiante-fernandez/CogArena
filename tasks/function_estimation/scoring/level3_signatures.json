@@ -1,0 +1,38 @@
+{
+    "task_id": "function_estimation",
+    "signatures": [
+        {
+            "name": "above_chance_estimation",
+            "description": "Estimation accuracy exceeds random guessing",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "chance_level": 0.3,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "within_block_improvement",
+            "description": "Estimation error decreases within blocks as pattern is learned",
+            "test": "correlation_test",
+            "field_x": "trial_in_block",
+            "field_y": "estimation_error",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "negative",
+            "weight": 1.0
+        },
+        {
+            "name": "across_block_improvement",
+            "description": "Accuracy improves across blocks with practice",
+            "test": "correlation_test",
+            "field_x": "block",
+            "field_y": "correct",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        }
+    ]
+}

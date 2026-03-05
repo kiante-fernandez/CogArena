@@ -1,0 +1,38 @@
+{
+    "task_id": "confirmation_bias_rl",
+    "signatures": [
+        {
+            "name": "counterfactual_learning",
+            "description": "Higher accuracy with complete (counterfactual) feedback than partial feedback",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false, "feedback_type": "complete"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "partial_above_chance",
+            "description": "Even with partial feedback, accuracy exceeds chance",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false, "feedback_type": "partial"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        },
+        {
+            "name": "learning_curve",
+            "description": "Accuracy improves over trials within each context",
+            "test": "correlation_test",
+            "field_x": "trial_index",
+            "field_y": "correct",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        }
+    ]
+}

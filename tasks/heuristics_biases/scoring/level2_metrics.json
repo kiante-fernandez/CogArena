@@ -1,0 +1,42 @@
+{
+    "task_id": "heuristics_biases",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "description": "Proportion of correct predictions",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.68,
+            "human_sd": 0.10
+        },
+        {
+            "name": "late_block_accuracy",
+            "description": "Accuracy on later trials within each block (trials 3-4)",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.75,
+            "human_sd": 0.12
+        },
+        {
+            "name": "ttb_usage",
+            "description": "Proportion of trials where response matched take-the-best heuristic",
+            "type": "proportion_correct",
+            "field": "used_ttb",
+            "filter": {"timed_out": false},
+            "human_mean": 0.55,
+            "human_sd": 0.15
+        },
+        {
+            "name": "mean_rt",
+            "description": "Mean reaction time on responded trials",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false},
+            "human_mean": 3200,
+            "human_sd": 800,
+            "direction": "lower_is_better"
+        }
+    ]
+}

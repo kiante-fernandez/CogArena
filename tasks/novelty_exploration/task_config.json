@@ -1,0 +1,15 @@
+{
+    "task_id": "novelty_exploration",
+    "task_name": "Novelty Exploration (Directed Exploration)",
+    "domain": "exploration",
+    "description": "Choose between novel and familiar options to earn rewards, testing novelty-driven exploration",
+    "citation": "Nussenbaum et al. (2023) eLife",
+    "psych201_reference": "nussenbaum2023novelty",
+    "parameters": {
+        "n_trials": 150,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "required_fields": ["trial_index", "block", "trial_in_block", "chosen_option", "chosen_novelty", "reward", "correct", "rt", "timed_out"]
+    }
+}

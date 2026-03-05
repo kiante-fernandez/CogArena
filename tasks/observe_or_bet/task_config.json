@@ -1,0 +1,15 @@
+{
+    "task_id": "observe_or_bet",
+    "task_name": "Observe or Bet (Information Seeking)",
+    "domain": "exploration",
+    "description": "Choose to observe (free info), guess blue, or guess red to maximize points, testing information-seeking tendency",
+    "citation": "Anvari et al. (2024) Nat Commun",
+    "psych201_reference": "anvari2024observe_bet",
+    "parameters": {
+        "n_trials": 125,
+        "response_keys": ["f", "j", "k"],
+        "response_type": "keypress",
+        "response_deadline_ms": 5000,
+        "required_fields": ["trial_index", "block", "trial_in_block", "action", "light_color", "reward", "correct", "rt", "timed_out"]
+    }
+}

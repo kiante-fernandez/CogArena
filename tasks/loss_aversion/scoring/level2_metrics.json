@@ -1,0 +1,31 @@
+{
+    "task_id": "loss_aversion",
+    "metrics": [
+        {
+            "name": "overall_accept_rate",
+            "description": "Proportion of gambles accepted",
+            "type": "proportion_correct",
+            "field": "accept",
+            "human_mean": 0.45,
+            "human_sd": 0.15
+        },
+        {
+            "name": "accept_rate_positive_ev",
+            "description": "Accept rate for gambles with positive expected value",
+            "type": "proportion_correct",
+            "field": "accept",
+            "filter": {"ev_positive": true},
+            "human_mean": 0.60,
+            "human_sd": 0.15
+        },
+        {
+            "name": "mean_rt",
+            "description": "Mean reaction time across all trials",
+            "type": "mean",
+            "field": "rt",
+            "human_mean": 1500,
+            "human_sd": 500,
+            "direction": "lower_is_better"
+        }
+    ]
+}

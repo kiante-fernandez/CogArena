@@ -1,0 +1,10 @@
+{
+    "task_id": "causal_reasoning",
+    "source": "Cohen et al. (2020) - Causal inference mining task",
+    "n_participants": 45,
+    "metrics": {
+        "overall_gold_rate": {"mean": 0.60, "sd": 0.08},
+        "better_mine_rate": {"mean": 0.65, "sd": 0.12},
+        "mean_rt": {"mean": 1500, "sd": 500}
+    }
+}

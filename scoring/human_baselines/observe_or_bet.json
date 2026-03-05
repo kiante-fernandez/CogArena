@@ -1,0 +1,10 @@
+{
+    "task_id": "observe_or_bet",
+    "source": "Anvari et al. (2024) Nature Communications",
+    "note": "Humans observe ~25-35% of trials, decreasing over time as they learn probability. Bet accuracy ~70% on incentivized blocks.",
+    "baselines": {
+        "observation_rate": { "mean": 0.30, "sd": 0.12, "n": 300 },
+        "bet_accuracy": { "mean": 0.70, "sd": 0.10, "n": 300 },
+        "mean_rt": { "mean": 1200, "sd": 400, "n": 300 }
+    }
+}

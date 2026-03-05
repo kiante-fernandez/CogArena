@@ -1,0 +1,22 @@
+{
+    "task_id": "probability_learning",
+    "source": "Thoma et al. (2025) J Exp Psychol Gen; Vulkan (2000) meta-analysis",
+    "note": "Humans typically show probability matching (choosing the better option ~70% when it wins 70%) rather than maximizing (choosing it 100%). Win-stay rate ~0.65-0.75.",
+    "baselines": {
+        "overall_accuracy": {
+            "mean": 0.62,
+            "sd": 0.08,
+            "n": 60
+        },
+        "optimal_choice_rate": {
+            "mean": 0.72,
+            "sd": 0.12,
+            "n": 60
+        },
+        "mean_rt": {
+            "mean": 650,
+            "sd": 200,
+            "n": 60
+        }
+    }
+}

@@ -1,0 +1,34 @@
+{
+    "task_id": "function_estimation",
+    "metrics": [
+        {
+            "name": "mean_estimation_error",
+            "description": "Mean absolute estimation error (lower is better)",
+            "type": "mean",
+            "field": "estimation_error",
+            "filter": {"timed_out": false},
+            "human_mean": 0.18,
+            "human_sd": 0.08,
+            "direction": "lower_is_better"
+        },
+        {
+            "name": "accuracy_rate",
+            "description": "Proportion of estimates within acceptable error",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.70,
+            "human_sd": 0.12
+        },
+        {
+            "name": "mean_rt",
+            "description": "Mean response time on slider trials",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false},
+            "human_mean": 5000,
+            "human_sd": 2000,
+            "direction": "lower_is_better"
+        }
+    ]
+}

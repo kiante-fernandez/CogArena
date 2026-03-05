@@ -1,0 +1,10 @@
+{
+    "task_id": "loss_aversion",
+    "source": "Spektor et al. (2024); Tom et al. (2007) Science; Tversky & Kahneman (1991)",
+    "note": "Literature estimates. Loss aversion lambda typically ~2.0 (losses weighted 2x gains).",
+    "baselines": {
+        "overall_accept_rate": {"mean": 0.45, "sd": 0.15, "n": 100},
+        "accept_rate_positive_ev": {"mean": 0.60, "sd": 0.15, "n": 100},
+        "mean_rt": {"mean": 1500, "sd": 500, "n": 100}
+    }
+}

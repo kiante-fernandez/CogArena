@@ -1,0 +1,9 @@
+{
+    "task_id": "moral_judgment",
+    "source": "Awad et al. (2018) Nature; Moral Machine Experiment",
+    "note": "Literature estimates from large-scale Moral Machine data (~40M decisions).",
+    "baselines": {
+        "utilitarian_rate": {"mean": 0.63, "sd": 0.15, "n": 100},
+        "mean_rt": {"mean": 5000, "sd": 3000, "n": 100}
+    }
+}

@@ -110,7 +110,7 @@ async def run_all_tasks(
     agent_name: str = "BrowserUseAgent",
     model_name: str = "claude-sonnet-4-20250514",
     no_deadline: bool = True,
-    task_timeout: float = 10000.0,  # 10 minutes per task
+    task_timeout: float = 600.0,  # 10 minutes per task
     tasks_filter: list[str] | None = None,
     short: bool = False,
 ):

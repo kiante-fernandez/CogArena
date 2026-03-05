@@ -1,0 +1,11 @@
+{
+    "task_id": "random_dot_motion",
+    "source": "Pirrone et al. (2018) - Dot magnitude discrimination",
+    "n_participants": 30,
+    "metrics": {
+        "overall_accuracy": {"mean": 0.78, "sd": 0.08},
+        "easy_accuracy": {"mean": 0.92, "sd": 0.05},
+        "hard_accuracy": {"mean": 0.62, "sd": 0.10},
+        "mean_rt": {"mean": 850, "sd": 180}
+    }
+}

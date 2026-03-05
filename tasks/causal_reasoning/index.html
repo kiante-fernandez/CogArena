@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CogArena - Causal Reasoning</title>
+    <script src="/jsPsych-8.2.3/packages/jspsych/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-html-keyboard-response/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-instructions/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-call-function/dist/index.browser.js"></script>
+    <link rel="stylesheet" href="/jsPsych-8.2.3/packages/jspsych/css/jspsych.css">
+    <style>
+        .mine-container { display: flex; justify-content: center; gap: 80px; margin: 20px; }
+        .mine-box { font-size: 22px; padding: 25px 35px; border: 3px solid #8B4513; border-radius: 15px; min-width: 150px; text-align: center; background: #FFF8DC; }
+        .mine-label { font-weight: bold; font-size: 24px; margin-bottom: 10px; }
+        .key-hint { font-size: 22px; color: #666; margin-top: 10px; }
+        .feedback-gold { color: #DAA520; font-size: 40px; font-weight: bold; }
+        .feedback-rocks { color: #808080; font-size: 40px; font-weight: bold; }
+        .territory-label { font-size: 18px; color: #1565c0; margin-bottom: 10px; font-weight: bold; }
+        .trial-counter { font-size: 20px; color: #888; margin-bottom: 10px; }
+        .fixation { font-size: 48px; }
+        .agent-question { font-size: 22px; margin: 15px; }
+        .feedback-correct { color: #2e7d32; font-size: 36px; font-weight: bold; }
+        .feedback-incorrect { color: #c62828; font-size: 36px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

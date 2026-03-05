@@ -1,0 +1,11 @@
+{
+    "task_id": "heuristics_biases",
+    "source": "Binz et al. (2022) - Heuristics from bounded meta-learned inference",
+    "n_participants": 28,
+    "metrics": {
+        "overall_accuracy": {"mean": 0.68, "sd": 0.10},
+        "late_block_accuracy": {"mean": 0.75, "sd": 0.12},
+        "ttb_usage": {"mean": 0.55, "sd": 0.15},
+        "mean_rt": {"mean": 3200, "sd": 800}
+    }
+}

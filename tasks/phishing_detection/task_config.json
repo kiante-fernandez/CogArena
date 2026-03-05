@@ -1,0 +1,15 @@
+{
+    "task_id": "phishing_detection",
+    "task_name": "Phishing Detection",
+    "domain": "applied_cognition",
+    "description": "Classify emails as legitimate or phishing, learning from feedback over trials",
+    "citation": "Singh et al. (2019)",
+    "psych201_reference": "singh2019phishing",
+    "parameters": {
+        "n_trials": 60,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 15000,
+        "required_fields": ["trial_index", "phase", "email_type", "response", "correct", "rt", "timed_out"]
+    }
+}

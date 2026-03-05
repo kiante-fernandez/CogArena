@@ -1,0 +1,22 @@
+{
+    "task_id": "moral_judgment",
+    "metrics": [
+        {
+            "name": "utilitarian_rate",
+            "description": "Rate of choosing the outcome with fewer total deaths",
+            "type": "proportion_correct",
+            "field": "chose_fewer_deaths",
+            "human_mean": 0.63,
+            "human_sd": 0.15
+        },
+        {
+            "name": "mean_rt",
+            "description": "Mean reaction time for moral decisions",
+            "type": "mean",
+            "field": "rt",
+            "human_mean": 5000,
+            "human_sd": 3000,
+            "direction": "lower_is_better"
+        }
+    ]
+}

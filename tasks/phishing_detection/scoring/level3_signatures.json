@@ -1,0 +1,38 @@
+{
+    "task_id": "phishing_detection",
+    "signatures": [
+        {
+            "name": "learning_from_feedback",
+            "description": "Accuracy improves from pre-training to post-training phase",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false, "phase": "post"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "above_chance_classification",
+            "description": "Overall classification accuracy exceeds chance",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        },
+        {
+            "name": "training_improvement",
+            "description": "Accuracy improves over training trials",
+            "test": "correlation_test",
+            "field_x": "trial_index",
+            "field_y": "correct",
+            "filter": {"timed_out": false, "phase": "train"},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "task_id": "context_effects",
+    "source": "Spektor et al. (2019); Huber et al. (1982) attraction; Simonson (1989) compromise",
+    "note": "Literature estimates for context effects in multi-alternative choice.",
+    "baselines": {
+        "overall_reward": {"mean": 65, "sd": 15, "n": 100},
+        "target_choice_rate": {"mean": 0.45, "sd": 0.12, "n": 100},
+        "mean_rt": {"mean": 1500, "sd": 500, "n": 100}
+    }
+}

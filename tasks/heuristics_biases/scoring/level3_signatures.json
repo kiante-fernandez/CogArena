@@ -1,0 +1,38 @@
+{
+    "task_id": "heuristics_biases",
+    "signatures": [
+        {
+            "name": "above_chance_accuracy",
+            "description": "Prediction accuracy exceeds chance (50%)",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "within_block_learning",
+            "description": "Accuracy improves over trials within each block",
+            "test": "correlation_test",
+            "field_x": "trial_in_block",
+            "field_y": "correct",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        },
+        {
+            "name": "overall_learning",
+            "description": "Accuracy improves over blocks (later planets are learned faster)",
+            "test": "correlation_test",
+            "field_x": "block",
+            "field_y": "correct",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        }
+    ]
+}

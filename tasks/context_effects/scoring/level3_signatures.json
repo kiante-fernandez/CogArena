@@ -1,0 +1,37 @@
+{
+    "task_id": "context_effects",
+    "signatures": [
+        {
+            "name": "attraction_effect",
+            "description": "Target chosen more than chance when decoy is present (attraction effect)",
+            "test": "proportion_test",
+            "filter": {"effect_type": "attraction"},
+            "field": "is_target",
+            "chance_level": 0.333,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "compromise_effect",
+            "description": "Middle option chosen more than chance when extremes frame it as compromise",
+            "test": "proportion_test",
+            "filter": {"effect_type": "compromise"},
+            "field": "is_target",
+            "chance_level": 0.333,
+            "expected_direction": "above_chance",
+            "threshold_p": 0.05,
+            "weight": 1.0
+        },
+        {
+            "name": "learning_improvement",
+            "description": "Reward improves over trials within blocks",
+            "test": "correlation_test",
+            "field_x": "trial_in_block",
+            "field_y": "reward_chosen",
+            "expected_direction": "positive",
+            "threshold_p": 0.05,
+            "weight": 0.5
+        }
+    ]
+}

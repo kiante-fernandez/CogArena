@@ -1,0 +1,15 @@
+{
+    "task_id": "lexical_decision",
+    "task_name": "Lexical Decision Task",
+    "domain": "language",
+    "description": "Classify letter strings as real words or nonwords, measuring word frequency and lexicality effects",
+    "citation": "Guenther et al. (2020) Behavior Research Methods",
+    "psych201_reference": "guenther2020LDT",
+    "parameters": {
+        "n_trials": 120,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 3000,
+        "required_fields": ["trial_index", "stimulus", "stimulus_type", "word_frequency", "correct", "response", "rt", "timed_out"]
+    }
+}

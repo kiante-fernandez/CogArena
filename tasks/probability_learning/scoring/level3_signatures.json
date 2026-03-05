@@ -1,0 +1,38 @@
+{
+    "task_id": "probability_learning",
+    "signatures": [
+        {
+            "name": "probability_matching",
+            "description": "Choice proportion for optimal side exceeds chance (probability matching or maximizing)",
+            "test": "proportion_test",
+            "field": "chose_optimal",
+            "filter": {"timed_out": false},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "win_stay_effect",
+            "description": "Participants tend to repeat choices that were rewarded",
+            "test": "proportion_test",
+            "field": "stayed",
+            "filter": {"timed_out": false, "prev_reward": 1},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        },
+        {
+            "name": "learning_curve",
+            "description": "Optimal choice rate increases over trials",
+            "test": "correlation_test",
+            "field_x": "trial_index",
+            "field_y": "chose_optimal",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        }
+    ]
+}

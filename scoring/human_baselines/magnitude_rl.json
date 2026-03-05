@@ -1,0 +1,27 @@
+{
+    "task_id": "magnitude_rl",
+    "source": "Bavard et al. (2018) Nature Communications",
+    "note": "Values estimated from published data. Magnitude effect: ~10% higher accuracy for high-magnitude pairs. Transfer shows irrational preference for high-magnitude symbols.",
+    "baselines": {
+        "learning_accuracy": {
+            "mean": 0.68,
+            "sd": 0.10,
+            "n": 40
+        },
+        "high_magnitude_accuracy": {
+            "mean": 0.72,
+            "sd": 0.10,
+            "n": 40
+        },
+        "transfer_accuracy": {
+            "mean": 0.65,
+            "sd": 0.12,
+            "n": 40
+        },
+        "mean_rt": {
+            "mean": 700,
+            "sd": 200,
+            "n": 40
+        }
+    }
+}

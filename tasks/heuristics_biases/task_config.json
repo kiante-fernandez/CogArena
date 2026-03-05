@@ -1,0 +1,15 @@
+{
+    "task_id": "heuristics_biases",
+    "task_name": "Heuristics & Biases (Cue Competition)",
+    "domain": "judgment",
+    "description": "Predict outcomes based on multiple cue attributes, testing attribute weighting and heuristic use",
+    "citation": "Binz et al. (2022) NeurIPS",
+    "psych201_reference": "binz2022heuristics",
+    "parameters": {
+        "n_trials": 40,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 10000,
+        "required_fields": ["trial_index", "block", "cue_values", "correct_answer", "correct", "response", "rt", "timed_out"]
+    }
+}

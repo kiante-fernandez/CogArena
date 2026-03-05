@@ -1,0 +1,31 @@
+{
+    "task_id": "context_effects",
+    "metrics": [
+        {
+            "name": "overall_reward",
+            "description": "Mean reward earned per trial",
+            "type": "mean",
+            "field": "reward_chosen",
+            "human_mean": 65,
+            "human_sd": 15
+        },
+        {
+            "name": "target_choice_rate",
+            "description": "Rate of choosing the target option in test trials",
+            "type": "proportion_correct",
+            "field": "is_target",
+            "filter": {"phase": "test"},
+            "human_mean": 0.45,
+            "human_sd": 0.12
+        },
+        {
+            "name": "mean_rt",
+            "description": "Mean reaction time",
+            "type": "mean",
+            "field": "rt",
+            "human_mean": 1500,
+            "human_sd": 500,
+            "direction": "lower_is_better"
+        }
+    ]
+}

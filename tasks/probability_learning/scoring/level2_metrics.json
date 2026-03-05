@@ -1,0 +1,32 @@
+{
+    "task_id": "probability_learning",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.62,
+            "human_sd": 0.08,
+            "direction": "higher_better"
+        },
+        {
+            "name": "optimal_choice_rate",
+            "type": "proportion_correct",
+            "field": "chose_optimal",
+            "filter": {"timed_out": false},
+            "human_mean": 0.72,
+            "human_sd": 0.12,
+            "direction": "higher_better"
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false},
+            "human_mean": 650,
+            "human_sd": 200,
+            "direction": "neutral"
+        }
+    ]
+}

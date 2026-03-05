@@ -1,0 +1,11 @@
+{
+    "task_id": "lexical_decision",
+    "source": "Guenther et al. (2020) - Lexical decision task",
+    "n_participants": 40,
+    "metrics": {
+        "overall_accuracy": {"mean": 0.95, "sd": 0.03},
+        "word_accuracy": {"mean": 0.96, "sd": 0.03},
+        "nonword_accuracy": {"mean": 0.94, "sd": 0.04},
+        "mean_rt": {"mean": 620, "sd": 90}
+    }
+}

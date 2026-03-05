@@ -1,0 +1,17 @@
+{
+    "task_id": "function_estimation",
+    "task_name": "Function Estimation",
+    "domain": "judgment",
+    "description": "Estimate underlying function from scatterplot data points using slider predictions",
+    "citation": "Little et al. (2024)",
+    "psych201_reference": "little2024functionestimation",
+    "parameters": {
+        "n_trials": 40,
+        "response_keys": [],
+        "response_type": "slider",
+        "response_field": "response",
+        "slider_range": [-100, 100],
+        "response_deadline_ms": 15000,
+        "required_fields": ["trial_index", "block", "trial_in_block", "x_value", "response", "correct_y", "estimation_error", "timed_out"]
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "task_id": "novelty_exploration",
+    "metrics": [
+        {
+            "name": "overall_reward_rate",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.55,
+            "human_sd": 0.08,
+            "direction": "higher_better"
+        },
+        {
+            "name": "novel_choice_rate",
+            "type": "proportion_correct",
+            "field": "chose_novel",
+            "filter": {"timed_out": false},
+            "human_mean": 0.45,
+            "human_sd": 0.12,
+            "direction": "neutral"
+        },
+        {
+            "name": "mean_rt",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false},
+            "human_mean": 900,
+            "human_sd": 250,
+            "direction": "neutral"
+        }
+    ]
+}
