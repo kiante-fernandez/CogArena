@@ -1,6 +1,6 @@
 # CogArena
 
-A benchmark that tests AI agents on interactive behavioral experiments through a web browser. 24 tasks span 7 cognitive domains — perception & attention, decision-making, exploration-exploitation, reinforcement learning, memory & learning, social & strategic cognition, and causal reasoning.
+A benchmark that tests AI agents on interactive behavioral experiments through a web browser. 40 tasks span perception, attention, decision-making, reinforcement learning, exploration, memory, social cognition, language, and more.
 
 Agents interact with real jsPsych experiments (the same framework used on Prolific/MTurk), and their behavioral data is scored across three levels: task completion, performance accuracy, and human-like behavioral signatures.
 
@@ -36,66 +36,50 @@ pytest scoring/tests/ -v        # Scoring tests
 pytest harness/tests/ -v        # API + field alignment tests
 ```
 
-## Tasks (24)
+## Tasks (40)
 
-### Perception & Attention
-
-| Task | Trials | Response | Key Behaviors |
-|------|--------|----------|---------------|
-| Stroop | 96 | Keypress (d/f/j/k) | Stroop interference, post-error slowing, congruency sequence effect |
-| Go/No-Go | 100 | Keypress (f) / Withhold | Response inhibition, commission vs omission errors, post-error slowing |
-| Flanker | 96 | Keypress (f/j) | Flanker interference, accuracy cost, congruency sequence effect |
-| Simple/Choice RT | 80 | Keypress (space/d/f/j/k) | Hick's Law (RT scales with log₂ alternatives), speed-accuracy tradeoff |
-| Navon Global/Local | 80 | Keypress (f/j) | Global precedence, asymmetric interference, congruency effect |
-
-### Decision-Making
-
-| Task | Trials | Response | Key Behaviors |
-|------|--------|----------|---------------|
-| Risky Choice | 60 | Keypress (f/j) | Risk aversion in gains, loss aversion framing, EV sensitivity |
-| Iowa Gambling Task | 100 | Keypress (d/f/j/k) | Learning effect, above-chance advantageous choices, deck avoidance |
-| Intertemporal Choice | 60 | Keypress (f/j) | Present bias, hyperbolic discounting, magnitude effect |
-| Decisions from Experience | 20 | Keypress (f/j/space) | Description-experience gap, sampling frugality, recency |
-| BART | 30 | Keypress (f/j) | Risk-taking above floor, post-pop adjustment, earnings above zero |
-
-### Exploration-Exploitation
-
-| Task | Trials | Response | Key Behaviors |
-|------|--------|----------|---------------|
-| 2-Armed Bandit | 80 | Keypress (f/j) | Horizon-dependent exploration, win-stay, directed exploration |
-| Restless Bandit | 100 | Keypress (f/j) | Above-chance tracking, win-stay/lose-shift, recency-weighted updating |
-
-### Reinforcement Learning
-
-| Task | Trials | Response | Key Behaviors |
-|------|--------|----------|---------------|
-| Reversal Learning | 120 | Keypress (f/j) | Pre-reversal learning, perseveration, post-reversal recovery |
-| Two-Step Task | 100 | Keypress (f/j) | Model-based index (reward × transition interaction), above-chance performance |
-| Probabilistic Classification | 100 | Keypress (f/j) | Above-chance accuracy, learning curve, cue utilization |
-
-### Memory & Learning
-
-| Task | Trials | Response | Key Behaviors |
-|------|--------|----------|---------------|
-| N-Back (2-back) | 120 | Keypress (f/j) | Above-chance discrimination, lure susceptibility, post-error slowing |
-| Shepard Category Learning | 144 | Keypress (f/j) | Above-chance learning, rule complexity hierarchy, generalization |
-| Serial Recall | 10 lists | Button click | Primacy effect, recency effect, U-shaped serial position curve |
-
-### Social & Strategic
-
-| Task | Trials | Response | Key Behaviors |
-|------|--------|----------|---------------|
-| Trust Game | 15 | Slider (0-10) | Non-zero trust, reciprocity sensitivity, trustee adaptation |
-| Dictator Game | 20 | Slider (0-10) | Non-zero giving, giving consistency, prosocial behavior |
-| Prisoner's Dilemma | 50 | Keypress (f/j) | Above-chance cooperation, tit-for-tat, forgiveness |
-| Ultimatum Game | 20 | Slider + Keypress | Fair offers (~40-50%), rejection of low offers, minimum acceptable offer |
-| Public Goods Game | 10 | Slider (0-20) | Conditional cooperation, declining contributions, group sensitivity |
-
-### Causal Reasoning
-
-| Task | Trials | Response | Key Behaviors |
-|------|--------|----------|---------------|
-| Contingency Judgment | 80 obs + ratings | Slider (0-100) | ΔP sensitivity, outcome density bias, above-chance discrimination |
+| Task | Description |
+|------|-------------|
+| BART | Inflate balloons for rewards with risk of popping |
+| Category Learning | Classify stimuli into categories based on binary features |
+| Causal Reasoning | Choose between mines and judge hidden agent interventions |
+| Confirmation Bias RL | Two-armed bandit with partial vs complete feedback |
+| Context Effects | Three-option choice with decoys (attraction/compromise) |
+| Contingency Judgment | Judge causal strength from observed co-occurrences |
+| Decisions from Experience | Sample from options before making a final choice |
+| Dictator Game | Allocate money between yourself and anonymous partners |
+| Flanker | Identify central arrow direction while ignoring flankers |
+| Function Estimation | Estimate underlying function from scatterplot data via slider |
+| Go/No-Go | Respond to go stimuli while withholding to no-go stimuli |
+| Heuristics & Biases | Predict outcomes from multiple cue attributes |
+| Insider Attack | Select targets to attack while avoiding monitoring |
+| Intertemporal Choice | Choose between smaller-sooner and larger-later rewards |
+| Iowa Gambling Task | Choose from four decks with different reward/punishment |
+| Lexical Decision | Classify letter strings as real words or nonwords |
+| Loss Aversion | Accept or reject mixed gambles with gains and losses |
+| Magnitude RL | Two-armed bandit with varying reward magnitudes |
+| Moral Judgment | Forced-choice moral dilemmas (autonomous vehicle scenarios) |
+| N-Back (2-back) | Respond when current letter matches the one 2 back |
+| Navon Global/Local | Identify letters at global or local level of hierarchical stimuli |
+| Novelty Exploration | Choose between novel and familiar options for rewards |
+| Observe or Bet | Choose to observe (free info) or guess to earn/lose points |
+| Phishing Detection | Classify emails as legitimate or phishing with feedback |
+| Prisoner's Dilemma | Repeated cooperation-defection game against tit-for-tat |
+| Probabilistic Classification | Predict outcomes from probabilistic cue combinations |
+| Probability Learning | Repeated binary choice with asymmetric reward probabilities |
+| Public Goods Game | Contribute to shared pool with simulated co-players |
+| Random Dot Motion | Compare dot arrays to identify which has more dots |
+| Restless Bandit | Two-armed bandit with drifting reward distributions |
+| Reversal Learning | Learn rewarded stimulus, then adapt after reversal |
+| Risky Choice | Binary choices between safe and risky options |
+| Safe Exploration | Choose between safe and risky options across zones |
+| Serial Recall | Study word lists and recall them in order |
+| Simple/Choice RT | Respond to stimuli under 1, 2, or 4 alternatives |
+| Stroop | Name ink color of color words, ignoring word meaning |
+| Trust Game | Investment game with partners of varying trustworthiness |
+| Two-Armed Bandit | Explore-exploit tradeoff with horizon manipulation |
+| Two-Step Task | Two-stage Markov decision task with common/rare transitions |
+| Ultimatum Game | Propose and respond to monetary offers |
 
 ## Running Agents
 
@@ -215,42 +199,24 @@ cogarena/
 │   ├── composite_score.py      # Weighted composite (0-100)
 │   ├── score_session.py        # Scoring entry point
 │   ├── analysis_templates/     # Statistical test implementations
-│   ├── human_baselines/        # Reference stats per task (24 files)
+│   ├── human_baselines/        # Reference stats per task (40 files)
 │   └── tests/                  # Scoring tests
 ├── templates/                  # Jinja2 website templates
 ├── static/                     # CSS, JS, and skill.md
-├── tasks/                      # 24 jsPsych experiments (auto-discovered)
-│   ├── stroop/                 # Each task contains:
-│   ├── go_nogo/                #   index.html, experiment.js,
-│   ├── flanker/                #   task_config.json,
-│   ├── simple_choice_rt/       #   scoring/level2_metrics.json,
-│   ├── navon/                  #   scoring/level3_signatures.json
-│   ├── two_armed_bandit/
-│   ├── restless_bandit/
-│   ├── risky_choice/
-│   ├── iowa_gambling/
-│   ├── intertemporal_choice/
-│   ├── decisions_from_experience/
-│   ├── bart/
-│   ├── reversal_learning/
-│   ├── two_step/
-│   ├── probabilistic_classification/
-│   ├── n_back/
-│   ├── category_learning/
-│   ├── serial_recall/
-│   ├── trust_game/
-│   ├── dictator_game/
-│   ├── prisoners_dilemma/
-│   ├── ultimatum_game/
-│   ├── public_goods/
-│   └── contingency_judgment/
+├── tasks/                      # 40 jsPsych experiments (auto-discovered)
+│   └── {task_id}/              # Each task contains:
+│       ├── index.html          #   HTML entry point
+│       ├── experiment.js       #   jsPsych experiment
+│       ├── task_config.json    #   Metadata and parameters
+│       └── scoring/            #   level2_metrics.json,
+│                               #   level3_signatures.json
 ├── paper/                      # NeurIPS paper (LaTeX)
 └── jsPsych-8.2.3/             # Vendored jsPsych library
 ```
 
 ## Psych-101/201 Overlap
 
-14 of CogArena's 24 tasks have direct counterparts in the [Psych-101](https://huggingface.co/datasets/marcelbinz/Psych-101) or [Psych-201](https://github.com/marcelbinz/Psych-201) text-based datasets, enabling direct comparison of LLM behavior in text-transcript vs. interactive-browser settings.
+30 of CogArena's 40 tasks have direct counterparts in [Psych-101](https://huggingface.co/datasets/marcelbinz/Psych-101) or [Psych-201](https://github.com/marcelbinz/Psych-201), enabling direct comparison of LLM behavior in text-transcript vs. interactive-browser settings.
 
 | CogArena Task | Psych-101 | Psych-201 |
 |---|---|---|
@@ -268,6 +234,22 @@ cogarena/
 | Shepard Category Learning | `shepard_categorization` | — |
 | BART | `balloon_analog_risk_task` | — |
 | Navon Global/Local | — | `busch2024_navon` |
+| Loss Aversion | — | `spektor2024lossaversion` |
+| Context Effects | — | `spektor2019contexteffects` |
+| Moral Judgment | — | `awad2018moral` |
+| Confirmation Bias RL | — | `palminteri2017confirmation` |
+| Magnitude RL | — | `bavard2018magnitude` |
+| Probability Learning | — | `thoma2025problearn` |
+| Novelty Exploration | — | `nussenbaum2023novelty` |
+| Safe Exploration | — | `witte2024safe_exploration` |
+| Observe or Bet | — | `anvari2024observe_bet` |
+| Random Dot Motion | — | `pirrone_2018_dots` |
+| Lexical Decision | — | `guenther2020LDT` |
+| Heuristics & Biases | — | `binz2022heuristics` |
+| Phishing Detection | — | `singh2019phishing` |
+| Causal Reasoning | — | `cohen2020causal` |
+| Insider Attack | — | `aggarwal2023iag` |
+| Function Estimation | — | `little2024functionestimation` |
 
 ## Roadmap
 
@@ -279,9 +261,10 @@ cogarena/
 | 4 | Done | Benchmark website, API readiness |
 | 5 | Done | 5 new tasks (Go/No-Go, Flanker, IGT, Dictator, Reversal Learning) — 10 total |
 | 6 | Done | Agent evaluation framework, reference agents |
-| 7 | Done | 14 new tasks — 24 total across 7 domains, multi-provider agent support |
-| 8 | Next | Run AI agent evaluations (Browser-Use + OpenAI/Gemini) |
-| 9 | Planned | Human baselines via Prolific |
+| 7 | Done | 14 new tasks — 24 total, multi-provider agent support |
+| 8 | Done | 16 new tasks from Psych-201 — 40 total |
+| 9 | Next | Run AI agent evaluations (Browser-Use + OpenAI/Gemini) |
+| 10 | Planned | Human baselines via Prolific |
 
 ## Citation
 
