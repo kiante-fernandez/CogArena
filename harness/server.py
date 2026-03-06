@@ -1,4 +1,5 @@
 import json
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -32,8 +33,14 @@ DOMAIN_LABELS = {
 }
 
 
+_tasks_meta_cache: list[dict] | None = None
+
+
 def _load_tasks_meta() -> list[dict]:
-    """Load task metadata from all task_config.json files."""
+    """Load task metadata from all task_config.json files (cached after first call)."""
+    global _tasks_meta_cache
+    if _tasks_meta_cache is not None:
+        return _tasks_meta_cache
     tasks = []
     for task_dir in sorted(settings.TASKS_DIR.iterdir()):
         config_path = task_dir / "task_config.json"
@@ -61,12 +68,14 @@ def _load_tasks_meta() -> list[dict]:
             "n_trials": params.get("n_trials", 0),
             "n_signatures": n_sigs,
         })
+    _tasks_meta_cache = tasks
     return tasks
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    settings.DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if not os.environ.get("VERCEL"):
+        settings.DATA_DIR.mkdir(parents=True, exist_ok=True)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -218,7 +227,32 @@ async def submit_data(session_id: str, task_id: str, body: TrialDataSubmission):
     return {"status": "ok", "session_id": session_id, "task_id": task_id}
 
 
-@app.post("/api/evaluate/{session_id}", summary="Trigger scoring for a session")
+@app.post("/api/evaluate/{session_id}/{task_id}", summary="Score a single task in a session")
+async def evaluate_task(session_id: str, task_id: str):
+    async with async_session_factory() as db:
+        mgr = SessionManager(db, settings.TASKS_DIR)
+        task_results = await mgr.get_all_task_results(session_id)
+        tr = next((t for t in task_results if t.task_id == task_id), None)
+        if not tr:
+            raise HTTPException(status_code=404, detail=f"No data for task {task_id}")
+
+        trial_data = json.loads(tr.trial_data)
+        result = score_task(trial_data, tr.task_id, settings.TASKS_DIR)
+        composite_info = result["composite"]
+        await mgr.save_score(
+            session_id=session_id,
+            task_id=tr.task_id,
+            l1=result["l1"]["score"],
+            l2=result["l2"]["score"],
+            l3=result["l3"]["score"],
+            composite=composite_info["composite_score"],
+            details=result,
+        )
+
+    return {"status": "scored", "session_id": session_id, "task_id": task_id}
+
+
+@app.post("/api/evaluate/{session_id}", summary="Trigger scoring for all tasks in a session")
 async def evaluate_session(session_id: str):
     async with async_session_factory() as db:
         mgr = SessionManager(db, settings.TASKS_DIR)
@@ -265,26 +299,27 @@ async def get_leaderboard():
         return {"entries": entries}
 
 
-# --- Static Files (mounted last) ---
+# --- Static Files (mounted last, skipped on Vercel where CDN serves them) ---
 
-static_dir = PROJECT_ROOT / "static"
-if static_dir.exists():
-    app.mount(
-        "/static",
-        StaticFiles(directory=str(static_dir)),
-        name="static",
-    )
+if not os.environ.get("VERCEL"):
+    static_dir = PROJECT_ROOT / "static"
+    if static_dir.exists():
+        app.mount(
+            "/static",
+            StaticFiles(directory=str(static_dir)),
+            name="static",
+        )
 
-if settings.JSPSYCH_DIR.exists():
-    app.mount(
-        "/jsPsych-8.2.3",
-        StaticFiles(directory=str(settings.JSPSYCH_DIR)),
-        name="jspsych",
-    )
+    if settings.JSPSYCH_DIR.exists():
+        app.mount(
+            "/jsPsych-8.2.3",
+            StaticFiles(directory=str(settings.JSPSYCH_DIR)),
+            name="jspsych",
+        )
 
-if settings.TASKS_DIR.exists():
-    app.mount(
-        "/tasks",
-        StaticFiles(directory=str(settings.TASKS_DIR), html=True),
-        name="tasks",
-    )
+    if settings.TASKS_DIR.exists():
+        app.mount(
+            "/tasks",
+            StaticFiles(directory=str(settings.TASKS_DIR), html=True),
+            name="tasks",
+        )

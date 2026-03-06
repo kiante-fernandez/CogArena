@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CogArena - Risky Choice</title>
+    <script src="/jsPsych-8.2.3/packages/jspsych/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-html-keyboard-response/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-instructions/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-call-function/dist/index.browser.js"></script>
+    <link rel="stylesheet" href="/jsPsych-8.2.3/packages/jspsych/css/jspsych.css">
+    <style>
+        .gamble-container {
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+            align-items: stretch;
+        }
+        .gamble-option {
+            font-size: 32px;
+            padding: 30px 40px;
+            border: 3px solid #333;
+            border-radius: 15px;
+            min-width: 250px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .gamble-option.left { background-color: #f5f5f5; }
+        .gamble-option.right { background-color: #f5f5f5; }
+        .gamble-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .gamble-amount { font-weight: bold; }
+        .gamble-amount.positive { color: #2e7d32; }
+        .gamble-amount.negative { color: #c62828; }
+        .gamble-prob { color: #555; font-size: 24px; }
+        .key-hint { font-size: 28px; color: #666; margin-top: 15px; }
+        .trial-counter { font-size: 20px; color: #888; margin-bottom: 15px; }
+        .fixation { font-size: 48px; }
+        .feedback { font-size: 28px; }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

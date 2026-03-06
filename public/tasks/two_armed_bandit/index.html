@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CogArena - 2-Armed Bandit</title>
+    <script src="/jsPsych-8.2.3/packages/jspsych/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-html-keyboard-response/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-instructions/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-call-function/dist/index.browser.js"></script>
+    <link rel="stylesheet" href="/jsPsych-8.2.3/packages/jspsych/css/jspsych.css">
+    <style>
+        .bandit-container {
+            display: flex;
+            justify-content: center;
+            gap: 100px;
+            align-items: center;
+        }
+        .bandit-arm {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            padding: 30px 50px;
+            border: 3px solid #333;
+            border-radius: 15px;
+            min-width: 150px;
+        }
+        .bandit-arm.left { background-color: #e8f4fd; }
+        .bandit-arm.right { background-color: #fde8e8; }
+        .bandit-arm.selected { border-color: #2196F3; border-width: 5px; }
+        .reward-display {
+            font-size: 64px;
+            font-weight: bold;
+            color: #2e7d32;
+            text-align: center;
+            margin: 20px;
+        }
+        .game-header {
+            font-size: 24px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .forced-label {
+            font-size: 18px;
+            color: #e65100;
+            font-weight: bold;
+        }
+        .key-hint {
+            font-size: 28px;
+            color: #666;
+            margin-top: 10px;
+        }
+        .fixation { font-size: 48px; }
+        .history-display {
+            font-size: 20px;
+            margin: 10px 0;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

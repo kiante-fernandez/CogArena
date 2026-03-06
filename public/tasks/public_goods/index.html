@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CogArena - Public Goods Game</title>
+    <script src="/jsPsych-8.2.3/packages/jspsych/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-html-keyboard-response/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-html-slider-response/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-instructions/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-call-function/dist/index.browser.js"></script>
+    <link rel="stylesheet" href="/jsPsych-8.2.3/packages/jspsych/css/jspsych.css">
+    <style>
+        .round-header {
+            font-size: 24px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .endowment-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2e7d32;
+            margin: 20px;
+        }
+        .slider-label {
+            font-size: 24px;
+            margin: 10px;
+        }
+        .group-note {
+            font-size: 18px;
+            color: #e65100;
+            margin: 10px;
+        }
+        .feedback-display {
+            font-size: 20px;
+            line-height: 2.0;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: left;
+        }
+        .feedback-display .section-label {
+            font-weight: bold;
+            color: #555;
+            margin-top: 10px;
+        }
+        .contribution-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 20px;
+        }
+        .contribution-you {
+            color: #1565c0;
+            font-weight: bold;
+        }
+        .contribution-other {
+            color: #666;
+        }
+        .pool-total {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e65100;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .payoff-display {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .payoff-display.positive { color: #2e7d32; }
+        .payoff-display.negative { color: #c62828; }
+        .fixation { font-size: 48px; }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

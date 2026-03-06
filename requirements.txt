@@ -5,6 +5,7 @@ pydantic-settings>=2.7.0
 sqlalchemy>=2.0.0
 greenlet>=3.0.0
 aiosqlite>=0.20.0
+libsql-experimental>=0.0.40
 scipy>=1.14.0
 numpy>=2.0.0
 pytest>=8.0.0

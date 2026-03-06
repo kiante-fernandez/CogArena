@@ -25,3 +25,6 @@ paper/*.bbl
 paper/*.blg
 paper/*.log
 paper/*.out
+.agents
+.vercel
+.env*.local

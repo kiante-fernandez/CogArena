@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>CogArena - Category Learning</title>
+    <script src="/jsPsych-8.2.3/packages/jspsych/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-html-keyboard-response/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-instructions/dist/index.browser.js"></script>
+    <script src="/jsPsych-8.2.3/packages/plugin-call-function/dist/index.browser.js"></script>
+    <link rel="stylesheet" href="/jsPsych-8.2.3/packages/jspsych/css/jspsych.css">
+    <style>
+        .stimulus-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+            margin: 20px 0;
+        }
+        .stimulus-shape {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .stimulus-shape.circle {
+            border-radius: 50%;
+        }
+        .stimulus-shape.square {
+            border-radius: 8px;
+        }
+        .stimulus-shape.large {
+            width: 120px;
+            height: 120px;
+        }
+        .stimulus-shape.small {
+            width: 60px;
+            height: 60px;
+        }
+        .stimulus-shape.red {
+            background-color: #d32f2f;
+        }
+        .stimulus-shape.blue {
+            background-color: #1976d2;
+        }
+        .key-mapping {
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+            margin-top: 30px;
+            font-size: 24px;
+        }
+        .key-mapping .key-option {
+            text-align: center;
+        }
+        .key-mapping kbd {
+            display: inline-block;
+            padding: 6px 16px;
+            font-size: 22px;
+            font-weight: bold;
+            border: 2px solid #333;
+            border-radius: 6px;
+            background-color: #f5f5f5;
+        }
+        .trial-counter {
+            font-size: 20px;
+            color: #888;
+            margin-bottom: 15px;
+        }
+        .fixation {
+            font-size: 48px;
+        }
+        .feedback {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .feedback.correct {
+            color: #2e7d32;
+        }
+        .feedback.incorrect {
+            color: #c62828;
+        }
+        .instruction-shape {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .instruction-shape.circle {
+            border-radius: 50%;
+        }
+        .instruction-shape.square {
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+jsPsych-8.2.3/
+data/
+agents/
+paper/
+__pycache__/
+.env
+*.db
+.pytest_cache/
+.git/
