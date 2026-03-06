@@ -3,6 +3,19 @@ name = "cogarena"
 version = "0.1.0"
 description = "A benchmark for testing AI agents on interactive behavioral experiments"
 requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "sqlalchemy>=2.0.0",
+    "greenlet>=3.0.0",
+    "aiosqlite>=0.20.0",
+    "scipy>=1.14.0",
+    "numpy>=2.0.0",
+    "jinja2>=3.1.0",
+    "httpx>=0.28.0",
+]
 
 [project.scripts]
 app = "harness.server:app"
