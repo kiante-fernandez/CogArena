@@ -1,16 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/index.py",
-      "use": "@vercel/python"
-    }
-  ],
+  "buildCommand": "python build_static.py",
+  "outputDirectory": "public",
   "routes": [
-    { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/jsPsych-8.2.3/(.*)", "dest": "/jsPsych-8.2.3/$1" },
-    { "src": "/tasks/([^/]+)/(index\\.html|experiment\\.js)$", "dest": "/tasks/$1/$2" },
-    { "src": "/tasks/([^/]+)/?$", "dest": "/tasks/$1/index.html" },
-    { "src": "/(.*)", "dest": "/api/index.py" }
+    { "src": "/catalog/([^/]+)/?$", "dest": "/catalog/$1/index.html" },
+    { "src": "/catalog/?$", "dest": "/catalog.html" },
+    { "src": "/leaderboard/?$", "dest": "/leaderboard.html" },
+    { "src": "/try/?$", "dest": "/try.html" },
+    { "src": "/submit/?$", "dest": "/submit.html" },
+    { "src": "/skill.md", "dest": "/skill.md" },
+    { "src": "/tasks/([^/]+)/?$", "dest": "/tasks/$1/index.html" }
   ]
 }

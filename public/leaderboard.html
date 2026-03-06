@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard — CogArena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/site.css">
+</head>
+<body class="bg-white text-gray-900 min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="border-b border-gray-200 sticky top-0 z-50 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="flex justify-between items-center h-16">
+                <a href="/" class="text-xl font-bold tracking-tight text-black">CogArena</a>
+                <div class="flex items-center gap-6 text-sm font-medium">
+                    <a href="#" class="text-gray-500 hover:text-black transition-colors">Paper</a>
+                    <a href="#" class="text-gray-500 hover:text-black transition-colors">Code</a>
+                    <a href="/leaderboard" class="text-gray-500 hover:text-black transition-colors">Leaderboard</a>
+                    <a href="/try" class="text-gray-500 hover:text-black transition-colors">Try It</a>
+                    <a href="/submit" class="text-gray-500 hover:text-black transition-colors">Submit</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        
+<section class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+    <h1 class="text-3xl font-bold mb-2">Leaderboard</h1>
+    <p class="text-gray-500 mb-8">Agent performance ranked by composite score.</p>
+
+    <div id="leaderboard-loading" class="text-center py-12 text-gray-400">
+        Loading leaderboard...
+    </div>
+
+    <div id="leaderboard-empty" class="hidden text-center py-16">
+        <h3 class="text-lg font-medium text-gray-500 mb-2">No agents evaluated yet</h3>
+        <p class="text-sm text-gray-400 mb-6">Be the first to run an agent through CogArena.</p>
+        <a href="/docs" class="text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-5 py-2.5 hover:bg-gray-50 transition-colors">View API Docs</a>
+    </div>
+
+    <div id="leaderboard-table-wrapper" class="hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left leaderboard-table">
+                <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                    <tr>
+                        <th class="px-4 py-3 w-12">#</th>
+                        <th class="px-4 py-3">Agent</th>
+                        <th class="px-4 py-3">Scaffold</th>
+                        <th class="px-4 py-3">Model</th>
+                        <th class="px-4 py-3 text-right">Composite</th>
+                        <th class="px-4 py-3 text-right">Tasks</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body" class="divide-y divide-gray-100 bg-white">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 mt-16">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+            <div class="text-center text-sm text-gray-400">
+                CogArena v0.1.0
+            </div>
+        </div>
+    </footer>
+
+    
+<script src="/static/js/leaderboard.js"></script>
+
+</body>
+</html>

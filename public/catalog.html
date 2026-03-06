@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Catalog — CogArena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/site.css">
+</head>
+<body class="bg-white text-gray-900 min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="border-b border-gray-200 sticky top-0 z-50 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="flex justify-between items-center h-16">
+                <a href="/" class="text-xl font-bold tracking-tight text-black">CogArena</a>
+                <div class="flex items-center gap-6 text-sm font-medium">
+                    <a href="#" class="text-gray-500 hover:text-black transition-colors">Paper</a>
+                    <a href="#" class="text-gray-500 hover:text-black transition-colors">Code</a>
+                    <a href="/leaderboard" class="text-gray-500 hover:text-black transition-colors">Leaderboard</a>
+                    <a href="/try" class="text-gray-500 hover:text-black transition-colors">Try It</a>
+                    <a href="/submit" class="text-gray-500 hover:text-black transition-colors">Submit</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1">
+        
+<section class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+    <h1 class="text-3xl font-bold mb-2">Task Catalog</h1>
+    <p class="text-gray-500 mb-10">40 interactive behavioral experiments across 15 domains.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Balloon Analog Risk Task (BART)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-decision_making">
+                Decision-Making
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Inflate balloons for rewards with risk of popping, measuring risk propensity</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">30</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/bart" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/bart/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Category Learning (Shepard Classification)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-memory_learning">
+                Memory & Learning
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Learn to classify stimuli into categories based on binary features with corrective feedback</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">120</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/category_learning" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/category_learning/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Causal Reasoning (Mining Task)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-causal_cognition">
+                causal_cognition
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Choose between mines and judge whether outcomes are caused by hidden agents</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">150</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/causal_reasoning" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/causal_reasoning/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Confirmation Bias RL (Counterfactual Feedback)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-reinforcement_learning">
+                Reinforcement Learning
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Two-armed bandit with partial vs complete feedback to measure confirmation bias in learning</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">96</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/confirmation_bias_rl" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/confirmation_bias_rl/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Context Effects (Multi-Alternative Choice)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-decision_making">
+                Decision-Making
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Three-option choice task testing attraction, compromise, and similarity effects in decisions from experience</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">90</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/context_effects" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/context_effects/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Contingency Judgment</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-causal_reasoning">
+                causal_reasoning
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Judge causal strength between events from observed co-occurrences</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">4</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/contingency_judgment" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/contingency_judgment/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Decisions from Experience (Sampling Paradigm)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-decision_making">
+                Decision-Making
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Sample from options before making a final choice, testing the description-experience gap</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">20</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/decisions_from_experience" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/decisions_from_experience/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Dictator Game</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-social_strategic">
+                Social & Strategic
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Allocate money between yourself and anonymous partners. Measures altruism, fairness norms, and prosocial behavior without strategic incentives.</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">20</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/dictator_game" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/dictator_game/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Eriksen Flanker Task</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-perception_attention">
+                Perception & Attention
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Identify the direction of a central arrow while ignoring flanking arrows. Measures selective attention and conflict monitoring.</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">96</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/flanker" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/flanker/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Function Estimation</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-judgment">
+                judgment
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Estimate underlying function from scatterplot data points using slider predictions</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">40</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/function_estimation" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/function_estimation/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Go/No-Go Task</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-perception_attention">
+                Perception & Attention
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Respond to frequent 'go' stimuli while withholding responses to infrequent 'no-go' stimuli. Measures response inhibition and impulsivity.</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">100</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/go_nogo" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/go_nogo/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Heuristics & Biases (Cue Competition)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-judgment">
+                judgment
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Predict outcomes based on multiple cue attributes, testing attribute weighting and heuristic use</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">40</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/heuristics_biases" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/heuristics_biases/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Insider Attack Game</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-strategic_cognition">
+                strategic_cognition
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Select targets to attack while avoiding monitored computers, adapting to warnings and changing payoffs</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">100</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/insider_attack" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/insider_attack/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Intertemporal Choice (Temporal Discounting)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-decision_making">
+                Decision-Making
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Binary choices between smaller-sooner and larger-later rewards measuring temporal discounting</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">60</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/intertemporal_choice" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/intertemporal_choice/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Iowa Gambling Task</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-decision_making">
+                Decision-Making
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Choose from four card decks with different reward/punishment schedules. Measures decision-making under ambiguity and learning from feedback.</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">100</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/iowa_gambling" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/iowa_gambling/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Lexical Decision Task</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-language">
+                language
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Classify letter strings as real words or nonwords, measuring word frequency and lexicality effects</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">120</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/lexical_decision" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/lexical_decision/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Loss Aversion (Mixed Gambles)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-decision_making">
+                Decision-Making
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Accept or reject mixed gambles with both potential gains and losses to measure loss aversion</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">60</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/loss_aversion" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/loss_aversion/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Magnitude RL (Reference-Point Learning)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-reinforcement_learning">
+                Reinforcement Learning
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Two-armed bandit with varying reward magnitudes testing range adaptation and reference-point effects</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">120</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/magnitude_rl" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/magnitude_rl/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Moral Judgment (Trolley Dilemmas)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-social_strategic">
+                Social & Strategic
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Forced-choice moral dilemmas involving autonomous vehicle scenarios with varying victim characteristics</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">26</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/moral_judgment" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/moral_judgment/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">N-Back (2-Back)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-memory_learning">
+                Memory & Learning
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Working memory task: respond when current letter matches the one 2 trials back</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">120</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/n_back" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/n_back/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Navon Global/Local Task</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-perception_attention">
+                Perception & Attention
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Identify letters at global or local level of hierarchical Navon figures. Tests global precedence in visual attention — processing large (global) letters faster than small (local) letters.</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">80</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/navon" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/navon/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Novelty Exploration (Directed Exploration)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-exploration">
+                exploration
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Choose between novel and familiar options to earn rewards, testing novelty-driven exploration</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">150</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/novelty_exploration" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/novelty_exploration/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Observe or Bet (Information Seeking)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-exploration">
+                exploration
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Choose to observe (free info), guess blue, or guess red to maximize points, testing information-seeking tendency</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">125</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/observe_or_bet" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/observe_or_bet/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Phishing Detection</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-applied_cognition">
+                applied_cognition
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Classify emails as legitimate or phishing, learning from feedback over trials</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">60</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/phishing_detection" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/phishing_detection/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Repeated Prisoner's Dilemma</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-social_strategic">
+                Social & Strategic
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Repeated cooperation-defection game against a tit-for-tat partner measuring strategic reciprocity</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">50</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/prisoners_dilemma" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/prisoners_dilemma/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Probabilistic Classification (Weather Prediction)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-reinforcement_learning">
+                Reinforcement Learning
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Learn to predict outcomes from probabilistic cue combinations. Four cards with different predictive validities are shown; participants must learn which combinations predict sun vs. rain.</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">100</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/probabilistic_classification" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/probabilistic_classification/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Probability Learning (Binary Choice)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-reinforcement_learning">
+                Reinforcement Learning
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Repeated binary choice task where one option has higher reward probability, testing probability matching vs maximizing</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">100</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/probability_learning" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/probability_learning/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Public Goods Game</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-social_strategic">
+                Social & Strategic
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Contribute to a shared pool with simulated co-players measuring cooperation and free-riding</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">10</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/public_goods" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/public_goods/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Random Dot Motion (Magnitude Discrimination)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-perception">
+                perception
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Compare two dot arrays and identify which has more dots, testing perceptual discrimination and speed-accuracy tradeoff</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">120</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/random_dot_motion" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/random_dot_motion/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Restless Bandit (Drifting Rewards)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-exploration_exploitation">
+                exploration_exploitation
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Two-armed bandit with drifting reward distributions requiring continuous tracking</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">100</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/restless_bandit" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/restless_bandit/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Reversal Learning Task</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-reinforcement_learning">
+                Reinforcement Learning
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Learn which stimulus is rewarded through feedback, then adapt when reward contingencies reverse. Measures cognitive flexibility and perseveration.</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">120</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/reversal_learning" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/reversal_learning/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Risky Choice (Gambles)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-decision_making">
+                Decision-Making
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Binary choices between safe and risky options across gain, loss, and mixed domains</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">60</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/risky_choice" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/risky_choice/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Safe Exploration (Risk-Sensitive Exploration)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-exploration">
+                exploration
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Choose between safe and risky options across safe and dangerous rounds, testing risk-sensitive exploration</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">100</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/safe_exploration" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/safe_exploration/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Serial Recall (Free Recall)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-memory_learning">
+                Memory & Learning
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Study lists of words and recall them in order, measuring serial position effects</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">10</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/serial_recall" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/serial_recall/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Simple and Choice Reaction Time</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-perception_attention">
+                Perception & Attention
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Respond to stimuli under 1, 2, or 4 alternatives testing Hick's Law</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">80</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/simple_choice_rt" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/simple_choice_rt/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Stroop Color-Word Interference Task</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-perception_attention">
+                Perception & Attention
+            </span>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">96</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/stroop" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/stroop/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Trust Game</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-social_strategic">
+                Social & Strategic
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Investment game with simulated partners of varying trustworthiness</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">15</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/trust_game" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/trust_game/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">2-Armed Bandit (Horizon Task)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-multi_armed_bandits">
+                Bandits & Exploration
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Explore-exploit tradeoff with horizon manipulation</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">140</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/two_armed_bandit" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/two_armed_bandit/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Two-Step Task (Model-Based vs. Model-Free RL)</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-reinforcement_learning">
+                Reinforcement Learning
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Two-stage Markov decision task with common and rare transitions measuring model-based vs. model-free learning</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">100</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/two_step" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/two_step/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 card-hover flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg leading-snug">Ultimatum Game</h3>
+            </div>
+            <span class="inline-block text-xs font-medium px-2.5 py-1 rounded mb-3 w-fit domain-social_strategic">
+                Social & Strategic
+            </span>
+            
+            <p class="text-sm text-gray-500 mb-4 flex-1">Propose and respond to monetary offers testing fairness norms and strategic reasoning</p>
+            
+            <div class="space-y-1.5 text-sm text-gray-600 mb-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Trials</span>
+                    <span class="font-medium">20</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Response</span>
+                    <span class="font-medium">Keyboard</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-auto">
+                <a href="/catalog/ultimatum_game" class="flex-1 text-center text-sm font-medium text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 transition-colors">Details</a>
+                <a href="/tasks/ultimatum_game/?session_id=demo" class="flex-1 text-center text-sm font-medium text-white bg-black rounded-lg px-3 py-2 hover:bg-gray-800 transition-colors">Try It</a>
+            </div>
+        </div>
+        
+    </div>
+</section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 mt-16">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+            <div class="text-center text-sm text-gray-400">
+                CogArena v0.1.0
+            </div>
+        </div>
+    </footer>
+
+    
+</body>
+</html>
