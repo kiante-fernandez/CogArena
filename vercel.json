@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "python build_static.py",
   "outputDirectory": "public",
   "routes": [
     { "src": "/catalog/([^/]+)/?$", "dest": "/catalog/$1/index.html" },
