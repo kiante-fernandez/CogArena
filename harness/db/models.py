@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Float, Integer, Text, DateTime, ForeignKey
+from sqlalchemy import Column, String, Float, Integer, Text, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, relationship
 from pydantic import BaseModel
 
@@ -32,6 +32,7 @@ class TaskResult(Base):
     session_id = Column(String, ForeignKey("sessions.id"), nullable=False)
     task_id = Column(String, nullable=False)
     trial_data = Column(Text, nullable=False)
+    is_complete = Column(Boolean, default=False, nullable=False)
     submitted_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     session = relationship("Session", back_populates="task_results")
@@ -76,6 +77,12 @@ class SessionResponse(BaseModel):
 
 class TrialDataSubmission(BaseModel):
     trial_data: list[dict]
+    metadata: dict | None = None
+
+
+class IncrementalDataSubmission(BaseModel):
+    trial_data: list[dict]
+    is_complete: bool = False
     metadata: dict | None = None
 
 

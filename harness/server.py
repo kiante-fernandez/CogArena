@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 
 from harness.config import settings
 from harness.db.models import (
-    Base, SessionCreate, TrialDataSubmission,
+    Base, SessionCreate, TrialDataSubmission, IncrementalDataSubmission,
 )
 from harness.session_manager import SessionManager
 from scoring.score_session import score_task
@@ -204,6 +204,7 @@ async def api_info():
             "create_session": "POST /api/sessions",
             "session_status": "GET /api/sessions/{session_id}",
             "submit_data": "POST /api/data/{session_id}/{task_id}",
+            "save_partial": "PATCH /api/data/{session_id}/{task_id}",
             "evaluate": "POST /api/evaluate/{session_id}",
             "results": "GET /api/results/{session_id}",
             "leaderboard": "GET /api/leaderboard",
@@ -242,11 +243,26 @@ async def submit_data(session_id: str, task_id: str, body: TrialDataSubmission, 
     mgr = SessionManager(db, settings.TASKS_DIR)
     try:
         await mgr.submit_trial_data(
-            session_id, task_id, body.trial_data, body.metadata
+            session_id, task_id, body.trial_data, body.metadata,
+            is_complete=True,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {"status": "ok", "session_id": session_id, "task_id": task_id}
+
+
+@app.patch("/api/data/{session_id}/{task_id}", summary="Incrementally save partial trial data")
+async def save_partial_data(session_id: str, task_id: str, body: IncrementalDataSubmission, db: AsyncSession = Depends(get_db)):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    try:
+        await mgr.submit_trial_data(
+            session_id, task_id, body.trial_data, body.metadata,
+            is_complete=body.is_complete,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"status": "saved", "session_id": session_id, "task_id": task_id,
+            "n_trials": len(body.trial_data), "is_complete": body.is_complete}
 
 
 @app.post("/api/evaluate/{session_id}/{task_id}", summary="Score a single task in a session")

@@ -242,17 +242,37 @@ async def test_submit_data(client: AsyncClient):
     assert resp.json()["status"] == "ok"
 
 
-async def test_duplicate_submission_rejected(client: AsyncClient):
+async def test_duplicate_submission_upserts(client: AsyncClient):
     resp = await client.post("/api/sessions", json={"agent_name": "test"})
     session_id = resp.json()["session_id"]
 
     trials = _make_stroop_trials()
-    await client.post(f"/api/data/{session_id}/stroop", json={"trial_data": trials})
+    resp1 = await client.post(f"/api/data/{session_id}/stroop", json={"trial_data": trials})
+    assert resp1.status_code == 200
 
-    # Second submission should fail
-    resp = await client.post(f"/api/data/{session_id}/stroop", json={"trial_data": trials})
-    assert resp.status_code == 400
-    assert "already submitted" in resp.json()["detail"]
+    # Second submission succeeds (UPSERT overwrites)
+    resp2 = await client.post(f"/api/data/{session_id}/stroop", json={"trial_data": trials})
+    assert resp2.status_code == 200
+
+
+async def test_incremental_save(client: AsyncClient):
+    resp = await client.post("/api/sessions", json={"agent_name": "test"})
+    session_id = resp.json()["session_id"]
+
+    # Partial save via PATCH
+    partial = _make_stroop_trials()[:5]
+    resp = await client.patch(
+        f"/api/data/{session_id}/stroop",
+        json={"trial_data": partial, "is_complete": False},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["n_trials"] == len(partial)
+    assert resp.json()["is_complete"] is False
+
+    # Final save via POST overwrites partial
+    full = _make_stroop_trials()
+    resp = await client.post(f"/api/data/{session_id}/stroop", json={"trial_data": full})
+    assert resp.status_code == 200
 
 
 async def test_invalid_session(client: AsyncClient):

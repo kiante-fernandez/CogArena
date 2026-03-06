@@ -250,6 +250,7 @@ async def run_all_tasks(
     agent_name: str = "RandomAgent",
     no_deadline: bool = True,
     task_timeout: float = 600.0,
+    tasks_filter: list[str] | None = None,
 ):
     """Run the random agent through all CogArena tasks."""
     client = httpx.Client(base_url=base_url, timeout=30.0)
@@ -271,6 +272,8 @@ async def run_all_tasks(
     logger.info("Session created: %s", session_id)
 
     tasks = session["tasks"]
+    if tasks_filter:
+        tasks = [t for t in tasks if t["task_id"] in tasks_filter]
     logger.info("Tasks to complete: %d", len(tasks))
 
     async with async_playwright() as p:

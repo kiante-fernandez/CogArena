@@ -80,33 +80,42 @@ class SessionManager:
         return session
 
     async def submit_trial_data(
-        self, session_id: str, task_id: str, trial_data: list[dict], metadata: dict | None = None
+        self, session_id: str, task_id: str, trial_data: list[dict],
+        metadata: dict | None = None, is_complete: bool = True,
     ) -> None:
         await self.validate_session_active(session_id)
 
-        existing = await self.db.execute(
+        result = await self.db.execute(
             select(TaskResult).where(
                 TaskResult.session_id == session_id,
                 TaskResult.task_id == task_id,
             )
         )
-        if existing.scalar_one_or_none() is not None:
-            raise ValueError(f"Data already submitted for {task_id} in session {session_id}")
+        existing = result.scalar_one_or_none()
 
-        task_result = TaskResult(
-            session_id=session_id,
-            task_id=task_id,
-            trial_data=json.dumps(trial_data),
-        )
-        self.db.add(task_result)
+        if existing is not None:
+            existing_len = len(json.loads(existing.trial_data))
+            if is_complete or len(trial_data) >= existing_len:
+                existing.trial_data = json.dumps(trial_data)
+                existing.is_complete = is_complete
+                existing.submitted_at = datetime.now(timezone.utc)
+        else:
+            task_result = TaskResult(
+                session_id=session_id,
+                task_id=task_id,
+                trial_data=json.dumps(trial_data),
+                is_complete=is_complete,
+            )
+            self.db.add(task_result)
 
-        result = await self.db.execute(select(Session).where(Session.id == session_id))
-        session = result.scalar_one_or_none()
+        sess_result = await self.db.execute(select(Session).where(Session.id == session_id))
+        session = sess_result.scalar_one_or_none()
         if session:
             session.status = "in_progress"
         await self.db.commit()
 
-        await self._auto_evaluate_if_complete(session_id)
+        if is_complete:
+            await self._auto_evaluate_if_complete(session_id)
 
     async def _auto_evaluate_if_complete(self, session_id: str) -> None:
         """Auto-trigger scoring when all tasks have been submitted."""

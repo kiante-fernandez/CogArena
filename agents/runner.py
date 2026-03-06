@@ -42,8 +42,8 @@ def wait_for_server(base_url: str, timeout: float = 30.0) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description="CogArena Agent Runner")
-    parser.add_argument("--agent", choices=["random", "browser-use"], default="random",
-                        help="Agent type to run")
+    parser.add_argument("--agent", choices=["random", "browser-use", "openhands", "browser-operator"],
+                        default="random", help="Agent type to run")
     parser.add_argument("--base-url", default="http://localhost:8000",
                         help="CogArena server URL")
     parser.add_argument("--start-server", action="store_true",
@@ -56,8 +56,10 @@ def main():
                         help="Remove response deadlines (default: True)")
     parser.add_argument("--use-deadline", action="store_true",
                         help="Keep original response deadlines")
-    parser.add_argument("--task-timeout", type=float, default=600.0,
+    parser.add_argument("--task-timeout", type=float, default=1200.0,
                         help="Max seconds per task")
+    parser.add_argument("--tasks", nargs="*", default=None,
+                        help="Only run specific tasks (e.g., --tasks stroop n_back)")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
@@ -100,13 +102,14 @@ def main():
                 agent_name=agent_name,
                 no_deadline=no_deadline,
                 task_timeout=args.task_timeout,
+                tasks_filter=args.tasks,
             ))
 
         elif args.agent == "browser-use":
             try:
                 from agents.browser_use_agent import run_all_tasks
             except ImportError:
-                logger.error("browser-use not installed. Run: pip install browser-use langchain-anthropic")
+                logger.error("browser-use not installed. Run: pip install browser-use")
                 sys.exit(1)
             agent_name = agent_name or f"BrowserUseAgent-{args.model}"
             asyncio.run(run_all_tasks(
@@ -115,6 +118,31 @@ def main():
                 model_name=args.model,
                 no_deadline=no_deadline,
                 task_timeout=args.task_timeout,
+                tasks_filter=args.tasks,
+            ))
+
+        elif args.agent == "openhands":
+            from agents.openhands_agent import run_all_tasks
+            agent_name = agent_name or f"OpenHands-{args.model}"
+            asyncio.run(run_all_tasks(
+                base_url=args.base_url,
+                agent_name=agent_name,
+                model_name=args.model,
+                no_deadline=no_deadline,
+                task_timeout=args.task_timeout,
+                tasks_filter=args.tasks,
+            ))
+
+        elif args.agent == "browser-operator":
+            from agents.browser_operator_agent import run_all_tasks
+            agent_name = agent_name or f"BrowserOperator-{args.model}"
+            asyncio.run(run_all_tasks(
+                base_url=args.base_url,
+                agent_name=agent_name,
+                model_name=args.model,
+                no_deadline=no_deadline,
+                task_timeout=args.task_timeout,
+                tasks_filter=args.tasks,
             ))
 
     finally:

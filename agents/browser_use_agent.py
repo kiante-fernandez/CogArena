@@ -7,6 +7,8 @@ the public skill.md reference — it must read jsPsych's on-screen instructions
 to learn task rules and key mappings, just like a human participant would.
 
 Supported providers (auto-detected from model name):
+    - OpenRouter: provider/model  (requires OPENROUTER_API_KEY)
+      e.g. openai/o3, anthropic/claude-sonnet-4, google/gemini-2.5-flash
     - OpenAI:    gpt-*, o3, o4-* (requires OPENAI_API_KEY)
     - Google:    gemini-*        (requires GOOGLE_API_KEY)
     - Anthropic: claude-*        (requires ANTHROPIC_API_KEY)
@@ -15,9 +17,10 @@ Requirements:
     pip install browser-use
 
 Usage:
+    python -m agents.browser_use_agent --base-url http://localhost:8000 --model openai/o3
+    python -m agents.browser_use_agent --base-url http://localhost:8000 --model anthropic/claude-sonnet-4
+    python -m agents.browser_use_agent --base-url http://localhost:8000 --model google/gemini-2.5-flash
     python -m agents.browser_use_agent --base-url http://localhost:8000 --model o3
-    python -m agents.browser_use_agent --base-url http://localhost:8000 --model gemini-flash-latest
-    python -m agents.browser_use_agent --base-url http://localhost:8000 --model claude-sonnet-4-20250514
 """
 import asyncio
 import json
@@ -42,11 +45,30 @@ except FileNotFoundError:
 
 
 def _make_llm(model_name: str):
-    """Create the appropriate LangChain LLM based on model name prefix."""
+    """Create the appropriate LangChain LLM based on model name prefix.
+
+    If model_name contains '/' (e.g. 'openai/o3'), route through OpenRouter.
+    Otherwise, auto-detect provider from model name prefix.
+    """
     try:
         from browser_use import Agent  # noqa: F401 — validate browser-use is installed
     except ImportError:
         raise ImportError("browser-use is required. Install with: pip install browser-use")
+
+    # OpenRouter: model names contain '/' (e.g. openai/o3, anthropic/claude-sonnet-4)
+    if "/" in model_name:
+        from browser_use import ChatOpenAI
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "OPENROUTER_API_KEY is required for OpenRouter models. "
+                "Set it in .env or environment."
+            )
+        return ChatOpenAI(
+            model=model_name,
+            api_key=api_key,
+            base_url="https://openrouter.ai/api/v1",
+        )
 
     name = model_name.lower()
     if name.startswith("gpt-") or name.startswith("o3") or name.startswith("o4"):
