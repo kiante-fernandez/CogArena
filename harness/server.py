@@ -1,9 +1,11 @@
+import asyncio
 import json
 import os
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
@@ -73,15 +75,26 @@ def _load_tasks_meta() -> list[dict]:
 
 
 _db_initialized = False
+_db_lock = asyncio.Lock()
 
 
 async def _ensure_db():
     """Lazily initialize database tables (needed for serverless where lifespan may not run)."""
     global _db_initialized
-    if not _db_initialized:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        _db_initialized = True
+    if _db_initialized:
+        return
+    async with _db_lock:
+        if not _db_initialized:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            _db_initialized = True
+
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """FastAPI dependency: ensure tables exist, then yield a DB session."""
+    await _ensure_db()
+    async with async_session_factory() as session:
+        yield session
 
 
 @asynccontextmanager
@@ -102,13 +115,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.middleware("http")
-async def ensure_db_middleware(request: Request, call_next):
-    """Ensure DB tables exist before any request (needed on Vercel where lifespan may not run)."""
-    await _ensure_db()
-    return await call_next(request)
 
 
 # --- Website Routes ---
@@ -217,46 +223,67 @@ async def list_tasks():
 
 
 @app.post("/api/sessions", summary="Create a new evaluation session")
-async def create_session(data: SessionCreate):
-    async with async_session_factory() as db:
-        mgr = SessionManager(db, settings.TASKS_DIR)
-        return await mgr.create_session(data)
+async def create_session(data: SessionCreate, db: AsyncSession = Depends(get_db)):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    return await mgr.create_session(data)
 
 
 @app.get("/api/sessions/{session_id}", summary="Get session status and task completion")
-async def get_session(session_id: str):
-    async with async_session_factory() as db:
-        mgr = SessionManager(db, settings.TASKS_DIR)
-        try:
-            return await mgr.get_session_status(session_id)
-        except ValueError as e:
-            raise HTTPException(status_code=404, detail=str(e))
+async def get_session(session_id: str, db: AsyncSession = Depends(get_db)):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    try:
+        return await mgr.get_session_status(session_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @app.post("/api/data/{session_id}/{task_id}", summary="Submit trial data for a task")
-async def submit_data(session_id: str, task_id: str, body: TrialDataSubmission):
-    async with async_session_factory() as db:
-        mgr = SessionManager(db, settings.TASKS_DIR)
-        try:
-            await mgr.submit_trial_data(
-                session_id, task_id, body.trial_data, body.metadata
-            )
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+async def submit_data(session_id: str, task_id: str, body: TrialDataSubmission, db: AsyncSession = Depends(get_db)):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    try:
+        await mgr.submit_trial_data(
+            session_id, task_id, body.trial_data, body.metadata
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return {"status": "ok", "session_id": session_id, "task_id": task_id}
 
 
 @app.post("/api/evaluate/{session_id}/{task_id}", summary="Score a single task in a session")
-async def evaluate_task(session_id: str, task_id: str):
-    async with async_session_factory() as db:
-        mgr = SessionManager(db, settings.TASKS_DIR)
-        task_results = await mgr.get_all_task_results(session_id)
-        tr = next((t for t in task_results if t.task_id == task_id), None)
-        if not tr:
-            raise HTTPException(status_code=404, detail=f"No data for task {task_id}")
+async def evaluate_task(session_id: str, task_id: str, db: AsyncSession = Depends(get_db)):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    task_results = await mgr.get_all_task_results(session_id)
+    tr = next((t for t in task_results if t.task_id == task_id), None)
+    if not tr:
+        raise HTTPException(status_code=404, detail=f"No data for task {task_id}")
 
+    trial_data = json.loads(tr.trial_data)
+    result = score_task(trial_data, tr.task_id, settings.TASKS_DIR)
+    composite_info = result["composite"]
+    await mgr.save_score(
+        session_id=session_id,
+        task_id=tr.task_id,
+        l1=result["l1"]["score"],
+        l2=result["l2"]["score"],
+        l3=result["l3"]["score"],
+        composite=composite_info["composite_score"],
+        details=result,
+    )
+    return {"status": "scored", "session_id": session_id, "task_id": task_id}
+
+
+@app.post("/api/evaluate/{session_id}", summary="Trigger scoring for all tasks in a session")
+async def evaluate_session(session_id: str, db: AsyncSession = Depends(get_db)):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    task_results = await mgr.get_all_task_results(session_id)
+
+    if not task_results:
+        raise HTTPException(status_code=404, detail="No task data found for session")
+
+    for tr in task_results:
         trial_data = json.loads(tr.trial_data)
         result = score_task(trial_data, tr.task_id, settings.TASKS_DIR)
+
         composite_info = result["composite"]
         await mgr.save_score(
             session_id=session_id,
@@ -268,54 +295,24 @@ async def evaluate_task(session_id: str, task_id: str):
             details=result,
         )
 
-    return {"status": "scored", "session_id": session_id, "task_id": task_id}
-
-
-@app.post("/api/evaluate/{session_id}", summary="Trigger scoring for all tasks in a session")
-async def evaluate_session(session_id: str):
-    async with async_session_factory() as db:
-        mgr = SessionManager(db, settings.TASKS_DIR)
-        task_results = await mgr.get_all_task_results(session_id)
-
-        if not task_results:
-            raise HTTPException(status_code=404, detail="No task data found for session")
-
-        for tr in task_results:
-            trial_data = json.loads(tr.trial_data)
-            result = score_task(trial_data, tr.task_id, settings.TASKS_DIR)
-
-            composite_info = result["composite"]
-            await mgr.save_score(
-                session_id=session_id,
-                task_id=tr.task_id,
-                l1=result["l1"]["score"],
-                l2=result["l2"]["score"],
-                l3=result["l3"]["score"],
-                composite=composite_info["composite_score"],
-                details=result,
-            )
-
-        await mgr.mark_session_scored(session_id)
-
+    await mgr.mark_session_scored(session_id)
     return {"status": "scored", "session_id": session_id}
 
 
 @app.get("/api/results/{session_id}", summary="Get scorecard for a scored session")
-async def get_results(session_id: str):
-    async with async_session_factory() as db:
-        mgr = SessionManager(db, settings.TASKS_DIR)
-        try:
-            return await mgr.get_scorecard(session_id)
-        except ValueError as e:
-            raise HTTPException(status_code=404, detail=str(e))
+async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    try:
+        return await mgr.get_scorecard(session_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @app.get("/api/leaderboard", summary="Get ranked leaderboard of all scored sessions")
-async def get_leaderboard():
-    async with async_session_factory() as db:
-        mgr = SessionManager(db, settings.TASKS_DIR)
-        entries = await mgr.get_leaderboard()
-        return {"entries": entries}
+async def get_leaderboard(db: AsyncSession = Depends(get_db)):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    entries = await mgr.get_leaderboard()
+    return {"entries": entries}
 
 
 # --- Static Files (mounted last, skipped on Vercel where CDN serves them) ---
