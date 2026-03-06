@@ -72,12 +72,23 @@ def _load_tasks_meta() -> list[dict]:
     return tasks
 
 
+_db_initialized = False
+
+
+async def _ensure_db():
+    """Lazily initialize database tables (needed for serverless where lifespan may not run)."""
+    global _db_initialized
+    if not _db_initialized:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        _db_initialized = True
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if not os.environ.get("VERCEL"):
         settings.DATA_DIR.mkdir(parents=True, exist_ok=True)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    await _ensure_db()
     yield
     await engine.dispose()
 
