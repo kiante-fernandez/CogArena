@@ -29,7 +29,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             tbody.appendChild(row);
         });
     } catch (err) {
-        loading.textContent = 'Failed to load leaderboard.';
+        loading.classList.add('hidden');
+        empty.classList.remove('hidden');
         console.error('Leaderboard error:', err);
     }
 });

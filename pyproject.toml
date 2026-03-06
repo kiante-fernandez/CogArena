@@ -4,6 +4,9 @@ version = "0.1.0"
 description = "A benchmark for testing AI agents on interactive behavioral experiments"
 requires-python = ">=3.11"
 
+[project.scripts]
+app = "harness.server:app"
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["scoring/tests", "harness/tests"]
