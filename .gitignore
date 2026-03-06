@@ -9,6 +9,7 @@ __pycache__/
 venv/
 node_modules/
 dist/
+!public/jsPsych-8.2.3/**/dist/
 *.egg-info/
 .eggs/
 *.egg
