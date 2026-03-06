@@ -42,7 +42,7 @@ def wait_for_server(base_url: str, timeout: float = 30.0) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description="CogArena Agent Runner")
-    parser.add_argument("--agent", choices=["random", "browser-use", "openhands", "browser-operator"],
+    parser.add_argument("--agent", choices=["random", "browser-use", "openhands"],
                         default="random", help="Agent type to run")
     parser.add_argument("--base-url", default="http://localhost:8000",
                         help="CogArena server URL")
@@ -52,10 +52,8 @@ def main():
                         help="Agent name for the session")
     parser.add_argument("--model", default="claude-sonnet-4-20250514",
                         help="Model name for LLM agents")
-    parser.add_argument("--no-deadline", action="store_true", default=True,
-                        help="Remove response deadlines (default: True)")
     parser.add_argument("--use-deadline", action="store_true",
-                        help="Keep original response deadlines")
+                        help="Enable task deadlines (default: no deadline)")
     parser.add_argument("--task-timeout", type=float, default=1200.0,
                         help="Max seconds per task")
     parser.add_argument("--tasks", nargs="*", default=None,
@@ -86,10 +84,10 @@ def main():
         logger.info("Server started")
 
     try:
-        # Check server is running
-        if not wait_for_server(args.base_url, timeout=5.0):
-            logger.error("Cannot connect to %s. Is the server running?", args.base_url)
-            sys.exit(1)
+        if not args.start_server:
+            if not wait_for_server(args.base_url, timeout=5.0):
+                logger.error("Cannot connect to %s. Is the server running?", args.base_url)
+                sys.exit(1)
 
         no_deadline = not args.use_deadline
         agent_name = args.agent_name
@@ -124,26 +122,14 @@ def main():
         elif args.agent == "openhands":
             from agents.openhands_agent import run_all_tasks
             agent_name = agent_name or f"OpenHands-{args.model}"
-            asyncio.run(run_all_tasks(
+            run_all_tasks(
                 base_url=args.base_url,
                 agent_name=agent_name,
                 model_name=args.model,
                 no_deadline=no_deadline,
                 task_timeout=args.task_timeout,
                 tasks_filter=args.tasks,
-            ))
-
-        elif args.agent == "browser-operator":
-            from agents.browser_operator_agent import run_all_tasks
-            agent_name = agent_name or f"BrowserOperator-{args.model}"
-            asyncio.run(run_all_tasks(
-                base_url=args.base_url,
-                agent_name=agent_name,
-                model_name=args.model,
-                no_deadline=no_deadline,
-                task_timeout=args.task_timeout,
-                tasks_filter=args.tasks,
-            ))
+            )
 
     finally:
         if server_proc:

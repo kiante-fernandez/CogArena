@@ -2,26 +2,23 @@
 CogArena OpenHands Agent
 
 Uses the OpenHands framework (https://github.com/All-Hands-AI/OpenHands)
-to control a sandboxed Docker environment with browser + code execution.
-The agent receives task URLs and must complete jsPsych experiments.
-
-OpenHands runs in headless CLI mode with JSON output for structured logging.
-LLM configuration uses LiteLLM format (supports OpenRouter model IDs).
+running natively via a separate conda environment (Python 3.12+).
+OpenHands spawns Docker sandbox containers with a browser for task execution.
 
 Requirements:
-    pip install openhands-ai
-    docker (running)
+    conda env 'openhands' with openhands-ai installed
+    Docker running (for OpenHands sandbox containers)
+    OPENHANDS_PYTHON env var pointing to the conda env's python binary
 
 Usage:
-    python -m agents.openhands_agent --base-url http://localhost:8000 --model openai/o3
+    python -m agents.runner --agent openhands --model google/gemini-2.5-flash --start-server --tasks dictator_game
     python -m agents.openhands_agent --base-url http://localhost:8000 --model anthropic/claude-sonnet-4
 """
-import asyncio
-import json
 import logging
 import os
+import shutil
 import subprocess
-import sys
+import tempfile
 import time
 
 from dotenv import load_dotenv
@@ -39,54 +36,98 @@ except FileNotFoundError:
     _SKILL_INSTRUCTIONS = ""
 
 
-def _get_host_url(base_url: str) -> str:
-    """Convert localhost URL to host.docker.internal for Docker access."""
-    return base_url.replace("localhost", "host.docker.internal").replace(
-        "127.0.0.1", "host.docker.internal"
+def _resolve_openhands_python() -> str:
+    """Find the OpenHands Python binary."""
+    explicit = os.environ.get("OPENHANDS_PYTHON")
+    if explicit:
+        return explicit
+    # Try common conda env location
+    candidate = shutil.which("python", path=os.path.expanduser(
+        "~/anaconda3/envs/openhands/bin"
+    ))
+    if candidate:
+        return candidate
+    raise FileNotFoundError(
+        "OpenHands Python not found. Set OPENHANDS_PYTHON env var to the "
+        "Python binary in your openhands conda env, e.g.:\n"
+        "  export OPENHANDS_PYTHON=~/anaconda3/envs/openhands/bin/python"
     )
+
+
+def _build_config_toml(model_name: str) -> str:
+    """Build an OpenHands config.toml for the given model."""
+    api_key = os.environ.get("OPENROUTER_API_KEY", "")
+    base_url = ""
+
+    # Detect OpenRouter models (contain '/')
+    if "/" in model_name:
+        base_url = "https://openrouter.ai/api/v1"
+        # OpenHands uses LiteLLM — OpenRouter models need openrouter/ prefix
+        if not model_name.startswith("openrouter/"):
+            litellm_model = f"openrouter/{model_name}"
+        else:
+            litellm_model = model_name
+    else:
+        litellm_model = model_name
+        # Use provider-specific keys
+        if model_name.startswith("claude"):
+            api_key = os.environ.get("ANTHROPIC_API_KEY", api_key)
+        else:
+            api_key = os.environ.get("OPENAI_API_KEY", api_key)
+
+    config = f"""[core]
+workspace_base = "/tmp/workspace"
+
+[llm]
+model = "{litellm_model}"
+api_key = "{api_key}"
+"""
+    if base_url:
+        config += f'base_url = "{base_url}"\n'
+
+    # Use pre-built runtime image to avoid build step
+    config += """
+[sandbox]
+runtime_container_image = "ghcr.io/openhands/runtime:oh_v1.4.0_image_nikolaik_s_python-nodejs_tag_python3.12-nodejs22"
+"""
+
+    return config
 
 
 def run_task_with_openhands(
     task_url: str,
     task_id: str,
-    model_name: str,
+    config_file_path: str,
+    openhands_python: str,
     timeout: float = 600.0,
 ) -> bool:
-    """Run a single CogArena task using OpenHands in headless mode."""
+    """Run a single CogArena task using OpenHands as a native subprocess."""
     task_description = (
-        f"Navigate to {task_url} in the browser and complete the experiment. "
-        f"This is a jsPsych behavioral experiment. Read the on-screen instructions "
-        f"carefully, then respond to each trial by pressing the correct keys or "
-        f"clicking the correct buttons as instructed.\n\n"
-        f"Key guidelines:\n"
-        f"- Wait for each trial to appear before responding\n"
-        f"- Use keyboard keys or mouse clicks as the experiment instructs\n"
-        f"- Complete ALL trials until the experiment shows a completion message\n"
-        f"- The experiment auto-submits data when complete\n\n"
-        f"Reference instructions:\n{_SKILL_INSTRUCTIONS}"
+        f"Navigate to {task_url} and complete the experiment you find there.\n\n"
+        f"{_SKILL_INSTRUCTIONS}"
     )
 
-    env = os.environ.copy()
-    # OpenHands uses LiteLLM format for model names
-    env["LLM_MODEL"] = model_name
-    if os.environ.get("OPENROUTER_API_KEY"):
-        env["LLM_API_KEY"] = os.environ["OPENROUTER_API_KEY"]
-        env["LLM_BASE_URL"] = "https://openrouter.ai/api/v1"
+    # Write task to temp file (avoid shell escaping issues)
+    task_file = tempfile.NamedTemporaryFile(
+        mode="w", suffix=".txt", prefix="openhands_task_", delete=False
+    )
+    task_file.write(task_description)
+    task_file.close()
 
-    cmd = [
-        sys.executable, "-m", "openhands.core.main",
-        "--headless",
-        "--json",
-        "-t", task_description,
-    ]
-
-    logger.info("Starting OpenHands agent for task: %s (model: %s)", task_id, model_name)
+    logger.info("Starting OpenHands agent for task: %s", task_id)
     start = time.time()
 
     try:
+        cmd = [
+            openhands_python, "-m", "openhands.core.main",
+            "--config-file", config_file_path,
+            "-f", task_file.name,
+        ]
+
+        logger.debug("Command: %s", " ".join(cmd))
+
         result = subprocess.run(
             cmd,
-            env=env,
             capture_output=True,
             text=True,
             timeout=timeout,
@@ -95,6 +136,8 @@ def run_task_with_openhands(
 
         if result.returncode == 0:
             logger.info("Task %s completed in %.1fs", task_id, elapsed)
+            if result.stdout:
+                logger.debug("stdout (last 500): %s", result.stdout[-500:])
             return True
         else:
             logger.warning(
@@ -102,7 +145,9 @@ def run_task_with_openhands(
                 task_id, result.returncode, elapsed,
             )
             if result.stderr:
-                logger.debug("stderr: %s", result.stderr[-500:])
+                logger.warning("stderr (last 1000): %s", result.stderr[-1000:])
+            if result.stdout:
+                logger.debug("stdout (last 500): %s", result.stdout[-500:])
             return False
 
     except subprocess.TimeoutExpired:
@@ -111,9 +156,11 @@ def run_task_with_openhands(
     except Exception as e:
         logger.error("Task %s failed: %s", task_id, e, exc_info=True)
         return False
+    finally:
+        os.unlink(task_file.name)
 
 
-async def run_all_tasks(
+def run_all_tasks(
     base_url: str = "http://localhost:8000",
     agent_name: str = "OpenHandsAgent",
     model_name: str = "openai/o3",
@@ -122,83 +169,136 @@ async def run_all_tasks(
     tasks_filter: list[str] | None = None,
 ):
     """Run the OpenHands agent through CogArena tasks."""
-    client = httpx.Client(base_url=base_url, timeout=30.0)
+    # Resolve OpenHands Python
+    try:
+        openhands_python = _resolve_openhands_python()
+    except FileNotFoundError as e:
+        logger.error("%s", e)
+        return None
 
-    resp = client.get("/api/health")
-    resp.raise_for_status()
-
-    resp = client.post("/api/sessions", json={
-        "agent_name": agent_name,
-        "scaffold": "openhands",
-        "model_name": model_name,
-        "observation_mode": "screenshot",
-    })
-    resp.raise_for_status()
-    session = resp.json()
-    session_id = session["session_id"]
-    logger.info("Session created: %s", session_id)
-
-    tasks = session["tasks"]
-    if tasks_filter:
-        tasks = [t for t in tasks if t["task_id"] in tasks_filter]
-    logger.info("Tasks to complete: %d", len(tasks))
-
-    # OpenHands runs in Docker — use host.docker.internal
-    docker_base_url = _get_host_url(base_url)
-
-    completed = []
-    failed = []
-
-    for task_info in tasks:
-        task_id = task_info["task_id"]
-        url = f"{docker_base_url}{task_info['url']}"
-        if no_deadline:
-            url += "&no_deadline=true"
-
-        success = run_task_with_openhands(
-            url, task_id, model_name, timeout=task_timeout,
+    # Verify OpenHands is importable
+    try:
+        result = subprocess.run(
+            [openhands_python, "-c", "import openhands; print(openhands.__version__)"],
+            capture_output=True, text=True, timeout=10,
         )
-        if success:
-            completed.append(task_id)
-        else:
-            failed.append(task_id)
+        if result.returncode != 0:
+            logger.error(
+                "OpenHands not importable at %s. "
+                "Install with: pip install openhands-ai",
+                openhands_python,
+            )
+            return None
+        logger.info("OpenHands version: %s", result.stdout.strip())
+    except FileNotFoundError:
+        logger.error("OpenHands Python not found at %s", openhands_python)
+        return None
 
-    logger.info("Completed: %d/%d tasks", len(completed), len(tasks))
-    if failed:
-        logger.warning("Failed: %s", ", ".join(failed))
+    # Verify Docker is available (needed for OpenHands sandbox)
+    try:
+        result = subprocess.run(
+            ["docker", "version", "--format", "{{.Server.Version}}"],
+            capture_output=True, text=True, timeout=10,
+        )
+        if result.returncode != 0:
+            logger.error("Docker is not running. Start Docker Desktop first.")
+            return None
+    except FileNotFoundError:
+        logger.error("Docker not found. Install Docker Desktop first.")
+        return None
 
-    # Trigger evaluation
-    status = client.get(f"/api/sessions/{session_id}").json()
-    if status["status"] == "scored":
-        logger.info("Auto-evaluation completed")
-    else:
-        logger.info("Triggering manual evaluation...")
-        resp = client.post(f"/api/evaluate/{session_id}")
-        if resp.status_code == 404:
-            logger.error("No task data found")
+    # Write config once — it's the same for all tasks
+    config_toml = _build_config_toml(model_name)
+    config_file = tempfile.NamedTemporaryFile(
+        mode="w", suffix=".toml", prefix="openhands_config_", delete=False
+    )
+    config_file.write(config_toml)
+    config_file.close()
+    os.chmod(config_file.name, 0o600)
+
+    try:
+        with httpx.Client(base_url=base_url, timeout=30.0) as client:
+            resp = client.get("/api/health")
+            resp.raise_for_status()
+
+            resp = client.post("/api/sessions", json={
+                "agent_name": agent_name,
+                "scaffold": "openhands",
+                "model_name": model_name,
+                "observation_mode": "screenshot",
+            })
+            resp.raise_for_status()
+            session = resp.json()
+            session_id = session["session_id"]
+            logger.info("Session created: %s", session_id)
+
+            tasks = session["tasks"]
+            if tasks_filter:
+                tasks = [t for t in tasks if t["task_id"] in tasks_filter]
+            logger.info("Tasks to complete: %d", len(tasks))
+
+            # OpenHands sandbox runs in Docker — use host.docker.internal so the
+            # browser inside the sandbox can reach the CogArena server on the host
+            docker_base_url = base_url.replace(
+                "localhost", "host.docker.internal"
+            ).replace("127.0.0.1", "host.docker.internal")
+
+            completed = []
+            failed = []
+
+            for task_info in tasks:
+                task_id = task_info["task_id"]
+                url = f"{docker_base_url}{task_info['url']}"
+                if no_deadline:
+                    url += "&no_deadline=true"
+
+                success = run_task_with_openhands(
+                    url, task_id, config_file.name, openhands_python,
+                    timeout=task_timeout,
+                )
+                if success:
+                    completed.append(task_id)
+                else:
+                    failed.append(task_id)
+
+            logger.info("Completed: %d/%d tasks", len(completed), len(tasks))
+            if failed:
+                logger.warning("Failed: %s", ", ".join(failed))
+
+            # Trigger evaluation
+            status = client.get(f"/api/sessions/{session_id}").json()
+            if status["status"] == "scored":
+                logger.info("Auto-evaluation completed")
+            else:
+                logger.info("Triggering manual evaluation...")
+                resp = client.post(f"/api/evaluate/{session_id}")
+                if resp.status_code == 404:
+                    logger.error("No task data found")
+                    return session_id
+                resp.raise_for_status()
+
+            # Print scorecard
+            results = client.get(f"/api/results/{session_id}").json()
+            print(f"\n{'=' * 65}")
+            print(f"  COGARENA SCORECARD: {agent_name}")
+            print(f"  Model: {model_name} | Framework: OpenHands")
+            print(f"{'=' * 65}")
+            print(f"  Composite Score:    {results['composite_score']:.2f} / 100")
+            print(f"  L1 Completion:      {results['l1_overall']:.4f}")
+            print(f"  L2 Accuracy:        {results['l2_overall']:.4f}")
+            print(f"  L3 Behavioral:      {results['l3_overall']:.4f}")
+            print(f"{'-' * 65}")
+            print(f"  {'Task':<22s} {'Composite':>9s} {'L1':>6s} {'L2':>6s} {'L3':>6s}")
+            print(f"  {'-'*22} {'-'*9} {'-'*6} {'-'*6} {'-'*6}")
+            for ts in sorted(results["task_scores"], key=lambda t: t["task_id"]):
+                print(f"  {ts['task_id']:<22s} {ts['composite']:>9.2f} "
+                      f"{ts['l1_completion']:>6.2f} {ts['l2_accuracy']:>6.2f} "
+                      f"{ts['l3_behavioral']:>6.2f}")
+            print(f"{'=' * 65}")
+
             return session_id
-        resp.raise_for_status()
-
-    # Print scorecard
-    results = client.get(f"/api/results/{session_id}").json()
-    print(f"\n{'=' * 65}")
-    print(f"  COGARENA SCORECARD: {agent_name}")
-    print(f"  Model: {model_name} | Framework: OpenHands")
-    print(f"{'=' * 65}")
-    print(f"  Composite Score:    {results['composite_score']:.2f} / 100")
-    print(f"  L1 Completion:      {results['l1_overall']:.4f}")
-    print(f"  L2 Accuracy:        {results['l2_overall']:.4f}")
-    print(f"  L3 Behavioral:      {results['l3_overall']:.4f}")
-    print(f"{'-' * 65}")
-    print(f"  {'Task':<22s} {'Composite':>9s} {'L1':>6s} {'L2':>6s} {'L3':>6s}")
-    print(f"  {'-'*22} {'-'*9} {'-'*6} {'-'*6} {'-'*6}")
-    for ts in sorted(results["task_scores"], key=lambda t: t["task_id"]):
-        print(f"  {ts['task_id']:<22s} {ts['composite']:>9.2f} "
-              f"{ts['l1_completion']:>6.2f} {ts['l2_accuracy']:>6.2f} "
-              f"{ts['l3_behavioral']:>6.2f}")
-    print(f"{'=' * 65}")
-
-    return session_id
+    finally:
+        os.unlink(config_file.name)
 
 
 def main():
@@ -208,8 +308,8 @@ def main():
     parser.add_argument("--agent-name", default="OpenHandsAgent")
     parser.add_argument("--model", default="openai/o3",
                         help="LLM model (LiteLLM format, e.g. openai/o3)")
-    parser.add_argument("--no-deadline", action="store_true", default=True)
-    parser.add_argument("--use-deadline", action="store_true")
+    parser.add_argument("--use-deadline", action="store_true",
+                        help="Enable task deadlines (default: no deadline)")
     parser.add_argument("--task-timeout", type=float, default=600.0)
     parser.add_argument("--tasks", nargs="*", default=None,
                         help="Only run specific tasks")
@@ -221,15 +321,14 @@ def main():
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
 
-    no_deadline = not args.use_deadline
-    asyncio.run(run_all_tasks(
+    run_all_tasks(
         base_url=args.base_url,
         agent_name=args.agent_name,
         model_name=args.model,
-        no_deadline=no_deadline,
+        no_deadline=not args.use_deadline,
         task_timeout=args.task_timeout,
         tasks_filter=args.tasks,
-    ))
+    )
 
 
 if __name__ == "__main__":

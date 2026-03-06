@@ -88,10 +88,10 @@ def _make_llm(model_name: str):
 
 async def run_task_with_browser_use(
     task_url: str, task_id: str, model_name: str,
-    timeout: float = 600.0, browser_session=None,
+    timeout: float = 600.0, headless: bool = True,
 ):
     """Run a single CogArena task using Browser-Use."""
-    from browser_use import Agent
+    from browser_use import Agent, BrowserSession
 
     llm = _make_llm(model_name)
 
@@ -100,14 +100,15 @@ async def run_task_with_browser_use(
         f"{_SKILL_INSTRUCTIONS}"
     )
 
+    browser_session = BrowserSession(headless=headless)
+
     agent_kwargs = dict(
         task=task_description,
         llm=llm,
         max_actions_per_step=5,
         loop_detection_enabled=False,
+        browser_session=browser_session,
     )
-    if browser_session is not None:
-        agent_kwargs["browser_session"] = browser_session
 
     agent = Agent(**agent_kwargs)
 
@@ -125,6 +126,8 @@ async def run_task_with_browser_use(
     except Exception as e:
         logger.error("Task %s failed: %s", task_id, e, exc_info=True)
         return False
+    finally:
+        await browser_session.close()
 
 
 async def run_all_tasks(
@@ -135,15 +138,14 @@ async def run_all_tasks(
     task_timeout: float = 600.0,  # 10 minutes per task
     tasks_filter: list[str] | None = None,
     short: bool = False,
+    headless: bool = True,
 ):
     """Run the Browser-Use agent through all CogArena tasks."""
     client = httpx.Client(base_url=base_url, timeout=30.0)
 
-    # Health check
     resp = client.get("/api/health")
     resp.raise_for_status()
 
-    # Create session
     resp = client.post("/api/sessions", json={
         "agent_name": agent_name,
         "scaffold": "browser-use",
@@ -172,7 +174,7 @@ async def run_all_tasks(
             url += "&n_trials=20"
 
         success = await run_task_with_browser_use(
-            url, task_id, model_name, timeout=task_timeout,
+            url, task_id, model_name, timeout=task_timeout, headless=headless,
         )
         if success:
             completed.append(task_id)
@@ -224,13 +226,15 @@ def main():
     parser.add_argument("--agent-name", default="BrowserUseAgent")
     parser.add_argument("--model", default="claude-sonnet-4-20250514",
                         help="LLM model name")
-    parser.add_argument("--no-deadline", action="store_true", default=True)
-    parser.add_argument("--use-deadline", action="store_true")
+    parser.add_argument("--use-deadline", action="store_true",
+                        help="Enable task deadlines (default: no deadline)")
     parser.add_argument("--task-timeout", type=float, default=600.0)
     parser.add_argument("--tasks", nargs="*", default=None,
                         help="Only run specific tasks (e.g., --tasks stroop n_back)")
     parser.add_argument("--short", action="store_true",
                         help="Use reduced trial counts (n_trials=20) for faster runs")
+    parser.add_argument("--no-headless", action="store_true",
+                        help="Show the browser window (default: headless)")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
@@ -248,6 +252,7 @@ def main():
         task_timeout=args.task_timeout,
         tasks_filter=args.tasks,
         short=args.short,
+        headless=not args.no_headless,
     ))
 
 
