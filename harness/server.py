@@ -104,6 +104,13 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def ensure_db_middleware(request: Request, call_next):
+    """Ensure DB tables exist before any request (needed on Vercel where lifespan may not run)."""
+    await _ensure_db()
+    return await call_next(request)
+
+
 # --- Website Routes ---
 
 @app.get("/", include_in_schema=False)
