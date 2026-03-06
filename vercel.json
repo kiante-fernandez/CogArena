@@ -1,6 +1,8 @@
 {
   "version": 2,
+  "buildCommand": "",
   "outputDirectory": "public",
+  "framework": null,
   "routes": [
     { "src": "/catalog/([^/]+)/?$", "dest": "/catalog/$1/index.html" },
     { "src": "/catalog/?$", "dest": "/catalog.html" },
