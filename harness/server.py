@@ -88,9 +88,10 @@ async def _ensure_db():
 async def lifespan(app: FastAPI):
     if not os.environ.get("VERCEL"):
         settings.DATA_DIR.mkdir(parents=True, exist_ok=True)
-    await _ensure_db()
+        await _ensure_db()
     yield
-    await engine.dispose()
+    if not os.environ.get("VERCEL"):
+        await engine.dispose()
 
 
 app = FastAPI(title="CogArena", version="0.1.0", lifespan=lifespan)
