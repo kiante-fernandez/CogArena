@@ -1,7 +1,3 @@
-"""Vercel serverless entry point — wraps the FastAPI app with Mangum."""
-
-from mangum import Mangum
+"""Vercel serverless entry point — re-exports the FastAPI ASGI app."""
 
 from harness.server import app
-
-handler = Mangum(app, lifespan="off")

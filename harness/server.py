@@ -19,8 +19,22 @@ from harness.db.models import (
 from harness.session_manager import SessionManager
 from scoring.score_session import score_task
 
-engine = create_async_engine(settings.DATABASE_URL, echo=settings.DEBUG)
-async_session_factory = async_sessionmaker(engine, expire_on_commit=False)
+
+_USE_LIBSQL = settings.DATABASE_URL.startswith("sqlite+libsql")
+
+if _USE_LIBSQL:
+    # sqlalchemy-libsql is sync-only; create sync engine + async wrapper
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker as sync_sessionmaker
+    _sync_engine = create_engine(settings.DATABASE_URL, echo=settings.DEBUG)
+    _sync_session_factory = sync_sessionmaker(_sync_engine, expire_on_commit=False)
+    engine = None  # not used directly
+    async_session_factory = None  # not used directly
+else:
+    _sync_engine = None
+    _sync_session_factory = None
+    engine = create_async_engine(settings.DATABASE_URL, echo=settings.DEBUG)
+    async_session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
 PROJECT_ROOT = Path(__file__).parent.parent
 templates = Jinja2Templates(directory=str(PROJECT_ROOT / "templates"))
@@ -74,6 +88,29 @@ def _load_tasks_meta() -> list[dict]:
     return tasks
 
 
+class _SyncSessionAsyncWrapper:
+    """Wraps a sync SQLAlchemy Session to match the AsyncSession interface.
+
+    Used on Vercel where sqlalchemy-libsql only provides a sync driver.
+    Delegates blocking calls to a thread pool via asyncio.to_thread.
+    """
+
+    def __init__(self, sync_session):
+        self._s = sync_session
+
+    async def execute(self, *a, **kw):
+        return await asyncio.to_thread(self._s.execute, *a, **kw)
+
+    async def commit(self):
+        return await asyncio.to_thread(self._s.commit)
+
+    async def delete(self, obj):
+        return await asyncio.to_thread(self._s.delete, obj)
+
+    def add(self, obj):
+        self._s.add(obj)
+
+
 _db_initialized = False
 _db_lock = asyncio.Lock()
 
@@ -85,16 +122,26 @@ async def _ensure_db():
         return
     async with _db_lock:
         if not _db_initialized:
-            async with engine.begin() as conn:
-                await conn.run_sync(Base.metadata.create_all)
+            if _USE_LIBSQL:
+                Base.metadata.create_all(_sync_engine)
+            else:
+                async with engine.begin() as conn:
+                    await conn.run_sync(Base.metadata.create_all)
             _db_initialized = True
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency: ensure tables exist, then yield a DB session."""
     await _ensure_db()
-    async with async_session_factory() as session:
-        yield session
+    if _USE_LIBSQL:
+        session = _sync_session_factory()
+        try:
+            yield _SyncSessionAsyncWrapper(session)
+        finally:
+            session.close()
+    else:
+        async with async_session_factory() as session:
+            yield session
 
 
 @asynccontextmanager
@@ -103,7 +150,7 @@ async def lifespan(app: FastAPI):
         settings.DATA_DIR.mkdir(parents=True, exist_ok=True)
         await _ensure_db()
     yield
-    if not os.environ.get("VERCEL"):
+    if not os.environ.get("VERCEL") and engine is not None:
         await engine.dispose()
 
 
