@@ -378,27 +378,26 @@ async def get_leaderboard(db: AsyncSession = Depends(get_db)):
     return {"entries": entries}
 
 
-# --- Static Files (mounted last, skipped on Vercel where CDN serves them) ---
+# --- Static Files (mounted last so explicit routes take priority) ---
 
-if not os.environ.get("VERCEL"):
-    static_dir = PROJECT_ROOT / "static"
-    if static_dir.exists():
-        app.mount(
-            "/static",
-            StaticFiles(directory=str(static_dir)),
-            name="static",
-        )
+static_dir = PROJECT_ROOT / "static"
+if static_dir.exists():
+    app.mount(
+        "/static",
+        StaticFiles(directory=str(static_dir)),
+        name="static",
+    )
 
-    if settings.JSPSYCH_DIR.exists():
-        app.mount(
-            "/jsPsych-8.2.3",
-            StaticFiles(directory=str(settings.JSPSYCH_DIR)),
-            name="jspsych",
-        )
+if settings.JSPSYCH_DIR.exists():
+    app.mount(
+        "/jsPsych-8.2.3",
+        StaticFiles(directory=str(settings.JSPSYCH_DIR)),
+        name="jspsych",
+    )
 
-    if settings.TASKS_DIR.exists():
-        app.mount(
-            "/tasks",
-            StaticFiles(directory=str(settings.TASKS_DIR), html=True),
-            name="tasks",
-        )
+if settings.TASKS_DIR.exists():
+    app.mount(
+        "/tasks",
+        StaticFiles(directory=str(settings.TASKS_DIR), html=True),
+        name="tasks",
+    )
