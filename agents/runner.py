@@ -54,10 +54,12 @@ def main():
                         help="Model name for LLM agents")
     parser.add_argument("--use-deadline", action="store_true",
                         help="Enable task deadlines (default: no deadline)")
-    parser.add_argument("--task-timeout", type=float, default=1200.0,
-                        help="Max seconds per task")
+    parser.add_argument("--task-timeout", type=float, default=1800.0,
+                        help="Max seconds per task (default: 1800)")
     parser.add_argument("--tasks", nargs="*", default=None,
                         help="Only run specific tasks (e.g., --tasks stroop n_back)")
+    parser.add_argument("--n-trials", type=int, default=None,
+                        help="Override trial count per task (e.g., --n-trials 40)")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
@@ -70,10 +72,13 @@ def main():
     # Start server if requested
     server_proc = None
     if args.start_server:
-        logger.info("Starting CogArena server...")
+        # Extract port from --base-url (default 8000)
+        from urllib.parse import urlparse
+        port = str(urlparse(args.base_url).port or 8000)
+        logger.info("Starting CogArena server on port %s...", port)
         server_proc = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "harness.server:app",
-             "--host", "0.0.0.0", "--port", "8000"],
+             "--host", "0.0.0.0", "--port", port],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
@@ -117,6 +122,7 @@ def main():
                 no_deadline=no_deadline,
                 task_timeout=args.task_timeout,
                 tasks_filter=args.tasks,
+                n_trials=args.n_trials,
             ))
 
         elif args.agent == "openhands":
@@ -129,6 +135,7 @@ def main():
                 no_deadline=no_deadline,
                 task_timeout=args.task_timeout,
                 tasks_filter=args.tasks,
+                n_trials=args.n_trials,
             )
 
     finally:

@@ -165,8 +165,9 @@ def run_all_tasks(
     agent_name: str = "OpenHandsAgent",
     model_name: str = "openai/o3",
     no_deadline: bool = True,
-    task_timeout: float = 600.0,
+    task_timeout: float = 1800.0,
     tasks_filter: list[str] | None = None,
+    n_trials: int | None = None,
 ):
     """Run the OpenHands agent through CogArena tasks."""
     # Resolve OpenHands Python
@@ -251,6 +252,8 @@ def run_all_tasks(
                 url = f"{docker_base_url}{task_info['url']}"
                 if no_deadline:
                     url += "&no_deadline=true"
+                if n_trials is not None:
+                    url += f"&n_trials={n_trials}"
 
                 success = run_task_with_openhands(
                     url, task_id, config_file.name, openhands_python,
@@ -310,9 +313,11 @@ def main():
                         help="LLM model (LiteLLM format, e.g. openai/o3)")
     parser.add_argument("--use-deadline", action="store_true",
                         help="Enable task deadlines (default: no deadline)")
-    parser.add_argument("--task-timeout", type=float, default=600.0)
+    parser.add_argument("--task-timeout", type=float, default=1800.0)
     parser.add_argument("--tasks", nargs="*", default=None,
                         help="Only run specific tasks")
+    parser.add_argument("--n-trials", type=int, default=None,
+                        help="Override trial count per task (e.g., --n-trials 40)")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
@@ -328,6 +333,7 @@ def main():
         no_deadline=not args.use_deadline,
         task_timeout=args.task_timeout,
         tasks_filter=args.tasks,
+        n_trials=args.n_trials,
     )
 
 

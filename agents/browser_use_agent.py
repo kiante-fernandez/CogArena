@@ -106,7 +106,8 @@ async def run_task_with_browser_use(
         task=task_description,
         llm=llm,
         max_actions_per_step=5,
-        loop_detection_enabled=False,
+        max_failures=10,
+        loop_detection_enabled=True,
         browser_session=browser_session,
     )
 
@@ -116,7 +117,7 @@ async def run_task_with_browser_use(
     start = time.time()
 
     try:
-        result = await asyncio.wait_for(agent.run(max_steps=200), timeout=timeout)
+        result = await asyncio.wait_for(agent.run(max_steps=500), timeout=timeout)
         elapsed = time.time() - start
         logger.info("Task %s completed in %.1fs", task_id, elapsed)
         return True
@@ -135,9 +136,9 @@ async def run_all_tasks(
     agent_name: str = "BrowserUseAgent",
     model_name: str = "claude-sonnet-4-20250514",
     no_deadline: bool = True,
-    task_timeout: float = 600.0,  # 10 minutes per task
+    task_timeout: float = 1800.0,
     tasks_filter: list[str] | None = None,
-    short: bool = False,
+    n_trials: int | None = None,
     headless: bool = True,
 ):
     """Run the Browser-Use agent through all CogArena tasks."""
@@ -170,8 +171,8 @@ async def run_all_tasks(
         url = f"{base_url}{task_info['url']}"
         if no_deadline:
             url += "&no_deadline=true"
-        if short:
-            url += "&n_trials=20"
+        if n_trials is not None:
+            url += f"&n_trials={n_trials}"
 
         success = await run_task_with_browser_use(
             url, task_id, model_name, timeout=task_timeout, headless=headless,
@@ -228,11 +229,11 @@ def main():
                         help="LLM model name")
     parser.add_argument("--use-deadline", action="store_true",
                         help="Enable task deadlines (default: no deadline)")
-    parser.add_argument("--task-timeout", type=float, default=600.0)
+    parser.add_argument("--task-timeout", type=float, default=1800.0)
     parser.add_argument("--tasks", nargs="*", default=None,
                         help="Only run specific tasks (e.g., --tasks stroop n_back)")
-    parser.add_argument("--short", action="store_true",
-                        help="Use reduced trial counts (n_trials=20) for faster runs")
+    parser.add_argument("--n-trials", type=int, default=None,
+                        help="Override trial count per task (e.g., --n-trials 40)")
     parser.add_argument("--no-headless", action="store_true",
                         help="Show the browser window (default: headless)")
     parser.add_argument("--verbose", "-v", action="store_true")
@@ -251,7 +252,7 @@ def main():
         no_deadline=no_deadline,
         task_timeout=args.task_timeout,
         tasks_filter=args.tasks,
-        short=args.short,
+        n_trials=args.n_trials,
         headless=not args.no_headless,
     ))
 
