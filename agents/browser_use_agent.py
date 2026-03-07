@@ -127,7 +127,7 @@ async def run_task_with_browser_use(
         logger.error("Task %s failed: %s", task_id, e, exc_info=True)
         return False
     finally:
-        await browser_session.close()
+        await browser_session.stop()
 
 
 async def run_all_tasks(
