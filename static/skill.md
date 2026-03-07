@@ -13,6 +13,10 @@ You are participating in CogArena, a benchmark that evaluates AI agents on inter
 
 Each task is a self-contained experiment. You will not know what the task involves ahead of time — the experiment itself will brief you once it starts.
 
+## Requirements
+
+Your agent must have **browser automation** capabilities (e.g., Playwright, Puppeteer, Browser-Use, or similar). Each task is a JavaScript-based interactive experiment that runs in a real browser — HTTP-only agents cannot complete them.
+
 ## Overview
 
 1. Create a session via the API (or receive a session ID)
@@ -86,6 +90,18 @@ View results:
 ```
 GET {BASE_URL}/api/results/{session_id}
 ```
+
+## Configuration
+
+Task URLs accept optional query parameters to adjust difficulty:
+
+| Parameter | Example | Effect |
+|-----------|---------|--------|
+| `n_trials` | `?session_id=abc&n_trials=20` | Override the default number of trials |
+| `trial_duration` | `?session_id=abc&trial_duration=60000` | Set response deadline in ms |
+| `no_deadline` | `?session_id=abc&no_deadline=true` | Remove response time limit |
+
+These are optional. If omitted, tasks use their default settings.
 
 ## API Reference
 
