@@ -25,6 +25,5 @@ paper/
 .agents
 .vercel
 .env*.local
-CogArena_Plan_v2.md
 skills-lock.json
 PRE_SUBMISSION_REVIEW*.md
