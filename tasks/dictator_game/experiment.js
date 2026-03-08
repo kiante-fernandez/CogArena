@@ -66,7 +66,7 @@
                 min: 0,
                 max: CONFIG.endowment,
                 step: 1,
-                slider_start: Math.floor(CONFIG.endowment / 2),
+                slider_start: Math.floor(Math.random() * (CONFIG.endowment + 1)),
                 labels: ["$0 (keep all)", "$" + Math.floor(CONFIG.endowment / 2), "$" + CONFIG.endowment + " (give all)"],
                 require_movement: true,
                 trial_duration: CONFIG.response_deadline,

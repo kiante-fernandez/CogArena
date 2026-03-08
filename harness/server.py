@@ -375,7 +375,8 @@ async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
 async def get_leaderboard(db: AsyncSession = Depends(get_db)):
     mgr = SessionManager(db, settings.TASKS_DIR)
     entries = await mgr.get_leaderboard()
-    return {"entries": entries}
+    total_tasks = len(mgr.get_available_tasks("_"))
+    return {"total_tasks": total_tasks, "entries": entries}
 
 
 # --- Static Files (mounted last so explicit routes take priority) ---

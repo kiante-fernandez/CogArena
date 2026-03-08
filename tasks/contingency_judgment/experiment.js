@@ -246,7 +246,7 @@
                 min: CONFIG.slider_min,
                 max: CONFIG.slider_max,
                 step: 1,
-                slider_start: 50,
+                slider_start: Math.floor(Math.random() * (CONFIG.slider_max - CONFIG.slider_min + 1)) + CONFIG.slider_min,
                 labels: ["0<br>Prevents<br>recovery", "50<br>No<br>effect", "100<br>Strongly causes<br>recovery"],
                 require_movement: true,
                 trial_duration: CONFIG.rating_deadline,

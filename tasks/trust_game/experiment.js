@@ -115,7 +115,7 @@
                 '<div class="slider-label">How much do you want to send?</div>',
             min: 0,
             max: CONFIG.endowment,
-            start: Math.floor(CONFIG.endowment / 2),
+            start: Math.floor(Math.random() * (CONFIG.endowment + 1)),
             step: 1,
             labels: ["$0", "$" + CONFIG.endowment],
             slider_width: 500,

@@ -32,7 +32,6 @@ done
 
 MODELS=(
     "google/gemini-3-flash-preview"
-    "anthropic/claude-opus-4.6"
     "openai/gpt-5.4"
     "minimax/minimax-m2.5"
     "moonshotai/kimi-k2.5"
@@ -41,7 +40,7 @@ MODELS=(
 
 [[ -n "$SINGLE_MODEL" ]] && MODELS=("$SINGLE_MODEL")
 
-FRAMEWORKS=("browser-use" "openhands")
+FRAMEWORKS=("browser-use")
 
 TASKS=(
     bart category_learning causal_reasoning confirmation_bias_rl
@@ -75,11 +74,11 @@ echo "================================================"
 echo ""
 
 # Find python with browser_use available.
-# .venv doesn't have browser_use, so we need the cdmm conda env.
-PYTHON="${CONDA_PYTHON:-/Users/kiante/anaconda3/envs/cdmm/bin/python}"
+# Set CONDA_PYTHON to override, otherwise falls back to 'python' on PATH.
+PYTHON="${CONDA_PYTHON:-python}"
 if ! "$PYTHON" -c "import browser_use" 2>/dev/null; then
-    echo "ERROR: browser_use not found in $PYTHON"
-    echo "Set CONDA_PYTHON to the python binary in your cdmm env."
+    echo "ERROR: browser_use not found via '$PYTHON'"
+    echo "Install browser-use (pip install browser-use) or set CONDA_PYTHON."
     exit 1
 fi
 echo "Using Python: $PYTHON"
@@ -102,7 +101,7 @@ run_model() {
             n=$((n + 1))
             local log="${LOG_DIR}/${slug}_${framework}_${task}.log"
 
-            echo -n "  [${n}/80] ${agent_name} / ${task} ... " | tee -a "$summary"
+            echo -n "  [${n}/$((${#TASKS[@]} * ${#FRAMEWORKS[@]}))] ${agent_name} / ${task} ... " | tee -a "$summary"
 
             if $DRY_RUN; then
                 echo "DRY RUN" | tee -a "$summary"
@@ -118,6 +117,7 @@ run_model() {
                 --tasks "$task" \
                 --n-trials "$N_TRIALS" \
                 --task-timeout "$TASK_TIMEOUT" \
+                --skip-scored \
                 > "$log" 2>&1; then
                 passed=$((passed + 1))
                 echo "OK" | tee -a "$summary"

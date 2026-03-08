@@ -147,7 +147,7 @@
                             '<div class="x-indicator">Predict Y at X = ' + test.x_value + '</div>',
                         min: -100,
                         max: 100,
-                        start: 0,
+                        start: Math.floor(Math.random() * 201) - 100,
                         step: 1,
                         labels: ["-1.0", "0", "1.0"],
                         slider_width: 400,

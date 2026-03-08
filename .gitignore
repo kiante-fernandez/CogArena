@@ -9,7 +9,7 @@ __pycache__/
 venv/
 node_modules/
 dist/
-!public/jsPsych-8.2.3/**/dist/
+public/
 *.egg-info/
 .eggs/
 *.egg
@@ -21,11 +21,10 @@ dist/
 .turbo/
 jsPsych-8.2.3/node_modules/
 .claude/
-paper/*.aux
-paper/*.bbl
-paper/*.blg
-paper/*.log
-paper/*.out
+paper/
 .agents
 .vercel
 .env*.local
+CogArena_Plan_v2.md
+skills-lock.json
+PRE_SUBMISSION_REVIEW*.md

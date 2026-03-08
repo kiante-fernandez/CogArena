@@ -83,7 +83,45 @@ pytest harness/tests/ -v        # API + field alignment tests
 
 ## Running Agents
 
-CogArena includes two reference agents: a random baseline and a Browser-Use LLM agent.
+CogArena includes three reference agents: a random baseline, a Browser-Use LLM agent, and an OpenHands Docker-based agent. The recommended entry point is `agents.runner`, which handles server startup, session creation, agent execution, and scoring.
+
+### Agent Runner (recommended)
+
+```bash
+# Run browser-use agent on all tasks (starts server automatically)
+python -m agents.runner --agent browser-use --model claude-sonnet-4-20250514 --start-server
+
+# Run on specific tasks only
+python -m agents.runner --agent browser-use --model google/gemini-2.5-flash --start-server --tasks stroop n_back
+
+# Run multiple trials per task, skip already-scored tasks
+python -m agents.runner --agent browser-use --model google/gemini-2.5-flash --start-server --n-trials 40 --skip-scored
+
+# Run OpenHands agent
+python -m agents.runner --agent openhands --model anthropic/claude-sonnet-4 --start-server
+
+# Run random baseline
+python -m agents.runner --agent random --start-server
+```
+
+Models containing `/` (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`) are routed through [OpenRouter](https://openrouter.ai/) (requires `OPENROUTER_API_KEY`). Direct provider models (e.g. `claude-sonnet-4-20250514`, `o3`, `gemini-flash-latest`) use native APIs.
+
+### Browser-Use Agent (direct)
+
+Requires the [browser-use](https://github.com/browser-use/browser-use) package and an API key for your chosen provider.
+
+```bash
+pip install browser-use
+python -m agents.browser_use_agent --base-url http://localhost:8000 --model o3
+```
+
+### OpenHands Agent
+
+Requires [OpenHands](https://github.com/All-Hands-AI/OpenHands) with Docker for sandboxed browser control.
+
+```bash
+python -m agents.openhands_agent --base-url http://localhost:8000 --model anthropic/claude-sonnet-4
+```
 
 ### Random Baseline Agent
 
@@ -91,23 +129,6 @@ No dependencies beyond core requirements. Presses random valid keys on each tria
 
 ```bash
 python -m agents.random_agent --base-url http://localhost:8000 -v
-```
-
-### Browser-Use Agent (LLM-powered)
-
-Requires the [browser-use](https://github.com/browser-use/browser-use) package and an API key for your chosen provider.
-
-```bash
-pip install browser-use
-
-# OpenAI (requires OPENAI_API_KEY)
-python -m agents.browser_use_agent --base-url http://localhost:8000 --model o3
-
-# Google Gemini (requires GOOGLE_API_KEY)
-python -m agents.browser_use_agent --base-url http://localhost:8000 --model gemini-flash-latest
-
-# Anthropic Claude (requires ANTHROPIC_API_KEY)
-python -m agents.browser_use_agent --base-url http://localhost:8000 --model claude-sonnet-4-20250514
 ```
 
 ### Scoring
@@ -134,6 +155,7 @@ The benchmark site at `http://localhost:8000` includes:
 | POST | `/api/sessions` | Create evaluation session |
 | GET | `/api/sessions/{session_id}` | Check session status |
 | POST | `/api/data/{session_id}/{task_id}` | Submit trial data |
+| PATCH | `/api/data/{session_id}/{task_id}` | Incrementally save partial trial data |
 | POST | `/api/evaluate/{session_id}` | Trigger scoring |
 | GET | `/api/results/{session_id}` | Retrieve scorecard |
 | GET | `/api/leaderboard` | Ranked agent results |
@@ -183,8 +205,10 @@ L3 signatures are tested with standard statistical analyses (paired t-tests, pro
 ```
 cogarena/
 ├── agents/                     # Reference agent implementations
+│   ├── runner.py               # Orchestrator CLI (start server, run agent, evaluate)
 │   ├── random_agent.py         # Random baseline (no LLM)
-│   └── browser_use_agent.py    # Browser-Use LLM agent (multi-provider)
+│   ├── browser_use_agent.py    # Browser-Use LLM agent (multi-provider)
+│   └── openhands_agent.py      # OpenHands Docker-based agent
 ├── harness/                    # FastAPI server & session management
 │   ├── server.py               # API + website routes
 │   ├── session_manager.py      # Session lifecycle
@@ -210,6 +234,7 @@ cogarena/
 │       ├── task_config.json    #   Metadata and parameters
 │       └── scoring/            #   level2_metrics.json,
 │                               #   level3_signatures.json
+├── run_study.sh               # Full-study runner (all models × tasks × frameworks)
 ├── paper/                      # NeurIPS paper (LaTeX)
 └── jsPsych-8.2.3/             # Vendored jsPsych library
 ```
@@ -263,7 +288,7 @@ cogarena/
 | 6 | Done | Agent evaluation framework, reference agents |
 | 7 | Done | 14 new tasks — 24 total, multi-provider agent support |
 | 8 | Done | 16 new tasks from Psych-201 — 40 total |
-| 9 | Next | Run AI agent evaluations (Browser-Use + OpenAI/Gemini) |
+| 9 | In Progress | Run AI agent evaluations across models and frameworks |
 | 10 | Planned | Human baselines via Prolific |
 
 ## Citation
@@ -271,6 +296,6 @@ cogarena/
 ```bibtex
 @article{cogarena2025,
   title={CogArena: Benchmarking AI Agents on Interactive Cognitive Experiments},
-  year={2025}
+  year={2026}
 }
 ```

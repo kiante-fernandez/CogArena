@@ -18,11 +18,34 @@ Usage:
 import argparse
 import asyncio
 import logging
+import sqlite3
 import subprocess
 import sys
 import time
+from pathlib import Path
 
 import httpx
+
+
+def get_scored_tasks(model_name: str, scaffold: str) -> set[str]:
+    """Query local DB for task_ids already scored for this model+scaffold."""
+    db_path = Path(__file__).resolve().parent.parent / "data" / "cogarena.db"
+    if not db_path.exists():
+        return set()
+    conn = sqlite3.connect(str(db_path))
+    try:
+        rows = conn.execute(
+            """
+            SELECT DISTINCT sc.task_id
+            FROM scores sc
+            JOIN sessions s ON sc.session_id = s.id
+            WHERE s.model_name = ? AND s.scaffold = ?
+            """,
+            (model_name, scaffold),
+        ).fetchall()
+        return {r[0] for r in rows}
+    finally:
+        conn.close()
 
 
 def wait_for_server(base_url: str, timeout: float = 30.0) -> bool:
@@ -60,6 +83,8 @@ def main():
                         help="Only run specific tasks (e.g., --tasks stroop n_back)")
     parser.add_argument("--n-trials", type=int, default=None,
                         help="Override trial count per task (e.g., --n-trials 40)")
+    parser.add_argument("--skip-scored", action="store_true",
+                        help="Skip tasks already scored for this model+scaffold")
     parser.add_argument("--verbose", "-v", action="store_true")
     args = parser.parse_args()
 
@@ -97,6 +122,15 @@ def main():
         no_deadline = not args.use_deadline
         agent_name = args.agent_name
 
+        # Determine scaffold name for skip-scored lookup
+        scaffold = args.agent if args.agent != "random" else None
+        skip_tasks = None
+        if args.skip_scored and scaffold:
+            skip_tasks = get_scored_tasks(args.model, scaffold)
+            if skip_tasks:
+                logger.info("Found %d already-scored tasks for %s/%s",
+                            len(skip_tasks), args.model, scaffold)
+
         if args.agent == "random":
             from agents.random_agent import run_all_tasks
             agent_name = agent_name or "RandomAgent"
@@ -123,6 +157,7 @@ def main():
                 task_timeout=args.task_timeout,
                 tasks_filter=args.tasks,
                 n_trials=args.n_trials,
+                skip_tasks=skip_tasks,
             ))
 
         elif args.agent == "openhands":
@@ -136,6 +171,7 @@ def main():
                 task_timeout=args.task_timeout,
                 tasks_filter=args.tasks,
                 n_trials=args.n_trials,
+                skip_tasks=skip_tasks,
             )
 
     finally:

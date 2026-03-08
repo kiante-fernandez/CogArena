@@ -6,6 +6,7 @@ from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from harness.config import settings
 from harness.db.models import (
@@ -236,32 +237,51 @@ class SessionManager:
 
     async def get_leaderboard(self) -> list[dict]:
         result = await self.db.execute(
-            select(Session).where(Session.status == "scored")
+            select(Session)
+            .where(Session.status == "scored")
+            .options(selectinload(Session.scores))
         )
         sessions = list(result.scalars().all())
 
-        entries = []
+        # Aggregate scores by (model_name, scaffold) instead of per-session
+        grouped: dict[tuple[str, str], dict] = {}
         for session in sessions:
-            scores_result = await self.db.execute(
-                select(Score).where(Score.session_id == session.id)
-            )
-            scores = list(scores_result.scalars().all())
-            if not scores:
+            if not session.scores:
                 continue
 
-            n = len(scores)
+            key = (session.model_name, session.scaffold)
+            if key not in grouped:
+                grouped[key] = {
+                    "agent_name": session.agent_name,
+                    "scaffold": session.scaffold,
+                    "model_name": session.model_name,
+                    "observation_mode": session.observation_mode,
+                    "all_scores": [],
+                    "latest_at": session.updated_at,
+                }
+            group = grouped[key]
+            group["all_scores"].extend(session.scores)
+            if session.updated_at and (
+                group["latest_at"] is None
+                or session.updated_at > group["latest_at"]
+            ):
+                group["latest_at"] = session.updated_at
+
+        entries = []
+        for group in grouped.values():
+            all_scores = group["all_scores"]
+            n = len(all_scores)
             entries.append({
-                "session_id": session.id,
-                "agent_name": session.agent_name,
-                "scaffold": session.scaffold,
-                "model_name": session.model_name,
-                "observation_mode": session.observation_mode,
-                "composite_score": round(sum(s.composite for s in scores) / n, 2),
-                "l1_overall": round(sum(s.l1_completion for s in scores) / n, 4),
-                "l2_overall": round(sum(s.l2_accuracy for s in scores) / n, 4),
-                "l3_overall": round(sum(s.l3_behavioral for s in scores) / n, 4),
+                "agent_name": group["agent_name"],
+                "scaffold": group["scaffold"],
+                "model_name": group["model_name"],
+                "observation_mode": group["observation_mode"],
+                "composite_score": round(sum(s.composite for s in all_scores) / n, 2),
+                "l1_overall": round(sum(s.l1_completion for s in all_scores) / n, 4),
+                "l2_overall": round(sum(s.l2_accuracy for s in all_scores) / n, 4),
+                "l3_overall": round(sum(s.l3_behavioral for s in all_scores) / n, 4),
                 "tasks_completed": n,
-                "evaluated_at": session.updated_at.isoformat() if session.updated_at else None,
+                "evaluated_at": group["latest_at"].isoformat() if group["latest_at"] else None,
             })
 
         entries.sort(key=lambda e: e["composite_score"], reverse=True)

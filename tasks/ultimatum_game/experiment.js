@@ -141,7 +141,7 @@
             min: CONFIG.slider_min,
             max: CONFIG.slider_max,
             step: 1,
-            slider_start: Math.floor(CONFIG.endowment / 2),
+            slider_start: Math.floor(Math.random() * (CONFIG.slider_max - CONFIG.slider_min + 1)) + CONFIG.slider_min,
             labels: ["$0 (keep all)", "$" + Math.floor(CONFIG.endowment / 2), "$" + CONFIG.endowment + " (give all)"],
             require_movement: true,
             button_label: "Submit Offer",

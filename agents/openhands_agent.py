@@ -168,6 +168,7 @@ def run_all_tasks(
     task_timeout: float = 1800.0,
     tasks_filter: list[str] | None = None,
     n_trials: int | None = None,
+    skip_tasks: set[str] | None = None,
 ):
     """Run the OpenHands agent through CogArena tasks."""
     # Resolve OpenHands Python
@@ -233,9 +234,20 @@ def run_all_tasks(
             session_id = session["session_id"]
             logger.info("Session created: %s", session_id)
 
+            MAX_CONSECUTIVE_FAILURES = 3
+
             tasks = session["tasks"]
             if tasks_filter:
                 tasks = [t for t in tasks if t["task_id"] in tasks_filter]
+            if skip_tasks:
+                before = len(tasks)
+                tasks = [t for t in tasks if t["task_id"] not in skip_tasks]
+                skipped = before - len(tasks)
+                if skipped:
+                    logger.info("Skipping %d already-scored tasks", skipped)
+            if not tasks:
+                logger.info("All tasks already scored — nothing to do")
+                return session_id
             logger.info("Tasks to complete: %d", len(tasks))
 
             # OpenHands sandbox runs in Docker — use host.docker.internal so the
@@ -246,6 +258,7 @@ def run_all_tasks(
 
             completed = []
             failed = []
+            consecutive_failures = 0
 
             for task_info in tasks:
                 task_id = task_info["task_id"]
@@ -261,12 +274,22 @@ def run_all_tasks(
                 )
                 if success:
                     completed.append(task_id)
+                    consecutive_failures = 0
                 else:
                     failed.append(task_id)
+                    consecutive_failures += 1
+                    if consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
+                        raise RuntimeError(
+                            f"Aborting: {consecutive_failures} consecutive failures — "
+                            "likely a systemic issue (expired credits, wrong API key, etc.)"
+                        )
 
             logger.info("Completed: %d/%d tasks", len(completed), len(tasks))
             if failed:
                 logger.warning("Failed: %s", ", ".join(failed))
+
+            if not completed:
+                raise RuntimeError("All tasks failed")
 
             # Trigger evaluation
             status = client.get(f"/api/sessions/{session_id}").json()
@@ -276,8 +299,7 @@ def run_all_tasks(
                 logger.info("Triggering manual evaluation...")
                 resp = client.post(f"/api/evaluate/{session_id}")
                 if resp.status_code == 404:
-                    logger.error("No task data found")
-                    return session_id
+                    raise RuntimeError("No task data found for evaluation")
                 resp.raise_for_status()
 
             # Print scorecard

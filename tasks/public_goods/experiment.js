@@ -129,7 +129,7 @@
                 '<div class="slider-label">How many tokens do you contribute to the public pool?</div>',
             min: CONFIG.slider_min,
             max: CONFIG.slider_max,
-            start: Math.floor(CONFIG.endowment / 2),
+            start: Math.floor(Math.random() * (CONFIG.slider_max - CONFIG.slider_min + 1)) + CONFIG.slider_min,
             step: 1,
             labels: ["0 (keep all)", "" + Math.floor(CONFIG.endowment / 2), "" + CONFIG.endowment + " (give all)"],
             slider_width: 500,

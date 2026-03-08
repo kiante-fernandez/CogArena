@@ -23,7 +23,6 @@ Usage:
     python -m agents.browser_use_agent --base-url http://localhost:8000 --model o3
 """
 import asyncio
-import json
 import logging
 import os
 import time
@@ -64,10 +63,14 @@ def _make_llm(model_name: str):
                 "OPENROUTER_API_KEY is required for OpenRouter models. "
                 "Set it in .env or environment."
             )
+        # Anthropic via OpenRouter rejects JSON schemas with 'minimum' on
+        # integer types — disable forced structured output for these models.
+        is_anthropic = model_name.startswith("anthropic/")
         return ChatOpenAI(
             model=model_name,
             api_key=api_key,
             base_url="https://openrouter.ai/api/v1",
+            dont_force_structured_output=is_anthropic,
         )
 
     name = model_name.lower()
@@ -86,6 +89,18 @@ def _make_llm(model_name: str):
         return ChatOpenAI(model=model_name)
 
 
+# Models known to lack vision/image-input support on OpenRouter
+_NO_VISION_MODELS = {
+    "z-ai/glm-5",
+    "minimax/minimax-m2.5",
+}
+
+
+def _model_supports_vision(model_name: str) -> bool:
+    """Check if a model supports image input (vision)."""
+    return model_name not in _NO_VISION_MODELS
+
+
 async def run_task_with_browser_use(
     task_url: str, task_id: str, model_name: str,
     timeout: float = 600.0, headless: bool = True,
@@ -94,6 +109,7 @@ async def run_task_with_browser_use(
     from browser_use import Agent, BrowserSession
 
     llm = _make_llm(model_name)
+    use_vision = _model_supports_vision(model_name)
 
     task_description = (
         f"Navigate to {task_url} and complete the experiment you find there.\n\n"
@@ -105,6 +121,7 @@ async def run_task_with_browser_use(
     agent_kwargs = dict(
         task=task_description,
         llm=llm,
+        use_vision=use_vision,
         max_actions_per_step=5,
         max_failures=10,
         loop_detection_enabled=True,
@@ -112,6 +129,8 @@ async def run_task_with_browser_use(
     )
 
     agent = Agent(**agent_kwargs)
+    if not use_vision:
+        logger.info("Vision disabled for %s — using DOM text mode", model_name)
 
     logger.info("Starting Browser-Use agent for task: %s", task_id)
     start = time.time()
@@ -140,8 +159,11 @@ async def run_all_tasks(
     tasks_filter: list[str] | None = None,
     n_trials: int | None = None,
     headless: bool = True,
+    skip_tasks: set[str] | None = None,
 ):
     """Run the Browser-Use agent through all CogArena tasks."""
+    MAX_CONSECUTIVE_FAILURES = 3
+
     client = httpx.Client(base_url=base_url, timeout=30.0)
 
     resp = client.get("/api/health")
@@ -161,10 +183,20 @@ async def run_all_tasks(
     tasks = session["tasks"]
     if tasks_filter:
         tasks = [t for t in tasks if t["task_id"] in tasks_filter]
+    if skip_tasks:
+        before = len(tasks)
+        tasks = [t for t in tasks if t["task_id"] not in skip_tasks]
+        skipped = before - len(tasks)
+        if skipped:
+            logger.info("Skipping %d already-scored tasks", skipped)
+    if not tasks:
+        logger.info("All tasks already scored — nothing to do")
+        return session_id
     logger.info("Tasks to complete: %d", len(tasks))
 
     completed = []
     failed = []
+    consecutive_failures = 0
 
     for task_info in tasks:
         task_id = task_info["task_id"]
@@ -179,12 +211,26 @@ async def run_all_tasks(
         )
         if success:
             completed.append(task_id)
+            consecutive_failures = 0
         else:
             failed.append(task_id)
+            consecutive_failures += 1
+            if consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
+                logger.error(
+                    "Aborting: %d consecutive failures — likely a systemic issue "
+                    "(expired credits, wrong API key, etc.)", consecutive_failures,
+                )
+                raise RuntimeError(
+                    f"Aborting: {consecutive_failures} consecutive failures — "
+                    "likely a systemic issue (expired credits, wrong API key, etc.)"
+                )
 
     logger.info("Completed: %d/%d tasks", len(completed), len(tasks))
     if failed:
         logger.warning("Failed: %s", ", ".join(failed))
+
+    if not completed:
+        raise RuntimeError("All tasks failed")
 
     # Check if auto-evaluation ran
     status = client.get(f"/api/sessions/{session_id}").json()
@@ -194,8 +240,7 @@ async def run_all_tasks(
         logger.info("Triggering manual evaluation...")
         resp = client.post(f"/api/evaluate/{session_id}")
         if resp.status_code == 404:
-            logger.error("No task data found")
-            return session_id
+            raise RuntimeError("No task data found for evaluation")
         resp.raise_for_status()
 
     # Print scorecard
