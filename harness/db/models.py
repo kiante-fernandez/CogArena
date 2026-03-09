@@ -63,7 +63,7 @@ class Score(Base):
 class SessionCreate(BaseModel):
     agent_name: str
     scaffold: str | None = None
-    model_name: str | None = None
+    model_name: str
     observation_mode: str | None = None
 
 

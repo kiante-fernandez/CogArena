@@ -180,7 +180,7 @@ async def test_api_info(client: AsyncClient):
 
 
 async def test_create_session(client: AsyncClient):
-    resp = await client.post("/api/sessions", json={"agent_name": "test-agent"})
+    resp = await client.post("/api/sessions", json={"agent_name": "test-agent", "model_name": "test-model"})
     assert resp.status_code == 200
     data = resp.json()
     assert "session_id" in data
@@ -201,7 +201,7 @@ async def test_create_session(client: AsyncClient):
 
 async def test_get_session_status(client: AsyncClient):
     # Create session
-    resp = await client.post("/api/sessions", json={"agent_name": "test"})
+    resp = await client.post("/api/sessions", json={"agent_name": "test", "model_name": "test-model"})
     session_id = resp.json()["session_id"]
 
     # Check status — nothing completed
@@ -230,7 +230,7 @@ async def test_get_session_status(client: AsyncClient):
 
 
 async def test_submit_data(client: AsyncClient):
-    resp = await client.post("/api/sessions", json={"agent_name": "test"})
+    resp = await client.post("/api/sessions", json={"agent_name": "test", "model_name": "test-model"})
     session_id = resp.json()["session_id"]
 
     trials = _make_stroop_trials()
@@ -243,7 +243,7 @@ async def test_submit_data(client: AsyncClient):
 
 
 async def test_duplicate_submission_upserts(client: AsyncClient):
-    resp = await client.post("/api/sessions", json={"agent_name": "test"})
+    resp = await client.post("/api/sessions", json={"agent_name": "test", "model_name": "test-model"})
     session_id = resp.json()["session_id"]
 
     trials = _make_stroop_trials()
@@ -256,7 +256,7 @@ async def test_duplicate_submission_upserts(client: AsyncClient):
 
 
 async def test_incremental_save(client: AsyncClient):
-    resp = await client.post("/api/sessions", json={"agent_name": "test"})
+    resp = await client.post("/api/sessions", json={"agent_name": "test", "model_name": "test-model"})
     session_id = resp.json()["session_id"]
 
     # Partial save via PATCH
@@ -332,7 +332,7 @@ async def test_leaderboard_populated(client: AsyncClient):
     assert len(resp.json()["entries"]) == 0
 
     # Create and score a session
-    resp = await client.post("/api/sessions", json={"agent_name": "lb-test"})
+    resp = await client.post("/api/sessions", json={"agent_name": "lb-test", "model_name": "test-model"})
     session_id = resp.json()["session_id"]
 
     for task_id, gen_fn in TASK_GENERATORS.items():
