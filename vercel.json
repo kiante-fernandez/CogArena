@@ -5,7 +5,7 @@
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.py" },
-    { "src": "/(catalog|try|submit|leaderboard|skill\\.md|docs).*", "dest": "/api/index.py" },
+    { "src": "/(catalog|try|submit|leaderboard|admin|skill\\.md|docs).*", "dest": "/api/index.py" },
     { "src": "^/$", "dest": "/api/index.py" },
     { "src": "/(.*)", "dest": "/api/index.py" }
   ]

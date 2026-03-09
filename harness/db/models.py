@@ -17,6 +17,10 @@ class Session(Base):
     model_name = Column(String, nullable=True)
     observation_mode = Column(String, nullable=True)
     status = Column(String, nullable=False, default="created")
+    approved = Column(Boolean, nullable=True, default=None)
+    reviewed_by = Column(String, nullable=True)
+    review_notes = Column(Text, nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc),
                         onupdate=lambda: datetime.now(timezone.utc))
@@ -84,6 +88,11 @@ class IncrementalDataSubmission(BaseModel):
     trial_data: list[dict]
     is_complete: bool = False
     metadata: dict | None = None
+
+
+class AdminReviewRequest(BaseModel):
+    reviewed_by: str | None = None
+    notes: str | None = None
 
 
 class TaskScore(BaseModel):

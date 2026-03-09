@@ -238,7 +238,7 @@ class SessionManager:
     async def get_leaderboard(self) -> list[dict]:
         result = await self.db.execute(
             select(Session)
-            .where(Session.status == "scored")
+            .where(Session.status == "scored", Session.approved == True)  # noqa: E712
             .options(selectinload(Session.scores))
         )
         sessions = list(result.scalars().all())
@@ -286,3 +286,56 @@ class SessionManager:
 
         entries.sort(key=lambda e: e["composite_score"], reverse=True)
         return entries
+
+    async def get_submissions(self, status_filter: str | None = None) -> list[dict]:  # "pending"|"approved"|"rejected"
+        """Return all scored sessions with approval status for admin review."""
+        query = select(Session).where(Session.status == "scored").options(selectinload(Session.scores))
+        if status_filter == "pending":
+            query = query.where(Session.approved.is_(None))
+        elif status_filter == "approved":
+            query = query.where(Session.approved == True)  # noqa: E712
+        elif status_filter == "rejected":
+            query = query.where(Session.approved == False)  # noqa: E712
+
+        result = await self.db.execute(query.order_by(Session.created_at.desc()))
+        sessions = list(result.scalars().all())
+
+        entries = []
+        for session in sessions:
+            scores = session.scores
+            n = len(scores) if scores else 0
+            entries.append({
+                "session_id": session.id,
+                "agent_name": session.agent_name,
+                "scaffold": session.scaffold,
+                "model_name": session.model_name,
+                "composite_score": round(sum(s.composite for s in scores) / n, 2) if n else 0,
+                "l1_overall": round(sum(s.l1_completion for s in scores) / n, 4) if n else 0,
+                "l2_overall": round(sum(s.l2_accuracy for s in scores) / n, 4) if n else 0,
+                "l3_overall": round(sum(s.l3_behavioral for s in scores) / n, 4) if n else 0,
+                "tasks_completed": n,
+                "approved": session.approved,
+                "reviewed_by": session.reviewed_by,
+                "review_notes": session.review_notes,
+                "created_at": session.created_at.isoformat() if session.created_at else None,
+                "reviewed_at": session.reviewed_at.isoformat() if session.reviewed_at else None,
+            })
+        return entries
+
+    async def _set_review_status(self, session_id: str, approved: bool, reviewed_by: str | None = None, notes: str | None = None) -> dict:
+        result = await self.db.execute(select(Session).where(Session.id == session_id))
+        session = result.scalar_one_or_none()
+        if session is None:
+            raise ValueError(f"Session {session_id} not found")
+        session.approved = approved
+        session.reviewed_by = reviewed_by
+        session.review_notes = notes
+        session.reviewed_at = datetime.now(timezone.utc)
+        await self.db.commit()
+        return {"session_id": session_id, "approved": approved}
+
+    async def approve_session(self, session_id: str, reviewed_by: str | None = None, notes: str | None = None) -> dict:
+        return await self._set_review_status(session_id, True, reviewed_by, notes)
+
+    async def reject_session(self, session_id: str, reviewed_by: str | None = None, notes: str | None = None) -> dict:
+        return await self._set_review_status(session_id, False, reviewed_by, notes)

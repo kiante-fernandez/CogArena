@@ -1,11 +1,12 @@
 import asyncio
+import hmac
 import json
 import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
@@ -15,6 +16,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from harness.config import settings
 from harness.db.models import (
     Base, SessionCreate, TrialDataSubmission, IncrementalDataSubmission,
+    AdminReviewRequest,
 )
 from harness.session_manager import SessionManager
 from scoring.score_session import score_task
@@ -377,6 +379,60 @@ async def get_leaderboard(db: AsyncSession = Depends(get_db)):
     entries = await mgr.get_leaderboard()
     total_tasks = len(mgr.get_available_tasks("_"))
     return {"total_tasks": total_tasks, "entries": entries}
+
+
+# --- Admin Routes ---
+
+async def verify_admin(x_admin_key: str = Header(...)):
+    if not settings.ADMIN_API_KEY or not hmac.compare_digest(x_admin_key, settings.ADMIN_API_KEY):
+        raise HTTPException(status_code=401, detail="Invalid admin key")
+
+
+@app.get("/admin", include_in_schema=False)
+async def admin_page(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})
+
+
+@app.get("/api/admin/submissions", summary="List scored sessions for admin review")
+async def admin_list_submissions(
+    status: str | None = None,
+    db: AsyncSession = Depends(get_db),
+    _: None = Depends(verify_admin),
+):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    return {"submissions": await mgr.get_submissions(status)}
+
+
+@app.post("/api/admin/submissions/{session_id}/approve", summary="Approve a submission")
+async def admin_approve(
+    session_id: str,
+    body: AdminReviewRequest | None = None,
+    db: AsyncSession = Depends(get_db),
+    _: None = Depends(verify_admin),
+):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    try:
+        reviewed_by = body.reviewed_by if body else None
+        notes = body.notes if body else None
+        return await mgr.approve_session(session_id, reviewed_by, notes)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.post("/api/admin/submissions/{session_id}/reject", summary="Reject a submission")
+async def admin_reject(
+    session_id: str,
+    body: AdminReviewRequest | None = None,
+    db: AsyncSession = Depends(get_db),
+    _: None = Depends(verify_admin),
+):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    try:
+        reviewed_by = body.reviewed_by if body else None
+        notes = body.notes if body else None
+        return await mgr.reject_session(session_id, reviewed_by, notes)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 # --- Static Files (mounted last so explicit routes take priority) ---

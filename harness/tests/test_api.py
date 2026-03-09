@@ -343,7 +343,18 @@ async def test_leaderboard_populated(client: AsyncClient):
 
     await client.post(f"/api/evaluate/{session_id}")
 
-    # Leaderboard should have one entry
+    # Leaderboard should still be empty (not approved yet)
+    resp = await client.get("/api/leaderboard")
+    assert resp.status_code == 200
+    assert len(resp.json()["entries"]) == 0
+
+    # Approve the session
+    await client.post(
+        f"/api/admin/submissions/{session_id}/approve",
+        headers={"X-Admin-Key": "test-key"},
+    )
+
+    # Leaderboard should have one entry now
     resp = await client.get("/api/leaderboard")
     assert resp.status_code == 200
     entries = resp.json()["entries"]

@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     PORT: int = 8000
     DEBUG: bool = True
     SESSION_TIMEOUT_HOURS: int = 24
+    ADMIN_API_KEY: str = ""
 
     class Config:
         env_file = ".env"
