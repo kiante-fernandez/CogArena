@@ -6,3 +6,7 @@ __pycache__/
 *.db
 .pytest_cache/
 .git/
+jsPsych-8.2.3/docs/
+jsPsych-8.2.3/examples/
+jsPsych-8.2.3/node_modules/
+jsPsych-8.2.3/.github/
