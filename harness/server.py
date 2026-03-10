@@ -267,6 +267,17 @@ async def health():
     return {"status": "ok", "version": "0.1.0", "db_backend": "libsql" if _USE_LIBSQL else "aiosqlite", "db_url_prefix": settings.DATABASE_URL[:30] + "..."}
 
 
+@app.get("/api/debug/db", include_in_schema=False)
+async def debug_db():
+    """Temporary debug endpoint to test DB connectivity."""
+    import traceback
+    try:
+        await _ensure_db()
+        return {"status": "db_ok", "tables_created": True}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
+
+
 @app.get("/api/tasks", summary="List all available tasks with configuration")
 async def list_tasks():
     return {"tasks": _load_tasks_meta()}
