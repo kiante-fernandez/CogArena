@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-from harness.config import settings
+from harness.config import settings, get_turso_connect_args
 from harness.db.models import (
     Base, SessionCreate, TrialDataSubmission, IncrementalDataSubmission,
     AdminReviewRequest,
@@ -28,7 +28,7 @@ if _USE_LIBSQL:
     # sqlalchemy-libsql is sync-only; create sync engine + async wrapper
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker as sync_sessionmaker
-    _sync_engine = create_engine(settings.DATABASE_URL, echo=settings.DEBUG)
+    _sync_engine = create_engine(settings.DATABASE_URL, echo=settings.DEBUG, connect_args=get_turso_connect_args())
     _sync_session_factory = sync_sessionmaker(_sync_engine, expire_on_commit=False)
     engine = None  # not used directly
     async_session_factory = None  # not used directly

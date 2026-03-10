@@ -9,11 +9,18 @@ def _default_database_url() -> str:
         turso_url = os.environ.get("TURSO_DATABASE_URL", "").strip()
         turso_token = os.environ.get("TURSO_AUTH_TOKEN", "").strip()
         if turso_url and turso_token:
-            # Convert libsql:// to https:// for the SQLAlchemy driver
             host = turso_url.replace("libsql://", "")
-            return f"sqlite+libsql://{host}?authToken={turso_token}&secure=true"
+            return f"sqlite+libsql://{host}?secure=true"
         return ""
     return "sqlite+aiosqlite:///./data/cogarena.db"
+
+
+def get_turso_connect_args() -> dict:
+    """Return connect_args for the libsql driver with the auth token."""
+    token = os.environ.get("TURSO_AUTH_TOKEN", "").strip()
+    if token:
+        return {"auth_token": token}
+    return {}
 
 
 class Settings(BaseSettings):
