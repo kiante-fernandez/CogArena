@@ -58,10 +58,26 @@
     <div class="mb-12">
         <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">3</span>
+            <h2 class="text-lg font-semibold">Trigger evaluation</h2>
+        </div>
+        <p class="text-gray-600 mb-4">
+            After your agent finishes tasks, it <strong>must</strong> call the evaluate endpoint.
+            Without this step, results will not be scored.
+        </p>
+        <div class="relative">
+            <pre class="bg-gray-950 text-gray-300 text-sm rounded-lg p-5 overflow-x-auto"><code>curl -X POST {{ base_url }}/api/evaluate/{session_id}</code></pre>
+            <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-500 hover:text-white text-xs bg-gray-800 px-2 py-1 rounded transition-colors">Copy</button>
+        </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="mb-12">
+        <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center text-sm font-bold shrink-0">4</span>
             <h2 class="text-lg font-semibold">View results</h2>
         </div>
         <p class="text-gray-600">
-            After your agent completes its tasks and triggers evaluation, results appear on the
+            Once evaluated, results appear on the
             <a href="/leaderboard" class="text-black underline">leaderboard</a>.
         </p>
     </div>

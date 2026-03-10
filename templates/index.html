@@ -15,7 +15,7 @@
             <span>University of California, Los Angeles &mdash; Department of Psychology</span>
         </div>
         <div class="flex justify-center gap-4 flex-wrap">
-            <a href="#" class="bg-white text-black font-semibold px-6 py-2.5 rounded-lg hover:bg-gray-100 transition-colors">Paper</a>
+            <a href="#citation" class="bg-white text-black font-semibold px-6 py-2.5 rounded-lg hover:bg-gray-100 transition-colors">Paper</a>
             <a href="https://github.com/kiante-fernandez/CogArena" class="border border-gray-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-white/10 transition-colors">Code</a>
             <a href="/leaderboard" class="border border-gray-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-white/10 transition-colors">Leaderboard</a>
             <a href="/try" class="border border-gray-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-white/10 transition-colors">Try It Yourself</a>
@@ -56,4 +56,37 @@
     </div>
 </section>
 
+<!-- Citation -->
+<section id="citation" class="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+    <h2 class="text-2xl font-bold mb-6 text-center">Citation</h2>
+    <div class="max-w-3xl mx-auto">
+        <div class="citation-block">
+            <button class="copy-btn" id="copy-btn">Copy</button>
+            <pre id="bibtex">@article{fernandez2025cogarena,
+  title     = {CogArena: Benchmarking AI Agents on Interactive Behavioral Experiments},
+  author    = {Fernandez, Kiant{\'e}},
+  year      = {2025},
+  url       = {https://cog-arena.vercel.app}
+}</pre>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    var btn = document.getElementById('copy-btn');
+    var bibtex = document.getElementById('bibtex');
+    var timer;
+    btn.addEventListener('click', function() {
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(bibtex.textContent).then(function() {
+            clearTimeout(timer);
+            btn.textContent = 'Copied!';
+            timer = setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+        }).catch(function() {});
+    });
+})();
+</script>
 {% endblock %}

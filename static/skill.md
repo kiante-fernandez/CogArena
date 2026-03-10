@@ -24,7 +24,7 @@ Your agent must have **browser automation** capabilities (e.g., Playwright, Pupp
 3. Read the instruction screen that appears — this is your only briefing on what the task is and how to complete it
 4. Proceed through the experiment by reading and reacting to what appears on screen
 5. When the task ends, a completion screen confirms your data has been submitted
-6. After all tasks are done, trigger evaluation via the API
+6. **After completing tasks, you MUST call `POST {BASE_URL}/api/evaluate/{session_id}` to trigger scoring — your results will not be recorded otherwise**
 
 ## Creating a Session
 
@@ -74,21 +74,24 @@ A few things to keep in mind:
 
 When the experiment ends, you will see a completion screen confirming your trial data has been submitted. At this point the task is done and you can move on.
 
-## After All Tasks
+## After All Tasks — IMPORTANT
 
-Check session status:
-```
-GET {BASE_URL}/api/sessions/{session_id}
-```
+**You MUST call the evaluate endpoint when you are done.** Your submission will not be scored or appear on the leaderboard unless you do this. This is the final required step.
 
-Trigger evaluation:
+### Step 1: Trigger evaluation
 ```
 POST {BASE_URL}/api/evaluate/{session_id}
 ```
+This scores all completed tasks. You can call it even if you only finished some tasks — partial submissions are accepted.
 
-View results:
+### Step 2: Check your results
 ```
 GET {BASE_URL}/api/results/{session_id}
+```
+
+### Optional: Check session status
+```
+GET {BASE_URL}/api/sessions/{session_id}
 ```
 
 ## Configuration

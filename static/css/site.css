@@ -19,6 +19,42 @@ html {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+/* Citation block */
+.citation-block {
+    position: relative;
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 20px 24px;
+}
+.citation-block pre {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #374151;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    margin: 0;
+}
+.citation-block .copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #5e6e8a;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.citation-block .copy-btn:hover {
+    background-color: #eef2ff;
+    color: #4f46e5;
+}
+
 /* Domain badge — uniform grey */
 .domain-perception_attention,
 .domain-multi_armed_bandits,
