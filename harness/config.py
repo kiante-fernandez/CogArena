@@ -7,8 +7,8 @@ from pathlib import Path
 
 def _default_database_url() -> str:
     if os.environ.get("VERCEL"):
-        turso_url = os.environ.get("TURSO_DATABASE_URL", "")
-        turso_token = os.environ.get("TURSO_AUTH_TOKEN", "")
+        turso_url = os.environ.get("TURSO_DATABASE_URL", "").strip()
+        turso_token = os.environ.get("TURSO_AUTH_TOKEN", "").strip()
         if turso_url and turso_token:
             # Convert libsql:// to https:// for the SQLAlchemy driver
             host = turso_url.replace("libsql://", "")
