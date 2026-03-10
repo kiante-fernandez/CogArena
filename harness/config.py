@@ -1,5 +1,4 @@
 import os
-from urllib.parse import quote
 
 from pydantic_settings import BaseSettings
 from pathlib import Path
@@ -12,8 +11,7 @@ def _default_database_url() -> str:
         if turso_url and turso_token:
             # Convert libsql:// to https:// for the SQLAlchemy driver
             host = turso_url.replace("libsql://", "")
-            token_encoded = quote(turso_token, safe="")
-            return f"sqlite+libsql://{host}?authToken={token_encoded}&secure=true"
+            return f"sqlite+libsql://{host}?authToken={turso_token}&secure=true"
         return ""
     return "sqlite+aiosqlite:///./data/cogarena.db"
 
