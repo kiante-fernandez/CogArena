@@ -264,27 +264,7 @@ async def api_info():
 
 @app.get("/api/health", summary="Health check")
 async def health():
-    return {"status": "ok", "version": "0.1.0", "db_backend": "libsql" if _USE_LIBSQL else "aiosqlite", "db_url_prefix": settings.DATABASE_URL[:30] + "..."}
-
-
-@app.get("/api/debug/db", include_in_schema=False)
-async def debug_db():
-    """Temporary debug endpoint to test DB connectivity."""
-    import traceback
-    url = settings.DATABASE_URL
-    # Redact the token but show structure
-    if "authToken=" in url:
-        token_start = url.index("authToken=") + len("authToken=")
-        token_end = url.index("&", token_start) if "&" in url[token_start:] else len(url)
-        token = url[token_start:token_end]
-        redacted_url = url[:token_start] + f"[{len(token)} chars, first10={token[:10]}]" + url[token_end:]
-    else:
-        redacted_url = url
-    try:
-        await _ensure_db()
-        return {"status": "db_ok", "tables_created": True, "url_structure": redacted_url}
-    except Exception as e:
-        return {"status": "error", "error": str(e), "url_structure": redacted_url, "traceback": traceback.format_exc()}
+    return {"status": "ok", "version": "0.1.0"}
 
 
 @app.get("/api/tasks", summary="List all available tasks with configuration")
