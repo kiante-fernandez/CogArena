@@ -264,7 +264,7 @@ async def api_info():
 
 @app.get("/api/health", summary="Health check")
 async def health():
-    return {"status": "ok", "version": "0.1.0"}
+    return {"status": "ok", "version": "0.1.0", "db_backend": "libsql" if _USE_LIBSQL else "aiosqlite", "db_url_prefix": settings.DATABASE_URL[:30] + "..."}
 
 
 @app.get("/api/tasks", summary="List all available tasks with configuration")
