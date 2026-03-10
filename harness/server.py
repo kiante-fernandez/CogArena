@@ -271,11 +271,20 @@ async def health():
 async def debug_db():
     """Temporary debug endpoint to test DB connectivity."""
     import traceback
+    url = settings.DATABASE_URL
+    # Redact the token but show structure
+    if "authToken=" in url:
+        token_start = url.index("authToken=") + len("authToken=")
+        token_end = url.index("&", token_start) if "&" in url[token_start:] else len(url)
+        token = url[token_start:token_end]
+        redacted_url = url[:token_start] + f"[{len(token)} chars, first10={token[:10]}]" + url[token_end:]
+    else:
+        redacted_url = url
     try:
         await _ensure_db()
-        return {"status": "db_ok", "tables_created": True}
+        return {"status": "db_ok", "tables_created": True, "url_structure": redacted_url}
     except Exception as e:
-        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
+        return {"status": "error", "error": str(e), "url_structure": redacted_url, "traceback": traceback.format_exc()}
 
 
 @app.get("/api/tasks", summary="List all available tasks with configuration")
