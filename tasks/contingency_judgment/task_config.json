@@ -2,6 +2,7 @@
     "task_id": "contingency_judgment",
     "task_name": "Contingency Judgment",
     "domain": "causal_reasoning",
+    "citation": "Jenkins & Ward (1965)",
     "description": "Judge causal strength between events from observed co-occurrences",
     "parameters": {
         "n_trials": 4,

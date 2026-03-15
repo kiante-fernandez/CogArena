@@ -2,6 +2,8 @@
     "task_id": "intertemporal_choice",
     "task_name": "Intertemporal Choice (Temporal Discounting)",
     "domain": "decision_making",
+    "citation": "Haines et al. (2020) Clin Psychol Sci",
+    "psych201_reference": "haines2020intertemporal_choice",
     "description": "Binary choices between smaller-sooner and larger-later rewards measuring temporal discounting",
     "parameters": {
         "n_trials": 60,

@@ -3,7 +3,7 @@
     "task_name": "Random Dot Motion (Magnitude Discrimination)",
     "domain": "perception",
     "description": "Compare two dot arrays and identify which has more dots, testing perceptual discrimination and speed-accuracy tradeoff",
-    "citation": "Pirrone et al. (2018) Psychonomic Bulletin & Review",
+    "citation": "Pirrone, Wen & Li (2018) BMC Neurosci",
     "psych201_reference": "pirrone_2018_dots",
     "parameters": {
         "n_trials": 120,

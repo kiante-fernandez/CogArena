@@ -2,6 +2,7 @@
     "task_id": "trust_game",
     "task_name": "Trust Game",
     "domain": "social_strategic",
+    "citation": "Berg, Dickhaut & McCabe (1995) Games Econ Behav",
     "description": "Investment game with simulated partners of varying trustworthiness",
     "parameters": {
         "n_trials": 15,

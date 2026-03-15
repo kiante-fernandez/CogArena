@@ -2,6 +2,8 @@
     "task_id": "risky_choice",
     "task_name": "Risky Choice (Gambles)",
     "domain": "decision_making",
+    "citation": "Thoma & Schulze (2025) J Exp Child Psychol",
+    "psych201_reference": "thoma2025riskychoice",
     "description": "Binary choices between safe and risky options across gain, loss, and mixed domains",
     "parameters": {
         "n_trials": 60,

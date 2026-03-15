@@ -2,6 +2,8 @@
     "task_id": "two_armed_bandit",
     "task_name": "2-Armed Bandit (Horizon Task)",
     "domain": "multi_armed_bandits",
+    "citation": "Wilson et al. (2014) J Exp Psychol Gen",
+    "psych101_reference": "wilson2014humans",
     "description": "Explore-exploit tradeoff with horizon manipulation",
     "parameters": {
         "n_free_choice_trials": 140,

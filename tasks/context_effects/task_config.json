@@ -3,7 +3,7 @@
     "task_name": "Context Effects (Multi-Alternative Choice)",
     "domain": "decision_making",
     "description": "Three-option choice task testing attraction, compromise, and similarity effects in decisions from experience",
-    "citation": "Spektor et al. (2019) J Exp Psychol Learn Mem Cogn",
+    "citation": "Spektor et al. (2019) Psychol Rev",
     "psych201_reference": "spektor2019contexteffects",
     "parameters": {
         "n_trials": 90,

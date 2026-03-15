@@ -2,6 +2,8 @@
     "task_id": "prisoners_dilemma",
     "task_name": "Repeated Prisoner's Dilemma",
     "domain": "social_strategic",
+    "citation": "Akata et al. (2023)",
+    "psych201_reference": "akata2023repeatedgames",
     "description": "Repeated cooperation-defection game against a tit-for-tat partner measuring strategic reciprocity",
     "parameters": {
         "n_trials": 50,

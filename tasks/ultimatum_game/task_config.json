@@ -2,6 +2,8 @@
     "task_id": "ultimatum_game",
     "task_name": "Ultimatum Game",
     "domain": "social_strategic",
+    "citation": "Heffner & FeldmanHall (2022) Nat Commun",
+    "psych201_reference": "heffner2022_economicgames",
     "description": "Propose and respond to monetary offers testing fairness norms and strategic reasoning",
     "parameters": {
         "n_trials": 20,

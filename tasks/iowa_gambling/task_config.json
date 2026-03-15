@@ -3,7 +3,8 @@
     "task_name": "Iowa Gambling Task",
     "domain": "decision_making",
     "version": "1.0.0",
-    "citation": "Bechara, Damasio, Damasio & Anderson, 1994",
+    "citation": "Steingroever et al. (2015)",
+    "psych101_reference": "steingroever2015data",
     "description": "Choose from four card decks with different reward/punishment schedules. Measures decision-making under ambiguity and learning from feedback.",
     "parameters": {
         "n_trials": 100,

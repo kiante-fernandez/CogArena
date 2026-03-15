@@ -26,6 +26,9 @@
                     {% if task.description %}
                     <p class="text-sm text-gray-500 mt-2">{{ task.description }}</p>
                     {% endif %}
+                    {% if task.citation %}
+                    <p class="text-xs text-gray-400 mt-1 italic">{{ task.citation }}</p>
+                    {% endif %}
                 </div>
                 <span class="text-gray-400 text-xl shrink-0 ml-4">&rarr;</span>
             </div>

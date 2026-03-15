@@ -2,6 +2,8 @@
     "task_id": "n_back",
     "task_name": "N-Back (2-Back)",
     "domain": "memory_learning",
+    "citation": "Enkavi et al. (2019)",
+    "psych101_reference": "enkavi2019adaptivenback",
     "description": "Working memory task: respond when current letter matches the one 2 trials back",
     "parameters": {
         "n_trials": 120,

@@ -3,7 +3,8 @@
     "task_name": "Navon Global/Local Task",
     "domain": "perception_attention",
     "version": "1.0.0",
-    "citation": "Navon, 1977",
+    "citation": "Busch, Geyer & Zinchenko (2024) Psychophysiology",
+    "psych201_reference": "busch2024_navon",
     "description": "Identify letters at global or local level of hierarchical Navon figures. Tests global precedence in visual attention — processing large (global) letters faster than small (local) letters.",
     "parameters": {
         "n_trials": 80,

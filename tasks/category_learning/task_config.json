@@ -2,6 +2,8 @@
     "task_id": "category_learning",
     "task_name": "Category Learning (Shepard Classification)",
     "domain": "memory_learning",
+    "citation": "Levering & Kurtz (2020) Cogn Sci",
+    "psych101_reference": "levering2020revisiting",
     "description": "Learn to classify stimuli into categories based on binary features with corrective feedback",
     "parameters": {
         "n_trials": 120,

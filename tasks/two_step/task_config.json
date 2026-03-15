@@ -3,7 +3,8 @@
     "task_name": "Two-Step Task (Model-Based vs. Model-Free RL)",
     "domain": "reinforcement_learning",
     "version": "1.0.0",
-    "citation": "Daw et al. (2011)",
+    "citation": "Kool et al. (2016) Psychol Sci",
+    "psych101_reference": "kool2016when",
     "description": "Two-stage Markov decision task with common and rare transitions measuring model-based vs. model-free learning",
     "parameters": {
         "n_trials": 100,

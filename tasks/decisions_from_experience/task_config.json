@@ -2,6 +2,8 @@
     "task_id": "decisions_from_experience",
     "task_name": "Decisions from Experience (Sampling Paradigm)",
     "domain": "decision_making",
+    "citation": "Frey et al. (2017) Sci Adv",
+    "psych201_reference": "frey2017dfe",
     "description": "Sample from options before making a final choice, testing the description-experience gap",
     "parameters": {
         "n_trials": 20,

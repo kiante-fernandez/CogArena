@@ -3,7 +3,8 @@
     "task_name": "Go/No-Go Task",
     "domain": "perception_attention",
     "version": "1.0.0",
-    "citation": "Donders, 1969; Logan, 1994",
+    "citation": "Enkavi et al. (2019)",
+    "psych101_reference": "enkavi2019gonogo",
     "description": "Respond to frequent 'go' stimuli while withholding responses to infrequent 'no-go' stimuli. Measures response inhibition and impulsivity.",
     "parameters": {
         "n_trials": 100,

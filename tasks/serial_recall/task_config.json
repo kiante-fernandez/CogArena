@@ -2,6 +2,7 @@
     "task_id": "serial_recall",
     "task_name": "Serial Recall (Free Recall)",
     "domain": "memory_learning",
+    "citation": "Murdock (1962) J Exp Psychol",
     "description": "Study lists of words and recall them in order, measuring serial position effects",
     "parameters": {
         "n_trials": 10,

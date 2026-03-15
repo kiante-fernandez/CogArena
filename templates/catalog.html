@@ -16,7 +16,10 @@
                 {{ task.domain_label }}
             </span>
             {% if task.description %}
-            <p class="text-sm text-gray-500 mb-4 flex-1">{{ task.description }}</p>
+            <p class="text-sm text-gray-500 mb-2 flex-1">{{ task.description }}</p>
+            {% endif %}
+            {% if task.citation %}
+            <p class="text-xs text-gray-400 mb-4 italic">{{ task.citation }}</p>
             {% endif %}
             <div class="space-y-1.5 text-sm text-gray-600 mb-4">
                 <div class="flex justify-between">

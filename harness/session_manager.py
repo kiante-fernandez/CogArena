@@ -243,7 +243,7 @@ class SessionManager:
         )
         sessions = list(result.scalars().all())
 
-        # Aggregate scores by (model_name, scaffold) instead of per-session
+        # Aggregate scores by (model_name, scaffold), keeping best per task
         grouped: dict[tuple[str, str], dict] = {}
         for session in sessions:
             if not session.scores:
@@ -256,11 +256,14 @@ class SessionManager:
                     "scaffold": session.scaffold,
                     "model_name": session.model_name,
                     "observation_mode": session.observation_mode,
-                    "all_scores": [],
+                    "best_by_task": {},
                     "latest_at": session.updated_at,
                 }
             group = grouped[key]
-            group["all_scores"].extend(session.scores)
+            for score in session.scores:
+                existing = group["best_by_task"].get(score.task_id)
+                if existing is None or score.composite > existing.composite:
+                    group["best_by_task"][score.task_id] = score
             if session.updated_at and (
                 group["latest_at"] is None
                 or session.updated_at > group["latest_at"]
@@ -269,17 +272,19 @@ class SessionManager:
 
         entries = []
         for group in grouped.values():
-            all_scores = group["all_scores"]
-            n = len(all_scores)
+            best_scores = list(group["best_by_task"].values())
+            n = len(best_scores)
+            if n == 0:
+                continue
             entries.append({
                 "agent_name": group["agent_name"],
                 "scaffold": group["scaffold"],
                 "model_name": group["model_name"],
                 "observation_mode": group["observation_mode"],
-                "composite_score": round(sum(s.composite for s in all_scores) / n, 2),
-                "l1_overall": round(sum(s.l1_completion for s in all_scores) / n, 4),
-                "l2_overall": round(sum(s.l2_accuracy for s in all_scores) / n, 4),
-                "l3_overall": round(sum(s.l3_behavioral for s in all_scores) / n, 4),
+                "composite_score": round(sum(s.composite for s in best_scores) / n, 2),
+                "l1_overall": round(sum(s.l1_completion for s in best_scores) / n, 4),
+                "l2_overall": round(sum(s.l2_accuracy for s in best_scores) / n, 4),
+                "l3_overall": round(sum(s.l3_behavioral for s in best_scores) / n, 4),
                 "tasks_completed": n,
                 "evaluated_at": group["latest_at"].isoformat() if group["latest_at"] else None,
             })

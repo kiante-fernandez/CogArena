@@ -3,7 +3,7 @@
     "task_name": "Stroop Color-Word Interference Task",
     "domain": "perception_attention",
     "version": "1.0.0",
-    "citation": "Stroop, 1935",
+    "citation": "Busch, Geyer & Zinchenko (2024) Psychophysiology",
     "psych201_reference": "busch2024_stroop",
     "cogbench_reference": null,
     "parameters": {

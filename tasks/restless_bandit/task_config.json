@@ -2,6 +2,8 @@
     "task_id": "restless_bandit",
     "task_name": "Restless Bandit (Drifting Rewards)",
     "domain": "exploration_exploitation",
+    "citation": "Anvari et al. (2024) Nat Commun",
+    "psych201_reference": "anvari2024armed_bandit",
     "description": "Two-armed bandit with drifting reward distributions requiring continuous tracking",
     "parameters": {
         "n_trials": 100,
