@@ -5468,3 +5468,1322 @@ def human_like_function_estimation_data():
 @pytest.fixture
 def random_function_estimation_data():
     return _generate_function_estimation_trials(base_error=0.5, seed=99)
+
+
+# ---------- Random Dot Motion v2 (direction discrimination) ----------
+
+def _generate_random_dot_motion_v2_trials(
+    n_trials=120,
+    coherence_levels=(0.05, 0.10, 0.20, 0.40, 0.80),
+    direction_accuracy_slope=1.0,   # >0 means accuracy ramps with coherence
+    base_accuracy=0.50,             # accuracy at coherence=0
+    rt_coherence_slope=-300,        # >0 means RT increases with coherence (we expect <0)
+    base_rt=900,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Generate human-like RDM-direction trial data.
+
+    Per-trial accuracy: clipped(base_accuracy + slope*coherence) -- e.g. with
+    base=0.5, slope=0.6, coherence=0.8 yields accuracy ≈ 0.98.
+    Per-trial mean RT: base_rt + rt_coherence_slope * coherence.
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    directions = ["left", "right"]
+    key_map = {"left": "f", "right": "j"}
+    per_cell = max(1, n_trials // (len(coherence_levels) * len(directions)))
+
+    trials = []
+    for c_idx, coh in enumerate(coherence_levels):
+        for d_idx, direction in enumerate(directions):
+            for k in range(per_cell):
+                if len(trials) >= n_trials:
+                    break
+                # Accuracy ramps with coherence (asymptotes near 1.0).
+                acc = max(0.0, min(0.995, base_accuracy + direction_accuracy_slope * coh / 2.0))
+                timed_out = rng.random() < timeout_rate
+                if timed_out:
+                    response = None
+                    is_correct = False
+                    rt = None
+                else:
+                    is_correct = rng.random() < acc
+                    response = key_map[direction] if is_correct else key_map["right" if direction == "left" else "left"]
+                    rt_mean = base_rt + rt_coherence_slope * coh
+                    rt = max(150, float(np_rng.normal(rt_mean, 120)))
+                trials.append({
+                    "trial_part": "stimulus",
+                    "trial_index": len(trials) + 1,
+                    "block": (c_idx * len(directions) + d_idx) // 2 + 1,
+                    "condition": "low" if coh <= 0.10 else "medium" if coh <= 0.20 else "high",
+                    "coherence": coh,
+                    "direction": direction,
+                    "correct_key": key_map[direction],
+                    "response": response,
+                    "correct": is_correct,
+                    "rt": rt,
+                    "timed_out": timed_out,
+                })
+
+    rng.shuffle(trials)
+    # Renumber trial_index after shuffle.
+    for i, t in enumerate(trials):
+        t["trial_index"] = i + 1
+    return trials
+
+
+@pytest.fixture
+def random_dot_motion_v2_config():
+    return {
+        "task_id": "random_dot_motion_v2",
+        "parameters": {
+            "n_trials": 120,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+            "required_fields": [
+                "trial_index", "block", "condition", "coherence", "direction",
+                "correct_key", "response", "correct", "rt", "timed_out"
+            ],
+        },
+    }
+
+
+_RDM_V2_DIR = (
+    __import__("pathlib").Path(__file__).resolve().parent.parent.parent
+    / "tasks" / "random_dot_motion_v2" / "scoring"
+)
+
+
+@pytest.fixture
+def random_dot_motion_v2_metrics():
+    with open(_RDM_V2_DIR / "level2_metrics.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def random_dot_motion_v2_signatures():
+    with open(_RDM_V2_DIR / "level3_signatures.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def human_like_random_dot_motion_v2_data():
+    return _generate_random_dot_motion_v2_trials(
+        direction_accuracy_slope=1.0, base_accuracy=0.50, rt_coherence_slope=-400, base_rt=950,
+    )
+
+
+@pytest.fixture
+def random_random_dot_motion_v2_data():
+    return _generate_random_dot_motion_v2_trials(
+        direction_accuracy_slope=0.0, base_accuracy=0.50, rt_coherence_slope=0, base_rt=850, seed=99,
+    )
+
+
+# ---------- Grid Bandit (Witte safe-vs-risky spatial bandit) ----------
+
+def _generate_grid_bandit_trials(
+    n_blocks=11,
+    clicks_per_block=10,
+    n_safe_blocks=6,
+    n_risky_blocks=5,
+    grid_size=11,
+    kraken_threshold=50,
+    high_value_pref=0.7,        # P(click on a tile with z_true>50) for "human-like"
+    risky_extra_caution=0.15,   # additional P(z>50) in risky blocks
+    exploit_pull=0.5,           # 0=random, 1=always close after high reward
+    learning_slope=2.0,         # mean z gain per click position within a block
+    seed=42,
+):
+    """Generate human-like grid_bandit trial data.
+
+    Simulates a smoothed-grid bandit where the agent picks high-value tiles with
+    probability `high_value_pref` (boosted by `risky_extra_caution` in risky blocks),
+    moves a small distance after a high-reward click ("exploit pull"), and observed
+    reward drifts up across the 10 within-block clicks ("learning_slope").
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    conditions = ["safe"] * n_safe_blocks + ["risky"] * n_risky_blocks
+    rng.shuffle(conditions)
+    trials = []
+    trial_index = 0
+
+    for block_idx, condition in enumerate(conditions, start=1):
+        env_idx = rng.randint(0, 29)
+        block_pref = high_value_pref + (risky_extra_caution if condition == "risky" else 0.0)
+        block_pref = max(0.0, min(0.99, block_pref))
+
+        last_x, last_y, last_z = None, None, None
+        running_reward = 0
+        for click_idx in range(1, clicks_per_block + 1):
+            picks_high = rng.random() < block_pref
+            # z_true: high-value tile yields ~65 +/- 12; low-value ~35 +/- 12.
+            if picks_high:
+                z_true = max(0, min(100, int(np_rng.normal(70, 10))))
+            else:
+                z_true = max(0, min(100, int(np_rng.normal(35, 10))))
+            # Within-block learning bumps the mean of z up over click_idx.
+            z_obs = max(0, min(100, int(z_true + learning_slope * (click_idx - 1) + np_rng.normal(0, 1))))
+
+            # Position: if last reward was high and exploit_pull is on, place closer.
+            if last_x is not None and last_z is not None and last_z > 50 and rng.random() < exploit_pull:
+                dx = rng.choice([-1, 0, 1])
+                dy = rng.choice([-1, 0, 1])
+                x = max(0, min(grid_size - 1, last_x + dx))
+                y = max(0, min(grid_size - 1, last_y + dy))
+            else:
+                x = rng.randrange(grid_size)
+                y = rng.randrange(grid_size)
+            distance = None
+            if last_x is not None:
+                distance = float(((x - last_x) ** 2 + (y - last_y) ** 2) ** 0.5)
+
+            kraken_caught = (condition == "risky" and z_true <= kraken_threshold)
+            running_reward = 0 if kraken_caught else running_reward + z_obs
+
+            trial_index += 1
+            trials.append({
+                "trial_part": "click",
+                "trial_index": trial_index,
+                "block": block_idx,
+                "click_in_block": click_idx,
+                "block_condition": condition,
+                "env_idx": env_idx,
+                "x": x, "y": y,
+                "z": z_obs,
+                "z_true": z_true,
+                "z_above_50": z_obs > 50,
+                "previous_z": last_z,
+                "distance_from_last": distance,
+                "is_repeat_tile": False,
+                "kraken_caught": kraken_caught,
+                "timed_out": False,
+                "rt": float(np_rng.uniform(800, 2000)),
+            })
+            last_x, last_y, last_z = x, y, z_obs
+
+    return trials
+
+
+_GRID_BANDIT_DIR = (
+    __import__("pathlib").Path(__file__).resolve().parent.parent.parent
+    / "tasks" / "grid_bandit" / "scoring"
+)
+
+
+@pytest.fixture
+def grid_bandit_config():
+    return {
+        "task_id": "grid_bandit",
+        "parameters": {
+            "n_trials": 110,
+            "response_keys": [],
+            "response_type": "button",
+            "required_fields": [
+                "trial_index", "block", "click_in_block", "block_condition",
+                "env_idx", "x", "y", "z", "z_true", "previous_z",
+                "distance_from_last", "is_repeat_tile", "kraken_caught", "rt",
+            ],
+        },
+    }
+
+
+@pytest.fixture
+def grid_bandit_metrics():
+    with open(_GRID_BANDIT_DIR / "level2_metrics.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def grid_bandit_signatures():
+    with open(_GRID_BANDIT_DIR / "level3_signatures.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def human_like_grid_bandit_data():
+    return _generate_grid_bandit_trials(
+        high_value_pref=0.7, risky_extra_caution=0.15, exploit_pull=0.6, learning_slope=2.0,
+    )
+
+
+@pytest.fixture
+def random_grid_bandit_data():
+    return _generate_grid_bandit_trials(
+        high_value_pref=0.5, risky_extra_caution=0.0, exploit_pull=0.0, learning_slope=0.0, seed=99,
+    )
+
+
+# ---------- Repeated Games (PD + BoS, Akata 2023) ----------
+
+_REPEATED_GAMES_PAYOFFS = {
+    "pd":  {"FF": (5, 5),  "FJ": (10, 0), "JF": (0, 10), "JJ": (8, 8)},
+    "bos": {"FF": (10, 7), "FJ": (0, 0),  "JF": (0, 0),  "JJ": (7, 10)},
+}
+
+
+def _bot_move_repeated(game, player_hist, opp_hist):
+    if game == "pd":
+        # Tit-for-tat: cooperate (J) first, then mirror.
+        return "j" if not player_hist else player_hist[-1]
+    if game == "bos":
+        # Alternation starting with F.
+        return "f" if len(opp_hist) % 2 == 0 else "j"
+    return "j"
+
+
+def _generate_repeated_games_trials(
+    rounds_per_game=15,
+    coop_prob_pd=0.6,         # P(cooperate) when no reciprocity signal
+    reciprocity_strength=0.5, # additive boost to coop_prob when opp cooperated last
+    bos_match_prob=0.7,       # P(player picks the action the bot will pick this round)
+    timeout_rate=0.0,
+    game_order=("pd", "bos"),
+    seed=42,
+):
+    """Simulate human-like repeated-games trials.
+
+    For PD: player cooperates with probability `coop_prob_pd`, boosted by
+    `reciprocity_strength` if the bot cooperated last round.
+    For BoS: player matches the bot's known alternation pattern with
+    probability `bos_match_prob` (perfect coordinator at 1.0).
+    """
+    rng = random.Random(seed)
+    trials = []
+    trial_index = 0
+
+    for block_order, game in enumerate(game_order, start=1):
+        player_hist = []
+        opp_hist = []
+        for r in range(1, rounds_per_game + 1):
+            timed_out = rng.random() < timeout_rate
+
+            if not timed_out:
+                if game == "pd":
+                    p_coop = coop_prob_pd
+                    if opp_hist and opp_hist[-1] == "j":
+                        p_coop = min(0.99, p_coop + reciprocity_strength)
+                    elif opp_hist and opp_hist[-1] == "f":
+                        p_coop = max(0.0, p_coop - reciprocity_strength)
+                    pa = "j" if rng.random() < p_coop else "f"
+                else:  # bos
+                    bot_next = _bot_move_repeated("bos", player_hist, opp_hist)
+                    pa = bot_next if rng.random() < bos_match_prob else ("f" if bot_next == "j" else "j")
+            else:
+                pa = rng.choice(["f", "j"])
+
+            oa = _bot_move_repeated(game, player_hist, opp_hist)
+            po = _REPEATED_GAMES_PAYOFFS[game][pa.upper() + oa.upper()]
+
+            prev_opp_coop_pd = None
+            if game == "pd" and opp_hist:
+                prev_opp_coop_pd = (opp_hist[-1] == "j")
+
+            trial_index += 1
+            trials.append({
+                "trial_part": "round",
+                "trial_index": trial_index,
+                "game": game,
+                "block_order": block_order,
+                "round": r,
+                "player_action": pa,
+                "opponent_action": oa,
+                "player_cooperate": (pa == "j") if game == "pd" else None,
+                "opponent_cooperate": (oa == "j") if game == "pd" else None,
+                "prev_opp_coop_pd": prev_opp_coop_pd,
+                "coordinated": (pa == oa) if game == "bos" else None,
+                "player_payoff": po[0],
+                "opponent_payoff": po[1],
+                "rt": float(rng.uniform(800, 2500)),
+                "timed_out": timed_out,
+            })
+            player_hist.append(pa)
+            opp_hist.append(oa)
+
+    return trials
+
+
+_REPEATED_GAMES_DIR = (
+    __import__("pathlib").Path(__file__).resolve().parent.parent.parent
+    / "tasks" / "repeated_games" / "scoring"
+)
+
+
+@pytest.fixture
+def repeated_games_config():
+    return {
+        "task_id": "repeated_games",
+        "parameters": {
+            "n_trials": 30,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+            "required_fields": [
+                "trial_index", "game", "block_order", "round",
+                "player_action", "opponent_action",
+                "player_cooperate", "opponent_cooperate",
+                "prev_opp_coop_pd", "coordinated",
+                "player_payoff", "opponent_payoff",
+                "rt", "timed_out",
+            ],
+        },
+    }
+
+
+@pytest.fixture
+def repeated_games_metrics():
+    with open(_REPEATED_GAMES_DIR / "level2_metrics.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def repeated_games_signatures():
+    with open(_REPEATED_GAMES_DIR / "level3_signatures.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def human_like_repeated_games_data():
+    # `coop_prob_pd=0.5, reciprocity_strength=0.3` keeps cooperation around 0.5 with
+    # enough swing in both directions for the prev_opp_coop_pd predictor to have
+    # meaningful variance across the 9 PD rounds where it's defined (rounds 2-10).
+    return _generate_repeated_games_trials(
+        coop_prob_pd=0.5, reciprocity_strength=0.3, bos_match_prob=0.75,
+    )
+
+
+@pytest.fixture
+def random_repeated_games_data():
+    return _generate_repeated_games_trials(
+        coop_prob_pd=0.5, reciprocity_strength=0.0, bos_match_prob=0.5, seed=99,
+    )
+
+
+# ---------- Marbles (Risky Choice from Description) ----------
+
+def _generate_marbles_risk_trials(
+    n_repetitions=4,
+    safe_value=5,
+    probabilities=(0.125, 0.25, 0.375, 0.5, 0.675, 0.75),
+    gamble_values=(8, 20, 50),
+    excluded=((0.25, 8), (0.75, 50)),
+    risk_aversion=0.6,
+    ev_sensitivity=0.6,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Generate human-like Marbles trial data.
+
+    Choice probability follows a logistic with two terms: an EV-sensitivity term
+    (slope on ev_diff) and a risk-aversion penalty (subtracted from the risky
+    utility). Position is balanced and randomized.
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    combos = []
+    for p in probabilities:
+        for v in gamble_values:
+            if any(abs(ex[0] - p) < 1e-9 and ex[1] == v for ex in excluded):
+                continue
+            combos.append((p, v))
+    trials = []
+    trial_idx = 0
+    for r in range(n_repetitions):
+        for p, v in combos:
+            ev_risky = p * v
+            ev_diff = ev_risky - safe_value
+            safe_position = "left" if rng.random() < 0.5 else "right"
+            risky_position = "right" if safe_position == "left" else "left"
+            has_clear_better = abs(ev_diff) >= 0.05
+            near_neutral_ev = abs(ev_diff) <= 1.0
+            correct_key_higher_ev = None
+            if has_clear_better:
+                winning_position = risky_position if ev_diff > 0 else safe_position
+                correct_key_higher_ev = "f" if winning_position == "left" else "j"
+
+            slope = 4.0 * ev_sensitivity
+            risk_pen = 1.5 * risk_aversion
+            logit = slope * ev_diff - risk_pen
+            p_risky = 1.0 / (1.0 + np.exp(-logit))
+            timed_out = rng.random() < timeout_rate
+            if timed_out:
+                response = None
+                chose_risky = None
+                chose_higher_ev = None
+                rt = None
+            else:
+                chose_risky = rng.random() < p_risky
+                picked_position = risky_position if chose_risky else safe_position
+                response = "f" if picked_position == "left" else "j"
+                chose_higher_ev = (response == correct_key_higher_ev) if correct_key_higher_ev else None
+                rt = max(200, float(np_rng.normal(2200, 700)))
+
+            trial_idx += 1
+            trials.append({
+                "trial_part": "stimulus",
+                "trial_index": trial_idx,
+                "probability": p,
+                "gamble_value": v,
+                "safe_value": safe_value,
+                "ev_risky": ev_risky,
+                "ev_diff": ev_diff,
+                "safe_position": safe_position,
+                "correct_key_higher_ev": correct_key_higher_ev,
+                "has_clear_better": has_clear_better,
+                "near_neutral_ev": near_neutral_ev,
+                "response": response,
+                "chose_risky": chose_risky,
+                "chose_higher_ev": chose_higher_ev,
+                "rt": rt,
+                "timed_out": timed_out,
+            })
+    rng.shuffle(trials)
+    for i, t in enumerate(trials):
+        t["trial_index"] = i + 1
+    return trials
+
+
+_MARBLES_DIR = (
+    __import__("pathlib").Path(__file__).resolve().parent.parent.parent
+    / "tasks" / "marbles_risk" / "scoring"
+)
+
+
+@pytest.fixture
+def marbles_risk_config():
+    return {
+        "task_id": "marbles_risk",
+        "parameters": {
+            "n_trials": 64,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+            "required_fields": [
+                "trial_index", "probability", "gamble_value", "safe_value",
+                "ev_risky", "ev_diff", "safe_position", "correct_key_higher_ev",
+                "has_clear_better", "near_neutral_ev",
+                "response", "chose_risky", "chose_higher_ev", "rt", "timed_out",
+            ],
+        },
+    }
+
+
+@pytest.fixture
+def marbles_risk_metrics():
+    with open(_MARBLES_DIR / "level2_metrics.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def marbles_risk_signatures():
+    with open(_MARBLES_DIR / "level3_signatures.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def human_like_marbles_risk_data():
+    return _generate_marbles_risk_trials(risk_aversion=0.6, ev_sensitivity=0.7)
+
+
+@pytest.fixture
+def random_marbles_risk_data():
+    return _generate_marbles_risk_trials(risk_aversion=0.0, ev_sensitivity=0.0, seed=99)
+
+
+# ---------- Moral Machine (autonomous-vehicle dilemmas) ----------
+
+def _generate_moral_machine_trials(
+    trials_per_dim=None,
+    p_utilitarian=0.78,
+    p_save_young=0.72,
+    p_save_human=0.85,
+    p_save_legal=0.62,
+    p_intervention=0.46,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Generate moral_machine trial data.
+
+    For each dimension, the simulated agent picks the canonical-target option
+    (the option that matches the canonical human preference) with the
+    dimension-specific probability.
+    """
+    if trials_per_dim is None:
+        trials_per_dim = {"number": 10, "age": 10, "species": 10, "legality": 6, "intervention": 4}
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    p_target = {
+        "number": p_utilitarian,
+        "age": p_save_young,
+        "species": p_save_human,
+        "legality": p_save_legal,
+        # For intervention, target = no_intervention; chose_intervention=True means swerved.
+        # So P(chose_target) = 1 - p_intervention.
+        "intervention": 1.0 - p_intervention,
+    }
+    trials = []
+    sid = 1
+    for dim, n in trials_per_dim.items():
+        for _ in range(n):
+            timed_out = rng.random() < timeout_rate
+            if timed_out:
+                chose_target = False
+                response = None
+            else:
+                chose_target = rng.random() < p_target[dim]
+                response = "f" if rng.random() < 0.5 else "j"
+            target_on_left = rng.random() < 0.5
+            chose_side = None if timed_out else ("left" if response == "f" else "right")
+            t = {
+                "trial_part": "scenario",
+                "trial_index": len(trials) + 1,
+                "scenario_id": f"scn_{sid}",
+                "dimension": dim,
+                "side_left_description": "synthetic",
+                "side_right_description": "synthetic",
+                "side_left_count": 1,
+                "side_right_count": 1,
+                "side_left_attributes": "synthetic",
+                "side_right_attributes": "synthetic",
+                "side_left_is_target": target_on_left,
+                "side_right_is_target": not target_on_left,
+                "chose_side": chose_side,
+                "chose_target": chose_target,
+                "chose_utilitarian": chose_target if dim == "number" else None,
+                "chose_young": chose_target if dim == "age" else None,
+                "chose_human": chose_target if dim == "species" else None,
+                "chose_legal": chose_target if dim == "legality" else None,
+                # Inverse coding: chose_intervention=True means agent swerved (NOT target).
+                "chose_intervention": (not chose_target) if dim == "intervention" else None,
+                "rt": float(np_rng.uniform(2000, 8000)) if not timed_out else None,
+                "timed_out": timed_out,
+            }
+            trials.append(t)
+            sid += 1
+    rng.shuffle(trials)
+    for i, t in enumerate(trials):
+        t["trial_index"] = i + 1
+    return trials
+
+
+_MORAL_MACHINE_DIR = (
+    __import__("pathlib").Path(__file__).resolve().parent.parent.parent
+    / "tasks" / "moral_machine" / "scoring"
+)
+
+
+@pytest.fixture
+def moral_machine_config():
+    return {
+        "task_id": "moral_machine",
+        "parameters": {
+            "n_trials": 40,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+            "required_fields": [
+                "trial_index", "scenario_id", "dimension",
+                "side_left_description", "side_right_description",
+                "side_left_count", "side_right_count",
+                "side_left_attributes", "side_right_attributes",
+                "side_left_is_target", "side_right_is_target",
+                "chose_side", "chose_target",
+                "chose_utilitarian", "chose_young", "chose_human", "chose_legal", "chose_intervention",
+                "rt", "timed_out",
+            ],
+        },
+    }
+
+
+@pytest.fixture
+def moral_machine_metrics():
+    with open(_MORAL_MACHINE_DIR / "level2_metrics.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def moral_machine_signatures():
+    with open(_MORAL_MACHINE_DIR / "level3_signatures.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def human_like_moral_machine_data():
+    return _generate_moral_machine_trials(
+        p_utilitarian=0.80, p_save_young=0.75, p_save_human=0.90,
+        p_save_legal=0.65, p_intervention=0.40,
+    )
+
+
+@pytest.fixture
+def random_moral_machine_data():
+    return _generate_moral_machine_trials(
+        p_utilitarian=0.50, p_save_young=0.50, p_save_human=0.50,
+        p_save_legal=0.50, p_intervention=0.50, seed=99,
+    )
+
+
+
+# ---------- Tiny Alchemy ----------
+
+def _generate_tiny_alchemy_trials(
+    n_attempts=80,
+    n_total_elements=540,
+    n_initial_inventory=4,
+    base_success_rate=0.40,
+    empowerment_strength=1.5,
+    novelty_decline_strength=0.5,
+    success_indegree_scaling=0.6,   # 0=success rate independent of in-degree (random); >0=human-like
+    seed=42,
+):
+    """Generate human-like Tiny Alchemy attempt data.
+
+    Each attempt: pick a pair of inventory elements with probability proportional
+    to their in-degree (n_recipes_in). Success rate scales with mean in-degree.
+    Novel discovery rate declines as inventory grows.
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    inventory = list(range(n_initial_inventory))
+    inventory_set = set(inventory)
+    attempts = []
+    in_degrees = [50, 50, 50, 50] + list(np_rng.lognormal(1.5, 0.8, n_total_elements - 4).round().astype(int))
+    in_degrees = [max(1, int(x)) for x in in_degrees]
+
+    for i in range(n_attempts):
+        weights = [in_degrees[idx] ** empowerment_strength for idx in inventory]
+        a = rng.choices(inventory, weights=weights, k=1)[0]
+        b = rng.choices(inventory, weights=weights, k=1)[0]
+        if a == b and len(inventory) > 1:
+            choices = [x for x in inventory if x != a]
+            b = rng.choices(choices, weights=[in_degrees[x] ** empowerment_strength for x in choices], k=1)[0]
+
+        avg_in = (in_degrees[a] + in_degrees[b]) / 2.0
+        if success_indegree_scaling > 0:
+            logit = np.log(max(0.5, avg_in)) - 1.5
+            p_success_raw = 1.0 / (1.0 + np.exp(-logit))
+            p_success = base_success_rate + (p_success_raw - base_success_rate) * success_indegree_scaling
+        else:
+            p_success = base_success_rate
+        is_success = rng.random() < p_success
+
+        result_idx = None
+        is_novel = False
+        if is_success:
+            decline_factor = max(0.0, 1.0 - novelty_decline_strength * (i / n_attempts))
+            p_novel = 0.7 * decline_factor + 0.1
+            is_novel = rng.random() < p_novel
+            if is_novel:
+                candidates = [x for x in range(n_total_elements) if x not in inventory_set]
+                if candidates:
+                    result_idx = rng.choice(candidates)
+                else:
+                    is_novel = False
+                    result_idx = rng.choice(list(inventory_set))
+            else:
+                others = [x for x in inventory if x != a and x != b]
+                result_idx = rng.choice(others) if others else a
+
+        sorted_pair = sorted([a, b])
+        attempts.append({
+            "trial_part": "attempt",
+            "trial_index": i + 1,
+            "elapsed_time_ms": (i + 1) * 4500 + rng.randint(-500, 500),
+            "element_a": f"element_{sorted_pair[0]}",
+            "element_b": f"element_{sorted_pair[1]}",
+            "element_a_idx": sorted_pair[0],
+            "element_b_idx": sorted_pair[1],
+            "result": f"element_{result_idx}" if result_idx is not None else None,
+            "result_idx": result_idx,
+            "is_success": is_success,
+            "is_novel_discovery": is_novel,
+            "inventory_size_before": len(inventory),
+            "inventory_size_after": len(inventory) + (1 if is_novel else 0),
+            "a_is_base": sorted_pair[0] < n_initial_inventory,
+            "b_is_base": sorted_pair[1] < n_initial_inventory,
+            "a_n_recipes_in": in_degrees[sorted_pair[0]],
+            "b_n_recipes_in": in_degrees[sorted_pair[1]],
+            "mean_input_recipes_in": (in_degrees[sorted_pair[0]] + in_degrees[sorted_pair[1]]) / 2.0,
+            "result_n_recipes_in": in_degrees[result_idx] if result_idx is not None else 0,
+            "rt": float(rng.uniform(800, 4000)),
+            "timed_out": False,
+        })
+        if is_novel and result_idx is not None:
+            inventory.append(result_idx)
+            inventory_set.add(result_idx)
+
+    return attempts
+
+
+_TINY_ALCHEMY_DIR = (
+    __import__("pathlib").Path(__file__).resolve().parent.parent.parent
+    / "tasks" / "tiny_alchemy" / "scoring"
+)
+
+
+@pytest.fixture
+def tiny_alchemy_config():
+    return {
+        "task_id": "tiny_alchemy",
+        "parameters": {
+            "n_trials": 80,
+            "response_keys": [],
+            "response_type": "button",
+            "required_fields": [
+                "trial_index", "elapsed_time_ms",
+                "element_a", "element_b",
+                "result", "is_success", "is_novel_discovery",
+                "inventory_size_before", "inventory_size_after",
+                "a_is_base", "b_is_base",
+                "a_n_recipes_in", "b_n_recipes_in",
+                "mean_input_recipes_in", "result_n_recipes_in",
+                "rt",
+            ],
+        },
+    }
+
+
+@pytest.fixture
+def tiny_alchemy_metrics():
+    with open(_TINY_ALCHEMY_DIR / "level2_metrics.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def tiny_alchemy_signatures():
+    with open(_TINY_ALCHEMY_DIR / "level3_signatures.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def human_like_tiny_alchemy_data():
+    return _generate_tiny_alchemy_trials(
+        n_attempts=100, base_success_rate=0.40, empowerment_strength=1.5, novelty_decline_strength=0.6,
+    )
+
+
+@pytest.fixture
+def random_tiny_alchemy_data():
+    return _generate_tiny_alchemy_trials(
+        n_attempts=100, base_success_rate=0.005,
+        empowerment_strength=0.0, novelty_decline_strength=0.0,
+        success_indegree_scaling=0.0,
+        seed=99,
+    )
+
+
+# ---------- Serial Recall v2 (Haridi cued paired-associate recall, v1 curated) ----------
+
+def _generate_serial_recall_v2_trials(
+    similarity_levels=(0.2, 0.4, 0.6, 0.8),
+    pairs_per_level=4,
+    base_accuracy=0.5,
+    similarity_slope=0.6,
+    mean_correct_rt=2500,
+    mean_incorrect_rt=4500,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Simulate human-like cued-recall trials.
+
+    Per-trial accuracy: clipped(base_accuracy + similarity_slope * similarity_level / 2).
+    Correct trials get a faster RT than incorrect ones.
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    fake_targets = ["app", "ban", "car", "den", "elm", "fox", "gum", "hat",
+                    "ice", "jam", "key", "log", "map", "nut", "oak", "pig",
+                    "qui", "rod", "sun", "tar", "urn", "van", "wax", "yam"]
+    trials = []
+    target_idx = 0
+    for sim in similarity_levels:
+        for _ in range(pairs_per_level):
+            target3 = fake_targets[target_idx % len(fake_targets)]
+            target_idx += 1
+            target_word = target3 + "ple"
+            cue_word = "cue_" + str(target_idx)
+            timed_out = rng.random() < timeout_rate
+            if timed_out:
+                trials.append({
+                    "trial_part": "recall",
+                    "trial_index": len(trials) + 1,
+                    "study_position": len(trials) + 1,
+                    "cue_word": cue_word, "target_word": target_word, "similarity_level": sim,
+                    "response": "", "response_truncated": "", "target_truncated": target3,
+                    "correct": False, "rt": None, "timed_out": True,
+                })
+                continue
+            acc = max(0.01, min(0.99, base_accuracy + similarity_slope * sim / 2.0))
+            is_correct = rng.random() < acc
+            if is_correct:
+                response = target_word
+                rt = max(300, float(np_rng.normal(mean_correct_rt, 800)))
+            else:
+                while True:
+                    cand = "".join(rng.choice("abcdefghijklmnopqrstuvwxyz") for _ in range(3))
+                    if cand != target3:
+                        break
+                response = cand
+                rt = max(300, float(np_rng.normal(mean_incorrect_rt, 1500)))
+            response_truncated = response[:3].lower()
+            trials.append({
+                "trial_part": "recall",
+                "trial_index": len(trials) + 1,
+                "study_position": len(trials) + 1,
+                "cue_word": cue_word, "target_word": target_word, "similarity_level": sim,
+                "response": response.lower(),
+                "response_truncated": response_truncated,
+                "target_truncated": target3,
+                "correct": response_truncated == target3,
+                "rt": rt, "timed_out": False,
+            })
+    rng.shuffle(trials)
+    for i, t in enumerate(trials):
+        t["trial_index"] = i + 1
+    return trials
+
+
+_SERIAL_RECALL_V2_DIR = (
+    __import__("pathlib").Path(__file__).resolve().parent.parent.parent
+    / "tasks" / "serial_recall_v2" / "scoring"
+)
+
+
+@pytest.fixture
+def serial_recall_v2_config():
+    return {
+        "task_id": "serial_recall_v2",
+        "parameters": {
+            "n_trials": 16,
+            "response_keys": [],
+            "response_type": "text_input",
+            "required_fields": [
+                "trial_index", "trial_part", "study_position", "cue_word",
+                "target_word", "similarity_level", "response", "response_truncated",
+                "target_truncated", "correct", "rt", "timed_out",
+            ],
+        },
+    }
+
+
+@pytest.fixture
+def serial_recall_v2_metrics():
+    with open(_SERIAL_RECALL_V2_DIR / "level2_metrics.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def serial_recall_v2_signatures():
+    with open(_SERIAL_RECALL_V2_DIR / "level3_signatures.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def human_like_serial_recall_v2_data():
+    # seed=1 produces a clean monotonic similarity gradient on the small (16-trial)
+    # design, representative of a typical subject who shows the canonical effect.
+    return _generate_serial_recall_v2_trials(base_accuracy=0.5, similarity_slope=0.6, seed=1)
+
+
+@pytest.fixture
+def random_serial_recall_v2_data():
+    return _generate_serial_recall_v2_trials(base_accuracy=0.0, similarity_slope=0.0, seed=99,
+    )
+
+
+
+# ---------- Visual Recognition (Brady-style old/new) ----------
+
+def _generate_visual_recognition_trials(
+    n_study=50,
+    n_lures=50,
+    hit_rate=0.92,
+    false_alarm_rate=0.08,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Generate test-phase trials only (study trials don't carry signal for L3 here).
+
+    Each test trial: is_old in {True, False}; agent says OLD with prob hit_rate
+    (if is_old) or false_alarm_rate (if not_old).
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+    items = ([{"is_old": True} for _ in range(n_study)] +
+             [{"is_old": False} for _ in range(n_lures)])
+    rng.shuffle(items)
+    for i, item in enumerate(items, start=1):
+        is_old = item["is_old"]
+        timed_out = rng.random() < timeout_rate
+        if timed_out:
+            response = None
+            responded_old = None
+            is_hit = False
+            is_false_alarm = False
+            is_miss = is_old
+            is_correct_rejection = not is_old
+            correct = False
+            rt = None
+        else:
+            p_old = hit_rate if is_old else false_alarm_rate
+            responded_old = rng.random() < p_old
+            response = "f" if responded_old else "j"
+            is_hit = is_old and responded_old
+            is_false_alarm = (not is_old) and responded_old
+            is_miss = is_old and (not responded_old)
+            is_correct_rejection = (not is_old) and (not responded_old)
+            correct = is_hit or is_correct_rejection
+            rt = max(150, float(np_rng.normal(1100, 350)))
+        trials.append({
+            "trial_part": "test",
+            "phase": "test",
+            "trial_index": i,
+            "stimulus_id": f"stim_{i}",
+            "is_old": is_old,
+            "response": response,
+            "responded_old": responded_old,
+            "is_hit": is_hit,
+            "is_false_alarm": is_false_alarm,
+            "is_miss": is_miss,
+            "is_correct_rejection": is_correct_rejection,
+            "correct": correct,
+            "rt": rt,
+            "timed_out": timed_out,
+        })
+    return trials
+
+
+_VISUAL_RECOGNITION_DIR = (
+    __import__("pathlib").Path(__file__).resolve().parent.parent.parent
+    / "tasks" / "visual_recognition" / "scoring"
+)
+
+
+@pytest.fixture
+def visual_recognition_config():
+    return {
+        "task_id": "visual_recognition",
+        "parameters": {
+            "n_trials": 100,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+            "required_fields": [
+                "trial_index", "phase", "stimulus_id",
+                "is_old", "response", "responded_old",
+                "is_hit", "is_false_alarm", "is_miss", "is_correct_rejection",
+                "correct", "rt", "timed_out",
+            ],
+        },
+    }
+
+
+@pytest.fixture
+def visual_recognition_metrics():
+    with open(_VISUAL_RECOGNITION_DIR / "level2_metrics.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def visual_recognition_signatures():
+    with open(_VISUAL_RECOGNITION_DIR / "level3_signatures.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def human_like_visual_recognition_data():
+    return _generate_visual_recognition_trials(hit_rate=0.92, false_alarm_rate=0.08)
+
+
+@pytest.fixture
+def random_visual_recognition_data():
+    return _generate_visual_recognition_trials(hit_rate=0.5, false_alarm_rate=0.5, seed=99)
+
+
+# ---------- Effort Foraging (Bustamante 2023 patch foraging, v1 curated) ----------
+
+def _generate_effort_foraging_trials(
+    n_blocks=2,
+    trials_per_block=40,
+    travel_costs=("low_cost", "high_cost"),
+    travel_cost_seconds=(4, 8),
+    start_reward_mean=70,
+    start_reward_sd=6,
+    decay_rate_mean=0.88,
+    decay_rate_sd=0.04,
+    leave_threshold_low=40,
+    leave_threshold_high=20,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Simulate human-like effort-foraging trial data with a threshold policy."""
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+    trials = []
+    trial_index = 0
+    block_order = list(travel_costs)
+    rng.shuffle(block_order)
+
+    for block_idx, condition in enumerate(block_order, start=1):
+        cost_seconds = travel_cost_seconds[travel_costs.index(condition)]
+        leave_threshold = leave_threshold_low if condition == "low_cost" else leave_threshold_high
+        block_total = 0
+        block_decisions = 0
+        # Use a single-item list to allow mutation from the inner closure.
+        patch_id = [0]
+        current_reward = [0.0]
+        decay_rate = [0.88]
+        harvests_so_far_in_patch = [0]
+
+        def start_new_patch():
+            patch_id[0] += 1
+            current_reward[0] = max(10, min(120, float(np_rng.normal(start_reward_mean, start_reward_sd))))
+            decay_rate[0] = max(0.5, min(0.99, float(np_rng.normal(decay_rate_mean, decay_rate_sd))))
+            harvests_so_far_in_patch[0] = 0
+        start_new_patch()
+
+        for t in range(trials_per_block):
+            timed_out = rng.random() < timeout_rate
+            pre_avg = block_total / block_decisions if block_decisions > 0 else 0.0
+            pre_current_reward = current_reward[0]
+            pre_patch_id = patch_id[0]
+            pre_harvest_in_patch = harvests_so_far_in_patch[0]
+            mvt_optimal_action = "stay" if pre_current_reward >= pre_avg else "leave"
+
+            if timed_out:
+                action = "leave"
+            else:
+                action = "stay" if pre_current_reward >= leave_threshold else "leave"
+
+            harvests_stayed_in_patch = harvests_so_far_in_patch[0]
+            if action == "stay":
+                harvest_reward = int(round(pre_current_reward))
+                block_total += harvest_reward
+                current_reward[0] = pre_current_reward * decay_rate[0]
+                harvests_so_far_in_patch[0] += 1
+            else:
+                harvest_reward = 0
+                start_new_patch()
+            block_decisions += 1
+            trial_index += 1
+
+            trials.append({
+                "trial_part": "decision",
+                "trial_index": trial_index,
+                "block": block_idx,
+                "block_condition": condition,
+                "travel_cost_seconds": cost_seconds,
+                "patch_id": pre_patch_id,
+                "harvest_in_patch": pre_harvest_in_patch + 1,
+                "current_reward_offered": int(round(pre_current_reward)),
+                "running_block_avg_per_decision": round(pre_avg, 2),
+                "action": action,
+                "is_stay": action == "stay",
+                "harvest_reward": harvest_reward,
+                "harvest_reward_above_chance": harvest_reward > 25,
+                "harvests_stayed_in_patch": harvests_stayed_in_patch if action == "leave" else None,
+                "mvt_optimal_action": mvt_optimal_action,
+                "mvt_optimal_match": action == mvt_optimal_action,
+                "rt": float(np_rng.uniform(800, 2500)) if not timed_out else None,
+                "timed_out": timed_out,
+            })
+
+    return trials
+
+
+_EFFORT_FORAGING_DIR = (
+    __import__("pathlib").Path(__file__).resolve().parent.parent.parent
+    / "tasks" / "effort_foraging" / "scoring"
+)
+
+
+@pytest.fixture
+def effort_foraging_config():
+    return {
+        "task_id": "effort_foraging",
+        "parameters": {
+            "n_trials": 80,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+            "required_fields": [
+                "trial_index", "block", "block_condition", "travel_cost_seconds",
+                "patch_id", "harvest_in_patch", "current_reward_offered",
+                "running_block_avg_per_decision", "action", "is_stay",
+                "harvest_reward", "harvest_reward_above_chance",
+                "harvests_stayed_in_patch", "mvt_optimal_action", "mvt_optimal_match",
+                "rt", "timed_out",
+            ],
+        },
+    }
+
+
+@pytest.fixture
+def effort_foraging_metrics():
+    with open(_EFFORT_FORAGING_DIR / "level2_metrics.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def effort_foraging_signatures():
+    with open(_EFFORT_FORAGING_DIR / "level3_signatures.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def human_like_effort_foraging_data():
+    return _generate_effort_foraging_trials(
+        leave_threshold_low=40, leave_threshold_high=20,
+    )
+
+
+@pytest.fixture
+def random_effort_foraging_data():
+    rng = random.Random(99)
+    trials = _generate_effort_foraging_trials(
+        leave_threshold_low=40, leave_threshold_high=20, seed=99,
+    )
+    # Overwrite the threshold-policy actions with uniform-random choices to
+    # simulate a no-policy agent. Re-derive dependent fields.
+    for t in trials:
+        t["action"] = rng.choice(["stay", "leave"])
+        t["is_stay"] = t["action"] == "stay"
+        t["mvt_optimal_match"] = t["action"] == t["mvt_optimal_action"]
+        if t["action"] == "stay":
+            t["harvest_reward"] = t["current_reward_offered"]
+            t["harvest_reward_above_chance"] = t["current_reward_offered"] > 25
+            t["harvests_stayed_in_patch"] = None
+        else:
+            t["harvest_reward"] = 0
+            t["harvest_reward_above_chance"] = False
+            t["harvests_stayed_in_patch"] = rng.randint(0, 4)
+    return trials
+
+
+
+# ---------- Phishing Detection v2 (Singh 2019) ----------
+
+def _generate_phishing_detection_v2_trials(
+    n_pre=10,
+    n_training=40,
+    n_post=10,
+    pre_accuracy=0.62,
+    post_accuracy=0.78,
+    training_start_acc=0.62,
+    training_end_acc=0.78,
+    phishing_rate=0.5,
+    timeout_rate=0.0,
+    seed=42,
+):
+    """Generate human-like phishing_detection_v2 trial data.
+
+    Pre/post phases: fixed accuracy (pre_accuracy, post_accuracy).
+    Training phase: accuracy ramps linearly from training_start_acc to training_end_acc.
+    """
+    rng = random.Random(seed)
+    np_rng = np.random.RandomState(seed)
+
+    def _phase_trials(phase, n, acc_curve, trial_offset):
+        out = []
+        for i in range(n):
+            is_phishing = rng.random() < phishing_rate
+            acc = acc_curve(i, n) if callable(acc_curve) else acc_curve
+            timed_out = rng.random() < timeout_rate
+            if timed_out:
+                response = None
+                responded_phishing = None
+                is_hit = False
+                is_false_alarm = False
+                is_miss = is_phishing
+                is_correct_rejection = not is_phishing
+                correct = False
+                rt = None
+            else:
+                correct = rng.random() < acc
+                if correct:
+                    responded_phishing = is_phishing
+                else:
+                    responded_phishing = not is_phishing
+                response = "j" if responded_phishing else "f"
+                is_hit = is_phishing and responded_phishing
+                is_false_alarm = (not is_phishing) and responded_phishing
+                is_miss = is_phishing and (not responded_phishing)
+                is_correct_rejection = (not is_phishing) and (not responded_phishing)
+                rt = max(800, float(np_rng.normal(8000, 4000)))
+            out.append({
+                "trial_part": "stimulus",
+                "trial_index": trial_offset + i + 1,
+                "phase": phase,
+                "trial_in_phase": i + 1,
+                "email_id": 1000 + trial_offset + i,
+                "is_phishing": is_phishing,
+                "response": response,
+                "responded_phishing": responded_phishing,
+                "is_hit": is_hit,
+                "is_false_alarm": is_false_alarm,
+                "is_miss": is_miss,
+                "is_correct_rejection": is_correct_rejection,
+                "correct": correct,
+                "rt": rt,
+                "timed_out": timed_out,
+            })
+        return out
+
+    trials = []
+    trials += _phase_trials("pre", n_pre, pre_accuracy, 0)
+    trials += _phase_trials(
+        "training", n_training,
+        lambda i, n: training_start_acc + (training_end_acc - training_start_acc) * (i / max(1, n - 1)),
+        n_pre,
+    )
+    trials += _phase_trials("post", n_post, post_accuracy, n_pre + n_training)
+    return trials
+
+
+_PHISH_V2_DIR = (
+    __import__("pathlib").Path(__file__).resolve().parent.parent.parent
+    / "tasks" / "phishing_detection_v2" / "scoring"
+)
+
+
+@pytest.fixture
+def phishing_detection_v2_config():
+    return {
+        "task_id": "phishing_detection_v2",
+        "parameters": {
+            "n_trials": 60,
+            "response_keys": ["f", "j"],
+            "response_type": "keypress",
+            "required_fields": [
+                "trial_index", "phase", "trial_in_phase",
+                "email_id", "is_phishing",
+                "response", "responded_phishing",
+                "is_hit", "is_false_alarm", "is_miss", "is_correct_rejection",
+                "correct", "rt", "timed_out",
+            ],
+        },
+    }
+
+
+@pytest.fixture
+def phishing_detection_v2_metrics():
+    with open(_PHISH_V2_DIR / "level2_metrics.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def phishing_detection_v2_signatures():
+    with open(_PHISH_V2_DIR / "level3_signatures.json") as f:
+        return json.load(f)
+
+
+@pytest.fixture
+def human_like_phishing_detection_v2_data():
+    return _generate_phishing_detection_v2_trials(
+        pre_accuracy=0.62, post_accuracy=0.80, training_start_acc=0.62, training_end_acc=0.80,
+    )
+
+
+@pytest.fixture
+def random_phishing_detection_v2_data():
+    return _generate_phishing_detection_v2_trials(
+        pre_accuracy=0.5, post_accuracy=0.5, training_start_acc=0.5, training_end_acc=0.5, seed=99,
+    )

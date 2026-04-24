@@ -1,0 +1,47 @@
+{
+    "task_id": "moral_machine",
+    "task_name": "Moral Machine (Autonomous Vehicle Dilemmas)",
+    "domain": "moral",
+    "version": "1.0.0",
+    "citation": "Awad, Dsouza, Kim, Schulz, Henrich, Shariff, Bonnefon & Rahwan (2018) — The Moral Machine experiment, Nature 563:59-64",
+    "psych201_reference": "awad2018moral",
+    "source": {
+        "url": "https://www.moralmachine.net/",
+        "commit": "n/a",
+        "license": "Apache-2.0 (reference implementation by MIT Media Lab); paradigm is freely usable",
+        "note": "v1 port presents trolley-style binary dilemmas in the Moral Machine factorial design (Awad et al. 2018, Nature). Stimuli are procedurally generated text vignettes that vary one of five orthogonal dimensions per trial: number-of-lives, age, species, legality, and intervention. Synthetic vignettes (no scraping of moralmachine.net assets); inspired in spirit by both moralmachine.net and neal.fun/absurd-trolley-problems but lighter on humor and tighter on factor manipulation so behavioral signatures are well-defined."
+    },
+    "description": "Forced-choice between two outcomes of an autonomous-vehicle dilemma. 24 scenarios drawn to vary one factor at a time across five dimensions: number-of-lives, age, species, legality, and intervention.",
+    "parameters": {
+        "n_trials": 40,
+        "n_practice_trials": 2,
+        "dimensions": ["number", "age", "species", "legality", "intervention"],
+        "trials_per_dimension": {
+            "number": 10, "age": 10, "species": 10, "legality": 6, "intervention": 4
+        },
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 30000,
+        "outcome_display_ms": 600,
+        "fixation_duration_ms": 0,
+        "iti_min_ms": 400,
+        "iti_max_ms": 700
+    },
+    "randomization": {
+        "seed_from_session": true,
+        "randomize_trial_order": true,
+        "randomize_left_right_assignment": true
+    },
+    "data_logging": {
+        "required_fields": [
+            "trial_index", "scenario_id", "dimension",
+            "side_left_description", "side_right_description",
+            "side_left_count", "side_right_count",
+            "side_left_attributes", "side_right_attributes",
+            "side_left_is_target", "side_right_is_target",
+            "chose_side", "chose_target",
+            "chose_utilitarian", "chose_young", "chose_human", "chose_legal", "chose_intervention",
+            "rt", "timed_out"
+        ]
+    }
+}

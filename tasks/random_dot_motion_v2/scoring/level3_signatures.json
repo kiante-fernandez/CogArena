@@ -1,0 +1,49 @@
+{
+    "task_id": "random_dot_motion_v2",
+    "signatures": [
+        {
+            "name": "coherence_accuracy_psychometric",
+            "description": "Accuracy increases monotonically with motion coherence (Roitman & Shadlen 2002, Fig 2). The headline psychometric signature of motion-direction discrimination.",
+            "test": "correlation_test",
+            "field_x": "coherence",
+            "field_y": "correct",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 2.0
+        },
+        {
+            "name": "coherence_rt_chronometric",
+            "description": "Correct RT decreases as coherence increases (Roitman & Shadlen 2002 chronometric function).",
+            "test": "correlation_test",
+            "field_x": "coherence",
+            "field_y": "rt",
+            "filter": {"timed_out": false, "correct": true},
+            "threshold_p": 0.05,
+            "expected_direction": "negative",
+            "weight": 1.5
+        },
+        {
+            "name": "above_chance_low_coherence",
+            "description": "Accuracy at the lowest non-zero coherence (5%) remains significantly above chance (0.5).",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false, "condition": "low"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 0.5
+        },
+        {
+            "name": "above_chance_overall",
+            "description": "Overall accuracy across all coherences is significantly above chance.",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        }
+    ]
+}

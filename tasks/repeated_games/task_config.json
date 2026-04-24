@@ -1,0 +1,45 @@
+{
+    "task_id": "repeated_games",
+    "task_name": "Repeated 2x2 Games (Prisoner's Dilemma + Battle of the Sexes)",
+    "domain": "social_economic",
+    "version": "1.0.0",
+    "citation": "Akata, Schulz, Coda-Forno, Oh, Bethge & Schulz (2023) — Playing repeated games with Large Language Models, arXiv:2305.16867",
+    "psych201_reference": "akata2023",
+    "source": {
+        "url": "https://github.com/eliaka/repeatedgames/tree/main/human_experiment/experiment",
+        "commit": "main",
+        "license": "MIT",
+        "note": "Adapted to jsPsych v8 from Akata et al.'s vanilla-JS/jQuery + JATOS implementation. Payoff matrices and J/F response coding (J=cooperate, F=defect) preserved verbatim. Bot strategies replaced: original used pre-recorded GPT-4 lookup tables; v1 port uses canonical strategies (tit-for-tat against PD, alternating-equilibrium against BoS) so reciprocity and coordination signatures are well-defined. Round count increased from Akata's canonical 10 to 15 per game so that lag-1 sequential analyses have enough data points for the correlation_test minimum (n>=10)."
+    },
+    "description": "Iterated 2x2 games against a fixed bot. The agent plays 15 rounds of Prisoner's Dilemma against a tit-for-tat opponent and 15 rounds of Battle of the Sexes against an alternating-equilibrium opponent (30 rounds total). Game order is randomized per session.",
+    "parameters": {
+        "n_trials": 30,
+        "n_games": 2,
+        "rounds_per_game": 15,
+        "games": ["pd", "bos"],
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "response_deadline_ms": 8000,
+        "outcome_display_ms": 1500,
+        "fixation_duration_ms": 0,
+        "payoffs": {
+            "pd": {"FF": [5, 5], "FJ": [10, 0], "JF": [0, 10], "JJ": [8, 8]},
+            "bos": {"FF": [10, 7], "FJ": [0, 0], "JF": [0, 0], "JJ": [7, 10]}
+        },
+        "bot_strategies": {"pd": "tit_for_tat", "bos": "alternation"}
+    },
+    "randomization": {
+        "seed_from_session": true,
+        "randomize_game_order": true
+    },
+    "data_logging": {
+        "required_fields": [
+            "trial_index", "game", "block_order", "round",
+            "player_action", "opponent_action",
+            "player_cooperate", "opponent_cooperate",
+            "prev_opp_coop_pd", "coordinated",
+            "player_payoff", "opponent_payoff",
+            "rt", "timed_out"
+        ]
+    }
+}

@@ -1,0 +1,43 @@
+{
+    "task_id": "random_dot_motion_v2",
+    "task_name": "Random Dot Motion (Direction Discrimination)",
+    "domain": "perception",
+    "version": "1.0.0",
+    "citation": "Roitman & Shadlen (2002) J. Neurosci.; Pinet et al. (2024) jsPsych RDK validation",
+    "psych201_reference": null,
+    "source": {
+        "url": "https://github.com/jspsych/jspsych-contrib/tree/main/packages/plugin-rdk",
+        "commit": "main",
+        "license": "MIT",
+        "note": "v1 uses a self-contained Canvas implementation rather than the jspsych-contrib plugin to avoid an additional CDN dependency. Algorithm matches Roitman & Shadlen 2002: per-frame coherent fraction moves at constant velocity in the target direction; remaining dots move in random directions."
+    },
+    "description": "Judge the global motion direction (left vs right) of a coherent-motion dot kinematogram across five coherence levels.",
+    "parameters": {
+        "n_trials": 120,
+        "n_blocks": 5,
+        "trials_per_block": 24,
+        "coherence_levels": [0.05, 0.10, 0.20, 0.40, 0.80],
+        "directions": ["left", "right"],
+        "response_keys": ["f", "j"],
+        "key_mapping": {"left": "f", "right": "j"},
+        "response_type": "keypress",
+        "stimulus_duration_ms": 2000,
+        "response_deadline_ms": 2000,
+        "fixation_duration_ms": 500,
+        "feedback_duration_ms": 800,
+        "n_dots": 200,
+        "dot_speed_pixels_per_frame": 3,
+        "dot_radius_px": 2,
+        "aperture_radius_px": 150
+    },
+    "randomization": {
+        "seed_from_session": true,
+        "randomize_trial_order": true
+    },
+    "data_logging": {
+        "required_fields": [
+            "trial_index", "block", "condition", "coherence", "direction",
+            "correct_key", "response", "correct", "rt", "timed_out"
+        ]
+    }
+}

@@ -111,6 +111,8 @@ class SessionManager:
 
         sess_result = await self.db.execute(select(Session).where(Session.id == session_id))
         session = sess_result.scalar_one_or_none()
+        # validate_session_active above already 400s on status == "scored",
+        # so we can unconditionally set in_progress here.
         if session:
             session.status = "in_progress"
         await self.db.commit()

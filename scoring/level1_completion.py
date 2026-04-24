@@ -4,11 +4,15 @@ def score_completion(trial_data: list[dict], task_config: dict) -> dict:
     expected_trials = params["n_trials"]
     response_type = params.get("response_type", "keypress")
 
-    has_data = len(trial_data) > 0
+    # Require at least 3 trials so a single-trial submission can't earn
+    # 0.20+ L1 just by sending one stub. Below this floor the agent
+    # accomplished essentially nothing scorable.
+    min_trials_received = 3
+    has_data = len(trial_data) >= min_trials_received
     checks.append({
         "name": "data_received",
         "passed": has_data,
-        "detail": f"Received {len(trial_data)} trials",
+        "detail": f"Received {len(trial_data)} trials (need >= {min_trials_received})",
     })
 
     trial_ratio = len(trial_data) / expected_trials if expected_trials > 0 else 0
@@ -44,6 +48,13 @@ def score_completion(trial_data: list[dict], task_config: dict) -> dict:
                 if t.get(response_field) is not None
                 and slider_min <= t.get(response_field, -1) <= slider_max
             )
+        elif response_type == "text_input":
+            # Typed-text tasks: accept any string response (including empty) or
+            # an explicit timeout. The actual content is scored at L2/L3.
+            valid_responses = sum(
+                1 for t in trial_data
+                if isinstance(t.get("response"), str) or t.get("timed_out", False)
+            )
         else:
             valid_keys = set(params.get("response_keys", []))
             valid_responses = sum(
@@ -60,7 +71,14 @@ def score_completion(trial_data: list[dict], task_config: dict) -> dict:
     })
 
     if trial_data:
-        max_trial_idx = max(t.get("trial_index", 0) for t in trial_data)
+        # Defensive int() — some custom plugins emit string trial_index, which
+        # crashes max() with TypeError and 500s the whole /api/evaluate.
+        def _as_int(v) -> int:
+            try:
+                return int(v)
+            except (TypeError, ValueError):
+                return 0
+        max_trial_idx = max(_as_int(t.get("trial_index", 0)) for t in trial_data)
         completed = max_trial_idx >= expected_trials * 0.8
     else:
         max_trial_idx = 0

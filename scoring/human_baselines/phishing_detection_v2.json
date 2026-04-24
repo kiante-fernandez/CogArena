@@ -1,0 +1,10 @@
+{
+    "task_id": "phishing_detection_v2",
+    "source": "literature_estimates",
+    "note": "Baselines aggregated from Singh, Aggarwal, Rajivan & Gonzalez (2019) MTurk participant pool. The published study tested adult MTurk workers across three feedback conditions (outcome / incentive / detail) and three phishing base rates (25/50/75%). v1 numbers below are mid-range estimates from the outcome-feedback / 50% base-rate cell, which most closely matches our v1 design. Replace with on-platform empirical baselines in v2.",
+    "overall_accuracy": {"mean": 0.72, "sd": 0.10, "n": 60},
+    "pre_training_accuracy": {"mean": 0.62, "sd": 0.12, "n": 60},
+    "post_training_accuracy": {"mean": 0.78, "sd": 0.11, "n": 60},
+    "hit_rate": {"mean": 0.79, "sd": 0.10, "n": 60},
+    "false_alarm_rate": {"mean": 0.25, "sd": 0.10, "n": 60}
+}

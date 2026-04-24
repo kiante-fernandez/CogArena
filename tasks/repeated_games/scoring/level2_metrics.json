@@ -1,0 +1,50 @@
+{
+    "task_id": "repeated_games",
+    "metrics": [
+        {
+            "name": "coop_rate_pd",
+            "description": "Proportion of PD rounds where the player chose J (cooperate). Akata 2023 reports human cooperation around 0.55 against TFT in iterated PD; meta-analyses (e.g., Nowak 2006) report 0.40-0.65 against reciprocators.",
+            "type": "proportion_correct",
+            "field": "player_cooperate",
+            "filter": {"timed_out": false, "game": "pd"},
+            "human_mean": 0.55,
+            "human_sd": 0.20
+        },
+        {
+            "name": "coordination_rate_bos",
+            "description": "Proportion of BoS rounds where player_action == opponent_action (any equilibrium reached). Camerer 2003 reports human coordination on coin-flip / alternation BoS bots around 0.55-0.65.",
+            "type": "proportion_correct",
+            "field": "coordinated",
+            "filter": {"timed_out": false, "game": "bos"},
+            "human_mean": 0.60,
+            "human_sd": 0.18
+        },
+        {
+            "name": "mean_payoff_pd",
+            "description": "Mean per-round payoff in PD. Mutual cooperation (J,J) yields 8; mutual defection (F,F) yields 5; against TFT, sustained cooperation should converge to ~8 and sustained defection to ~5.",
+            "type": "mean",
+            "field": "player_payoff",
+            "filter": {"timed_out": false, "game": "pd"},
+            "human_mean": 6.5,
+            "human_sd": 1.5
+        },
+        {
+            "name": "mean_payoff_bos",
+            "description": "Mean per-round payoff in BoS. Coordinating on player-preferred F gives 10; opponent-preferred J gives 7; mismatch gives 0. Alternation against an alternating bot yields ~5 if perfectly anti-aligned, ~8.5 if perfectly aligned.",
+            "type": "mean",
+            "field": "player_payoff",
+            "filter": {"timed_out": false, "game": "bos"},
+            "human_mean": 5.5,
+            "human_sd": 2.5
+        },
+        {
+            "name": "timeout_rate",
+            "description": "Proportion of rounds in which no response was registered before the deadline.",
+            "type": "proportion_correct",
+            "field": "timed_out",
+            "human_mean": 0.02,
+            "human_sd": 0.05,
+            "direction": "lower_is_better"
+        }
+    ]
+}

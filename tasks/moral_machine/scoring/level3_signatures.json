@@ -1,0 +1,38 @@
+{
+    "task_id": "moral_machine",
+    "signatures": [
+        {
+            "name": "utilitarian_preference",
+            "description": "When numbers differ, agents prefer to save the larger group. Awad et al. 2018 (Nature) global aggregate.",
+            "test": "proportion_test",
+            "field": "chose_utilitarian",
+            "filter": {"timed_out": false, "dimension": "number"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "age_preference_save_young",
+            "description": "Agents prefer to save the young over the elderly. Awad et al. 2018 global aggregate.",
+            "test": "proportion_test",
+            "field": "chose_young",
+            "filter": {"timed_out": false, "dimension": "age"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        },
+        {
+            "name": "species_preference_save_human",
+            "description": "Agents prefer to save humans over pets. The largest single-factor effect in the Moral Machine global data.",
+            "test": "proportion_test",
+            "field": "chose_human",
+            "filter": {"timed_out": false, "dimension": "species"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        }
+    ]
+}

@@ -1,10 +1,13 @@
 import asyncio
 import hmac
 import json
+import logging
 import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,13 +45,54 @@ PROJECT_ROOT = Path(__file__).parent.parent
 templates = Jinja2Templates(directory=str(PROJECT_ROOT / "templates"))
 
 DOMAIN_LABELS = {
+    # Existing categories from the broader 40-task set.
     "perception_attention": "Perception & Attention",
     "multi_armed_bandits": "Bandits & Exploration",
     "decision_making": "Decision-Making",
     "social_strategic": "Social & Strategic",
     "memory_learning": "Memory & Learning",
     "reinforcement_learning": "Reinforcement Learning",
+    # v1 curated-10 categories.
+    "learning": "Learning",
+    "risk_ambiguity": "Risk & Ambiguity",
+    "social_economic": "Social & Economic",
+    "memory_recall": "Memory — Recall",
+    "memory_recognition": "Memory — Recognition",
+    "perception": "Perception",
+    "judgment": "Judgment",
+    "foraging": "Foraging",
+    "compositionality": "Compositionality",
+    "moral": "Moral Decision-Making",
 }
+
+
+# --- v1 launch set ---
+# These are the ten curated tasks foregrounded on the deployment site for the
+# NeurIPS 2026 D&B v1 paper. The broader 30+ tasks remain on disk and are still
+# discoverable via /api/tasks for direct use, but the website pages (/, /catalog,
+# /try, etc.) only show the v1 set. To re-expose all tasks on the site, set
+# SHOW_ALL_TASKS = True below or comment out the filter calls in the route
+# handlers.
+V1_TASK_IDS: set[str] = {
+    "random_dot_motion_v2",
+    "grid_bandit",
+    "marbles_risk",
+    "repeated_games",
+    "moral_machine",
+    "tiny_alchemy",
+    "visual_recognition",
+    "serial_recall_v2",
+    "phishing_detection_v2",
+    "effort_foraging",
+}
+SHOW_ALL_TASKS: bool = False
+
+
+def _v1_only(tasks: list[dict]) -> list[dict]:
+    """Filter task list to the v1 launch set unless SHOW_ALL_TASKS is true."""
+    if SHOW_ALL_TASKS:
+        return tasks
+    return [t for t in tasks if t["task_id"] in V1_TASK_IDS]
 
 
 _tasks_meta_cache: list[dict] | None = None
@@ -156,7 +200,7 @@ async def lifespan(app: FastAPI):
         await engine.dispose()
 
 
-app = FastAPI(title="CogArena", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="CogArena", version="0.2.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -170,7 +214,7 @@ app.add_middleware(
 
 @app.get("/", include_in_schema=False)
 async def landing_page(request: Request):
-    tasks = _load_tasks_meta()
+    tasks = _v1_only(_load_tasks_meta())
     domains = set(t["domain"] for t in tasks)
     return templates.TemplateResponse("index.html", {
         "request": request,
@@ -181,7 +225,7 @@ async def landing_page(request: Request):
 
 @app.get("/catalog", include_in_schema=False)
 async def catalog_page(request: Request):
-    tasks = _load_tasks_meta()
+    tasks = _v1_only(_load_tasks_meta())
     domains = set(t["domain"] for t in tasks)
     return templates.TemplateResponse("catalog.html", {
         "request": request,
@@ -192,7 +236,7 @@ async def catalog_page(request: Request):
 
 @app.get("/catalog/{task_id}", include_in_schema=False)
 async def task_detail_page(request: Request, task_id: str):
-    tasks = _load_tasks_meta()
+    tasks = _v1_only(_load_tasks_meta())
     task = next((t for t in tasks if t["task_id"] == task_id), None)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -210,7 +254,7 @@ async def leaderboard_page(request: Request):
 
 @app.get("/try", include_in_schema=False)
 async def try_page(request: Request):
-    tasks = _load_tasks_meta()
+    tasks = _v1_only(_load_tasks_meta())
     return templates.TemplateResponse("try.html", {
         "request": request,
         "tasks": tasks,
@@ -322,33 +366,9 @@ async def evaluate_task(session_id: str, task_id: str, db: AsyncSession = Depend
     if not tr:
         raise HTTPException(status_code=404, detail=f"No data for task {task_id}")
 
-    trial_data = json.loads(tr.trial_data)
-    result = score_task(trial_data, tr.task_id, settings.TASKS_DIR)
-    composite_info = result["composite"]
-    await mgr.save_score(
-        session_id=session_id,
-        task_id=tr.task_id,
-        l1=result["l1"]["score"],
-        l2=result["l2"]["score"],
-        l3=result["l3"]["score"],
-        composite=composite_info["composite_score"],
-        details=result,
-    )
-    return {"status": "scored", "session_id": session_id, "task_id": task_id}
-
-
-@app.post("/api/evaluate/{session_id}", summary="Trigger scoring for all tasks in a session")
-async def evaluate_session(session_id: str, db: AsyncSession = Depends(get_db)):
-    mgr = SessionManager(db, settings.TASKS_DIR)
-    task_results = await mgr.get_all_task_results(session_id)
-
-    if not task_results:
-        raise HTTPException(status_code=404, detail="No task data found for session")
-
-    for tr in task_results:
+    try:
         trial_data = json.loads(tr.trial_data)
         result = score_task(trial_data, tr.task_id, settings.TASKS_DIR)
-
         composite_info = result["composite"]
         await mgr.save_score(
             session_id=session_id,
@@ -359,9 +379,68 @@ async def evaluate_session(session_id: str, db: AsyncSession = Depends(get_db)):
             composite=composite_info["composite_score"],
             details=result,
         )
+    except Exception as e:
+        logger.exception("Scoring failed for task %s in session %s", task_id, session_id)
+        raise HTTPException(status_code=422, detail=f"{type(e).__name__}: {e}")
+    return {"status": "scored", "session_id": session_id, "task_id": task_id}
+
+
+@app.post(
+    "/api/evaluate/{session_id}",
+    summary=(
+        "Trigger scoring for all tasks in a session. Returns 200 with "
+        "status='scored' on success (with `scoring_errors` listing any "
+        "per-task failures), or status='no_data' if no trial data has "
+        "been submitted yet (was 404 in v0.1.x — clients should branch "
+        "on the `status` field, not HTTP code)."
+    ),
+)
+async def evaluate_session(session_id: str, db: AsyncSession = Depends(get_db)):
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    task_results = await mgr.get_all_task_results(session_id)
+
+    # Idempotent: returning 200 (instead of 404) when no data exists prevents
+    # benchmark agents from doom-looping — they see 404, decide to "fix" by
+    # re-navigating to the task URL, which destroys the in-flight jsPsych
+    # state and ensures data NEVER reaches the server. Returning a status
+    # field lets correct callers branch without raising on the happy path.
+    if not task_results:
+        return {"status": "no_data", "session_id": session_id,
+                "detail": "No trial data has been submitted for this session yet. "
+                          "Either the experiment has not finished, or the data "
+                          "submission failed. Do NOT navigate back to the task "
+                          "URL — that resets the experiment and loses progress."}
+
+    # Score each task in isolation so a single broken task can't 500-cascade
+    # the whole session. We collect per-task errors and return them in the
+    # response so the caller knows what failed.
+    scoring_errors: list[dict] = []
+    for tr in task_results:
+        try:
+            trial_data = json.loads(tr.trial_data)
+            result = score_task(trial_data, tr.task_id, settings.TASKS_DIR)
+            composite_info = result["composite"]
+            await mgr.save_score(
+                session_id=session_id,
+                task_id=tr.task_id,
+                l1=result["l1"]["score"],
+                l2=result["l2"]["score"],
+                l3=result["l3"]["score"],
+                composite=composite_info["composite_score"],
+                details=result,
+            )
+        except Exception as e:
+            logger.exception("Scoring failed for task %s in session %s",
+                             tr.task_id, session_id)
+            scoring_errors.append({"task_id": tr.task_id,
+                                   "error": f"{type(e).__name__}: {e}"})
 
     await mgr.mark_session_scored(session_id)
-    return {"status": "scored", "session_id": session_id}
+    return {
+        "status": "scored",
+        "session_id": session_id,
+        "scoring_errors": scoring_errors,
+    }
 
 
 @app.get("/api/results/{session_id}", summary="Get scorecard for a scored session")

@@ -1,0 +1,52 @@
+{
+    "task_id": "grid_bandit",
+    "metrics": [
+        {
+            "name": "mean_reward_per_click",
+            "description": "Mean observed reward (z) across all clicks. Random clicking on the GP-sampled grids yields ~50; humans typically reach ~62-70 by exploiting smooth reward gradients (Witte et al. 2024).",
+            "type": "mean",
+            "field": "z",
+            "filter": {"timed_out": false},
+            "human_mean": 65,
+            "human_sd": 8
+        },
+        {
+            "name": "mean_reward_safe",
+            "description": "Mean reward in safe blocks (no Kraken). The relative ordering vs risky-block reward depends on whether the agent's caution boost in risky blocks outweighs the Kraken zero-outs.",
+            "type": "mean",
+            "field": "z",
+            "filter": {"timed_out": false, "block_condition": "safe"},
+            "human_mean": 65,
+            "human_sd": 9
+        },
+        {
+            "name": "mean_reward_risky",
+            "description": "Mean per-click reward in risky blocks. Cautious humans tend to pick high-value tiles more often when the Kraken is present, often netting a slightly higher per-click mean even though block totals are reduced by Kraken zero-outs.",
+            "type": "mean",
+            "field": "z",
+            "filter": {"timed_out": false, "block_condition": "risky"},
+            "human_mean": 67,
+            "human_sd": 8
+        },
+        {
+            "name": "prop_high_value_clicks",
+            "description": "Proportion of clicks with z>50 across all blocks. Random ~0.5; humans 0.7-0.8.",
+            "type": "proportion_correct",
+            "field": "z",
+            "filter": {"timed_out": false},
+            "human_mean": 0.75,
+            "human_sd": 0.10,
+            "compute": "value_above_threshold:50"
+        },
+        {
+            "name": "kraken_caught_rate_risky",
+            "description": "Fraction of risky-block clicks that catch the Kraken (z_true<=50). Random ~0.5; humans should be much lower.",
+            "type": "proportion_correct",
+            "field": "kraken_caught",
+            "filter": {"timed_out": false, "block_condition": "risky"},
+            "human_mean": 0.25,
+            "human_sd": 0.12,
+            "direction": "lower_is_better"
+        }
+    ]
+}

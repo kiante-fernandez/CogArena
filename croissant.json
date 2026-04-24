@@ -1,0 +1,225 @@
+{
+  "@context": {
+    "@language": "en",
+    "@vocab": "https://schema.org/",
+    "citeAs": "cr:citeAs",
+    "column": "cr:column",
+    "conformsTo": "dct:conformsTo",
+    "cr": "http://mlcommons.org/croissant/",
+    "rai": "http://mlcommons.org/croissant/RAI/",
+    "data": {
+      "@id": "cr:data",
+      "@type": "@json"
+    },
+    "dataType": {
+      "@id": "cr:dataType",
+      "@type": "@vocab"
+    },
+    "dct": "http://purl.org/dc/terms/",
+    "examples": {
+      "@id": "cr:examples",
+      "@type": "@json"
+    },
+    "extract": "cr:extract",
+    "field": "cr:field",
+    "fileProperty": "cr:fileProperty",
+    "fileObject": "cr:fileObject",
+    "fileSet": "cr:fileSet",
+    "format": "cr:format",
+    "includes": "cr:includes",
+    "isLiveDataset": "cr:isLiveDataset",
+    "jsonPath": "cr:jsonPath",
+    "key": "cr:key",
+    "md5": "cr:md5",
+    "parentField": "cr:parentField",
+    "path": "cr:path",
+    "recordSet": "cr:recordSet",
+    "references": "cr:references",
+    "regex": "cr:regex",
+    "repeated": "cr:repeated",
+    "replace": "cr:replace",
+    "sc": "https://schema.org/",
+    "separator": "cr:separator",
+    "source": "cr:source",
+    "subField": "cr:subField",
+    "transform": "cr:transform"
+  },
+  "@type": "sc:Dataset",
+  "name": "CogArena",
+  "description": "CogArena v1: a benchmark of ten interactive jsPsych behavioral experiments for evaluating multimodal AI agents through a real browser, with three-level scoring (completion, accuracy vs. literature-derived human baselines, and behavioral signatures via statistical tests).",
+  "conformsTo": "http://mlcommons.org/croissant/1.0",
+  "version": "1.0.0",
+  "datePublished": "2026-05-06",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "url": "https://[ANONYMIZED FOR REVIEW]/",
+  "citeAs": "[Anonymous]. CogArena: Verifiable Behavioral-Signature Benchmarking of Multimodal Agents on Interactive Cognitive Experiments. NeurIPS 2026 Datasets and Benchmarks (under review).",
+  "keywords": [
+    "benchmark",
+    "multimodal agents",
+    "behavioral science",
+    "cognitive psychology",
+    "jsPsych",
+    "browser agents",
+    "behavioral signatures",
+    "AI evaluation"
+  ],
+  "creator": [
+    {
+      "@type": "Person",
+      "name": "[ANONYMIZED FOR REVIEW]"
+    }
+  ],
+  "rai:dataCollection": "Tasks are ported from vetted research codebases (cited per task in the paper). Trial-data records in this dataset come from the empirical study reported in the accompanying paper: each record is one (model, task, session) triple, where the agent is a closed- or open-weight large language model invoked through a single shared scaffold (Browser-Use). No human-subject data is included in this release.",
+  "rai:dataUseCases": "Intended uses: (i) evaluating new multimodal agents on the v1 task set; (ii) reproducing the headline study reported in the paper; (iii) extending the Level 3 scoring layer to additional behavioral signatures within the v1 tasks. Out-of-scope: (i) using the human baselines as ground truth for training models to mimic human behavior outside the explicit signature contracts; (ii) training models specifically to evade Level 3 detection.",
+  "rai:dataLimitations": "Human baselines are drawn from published literature, not from humans recruited on the CogArena platform. The v1 task set is ten curated tasks; agents that succeed on all ten do not necessarily generalize to the broader cognitive-science literature.",
+  "distribution": [
+    {
+      "@type": "cr:FileObject",
+      "@id": "code-archive",
+      "name": "code-archive",
+      "description": "Source code for tasks, scoring pipeline, and reference agents.",
+      "contentUrl": "[ZENODO_DOI_TBD]",
+      "encodingFormat": "application/zip",
+      "sha256": "[TBD]"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "scored-sessions-archive",
+      "name": "scored-sessions-archive",
+      "description": "All scored sessions from the empirical study reported in the paper.",
+      "contentUrl": "[ZENODO_DOI_TBD]",
+      "encodingFormat": "application/zip",
+      "sha256": "[TBD]"
+    },
+    {
+      "@type": "cr:FileSet",
+      "@id": "task-configs",
+      "name": "task-configs",
+      "description": "Per-task configuration JSONs.",
+      "containedIn": {
+        "@id": "code-archive"
+      },
+      "encodingFormat": "application/json",
+      "includes": "tasks/*/task_config.json"
+    },
+    {
+      "@type": "cr:FileSet",
+      "@id": "scoring-specs",
+      "name": "scoring-specs",
+      "description": "Per-task Level 2 metric and Level 3 signature specifications.",
+      "containedIn": {
+        "@id": "code-archive"
+      },
+      "encodingFormat": "application/json",
+      "includes": "tasks/*/scoring/*.json"
+    },
+    {
+      "@type": "cr:FileSet",
+      "@id": "human-baselines",
+      "name": "human-baselines",
+      "description": "Per-task literature-derived human baseline statistics.",
+      "containedIn": {
+        "@id": "code-archive"
+      },
+      "encodingFormat": "application/json",
+      "includes": "scoring/human_baselines/*.json"
+    }
+  ],
+  "recordSet": [
+    {
+      "@type": "cr:RecordSet",
+      "@id": "tasks",
+      "name": "tasks",
+      "description": "Metadata record for each of the ten v1 tasks (category, source repo, license, response modality, parameters).",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "tasks/task_id",
+          "name": "task_id",
+          "description": "Unique task identifier.",
+          "dataType": "sc:Text"
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "tasks/category",
+          "name": "category",
+          "description": "One of: learning, risk_ambiguity, social_economic, memory_recall, memory_recognition, perception, judgment, foraging, compositionality, moral.",
+          "dataType": "sc:Text"
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "tasks/source_repo",
+          "name": "source_repo",
+          "description": "URL of the upstream research repository the task was ported from.",
+          "dataType": "sc:URL"
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "scored-sessions",
+      "name": "scored-sessions",
+      "description": "One record per scored (model, task, session) triple from the empirical study.",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/session_id",
+          "name": "session_id",
+          "dataType": "sc:Text"
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/model",
+          "name": "model",
+          "dataType": "sc:Text"
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/scaffold",
+          "name": "scaffold",
+          "dataType": "sc:Text"
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/task_id",
+          "name": "task_id",
+          "dataType": "sc:Text"
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/seed",
+          "name": "seed",
+          "dataType": "sc:Integer"
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/l1",
+          "name": "l1",
+          "description": "Level 1 (completion) score in [0, 1].",
+          "dataType": "sc:Float"
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/l2",
+          "name": "l2",
+          "description": "Level 2 (accuracy) score in [0, 1].",
+          "dataType": "sc:Float"
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/l3",
+          "name": "l3",
+          "description": "Level 3 (behavioral alignment) score in [0, 1].",
+          "dataType": "sc:Float"
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/composite",
+          "name": "composite",
+          "description": "Composite CogArena score in [0, 100].",
+          "dataType": "sc:Float"
+        }
+      ]
+    }
+  ]
+}

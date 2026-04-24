@@ -26,6 +26,7 @@ import asyncio
 import logging
 import os
 import time
+from pathlib import Path
 
 from dotenv import load_dotenv
 import httpx
@@ -63,14 +64,10 @@ def _make_llm(model_name: str):
                 "OPENROUTER_API_KEY is required for OpenRouter models. "
                 "Set it in .env or environment."
             )
-        # Anthropic via OpenRouter rejects JSON schemas with 'minimum' on
-        # integer types — disable forced structured output for these models.
-        is_anthropic = model_name.startswith("anthropic/")
         return ChatOpenAI(
             model=model_name,
             api_key=api_key,
             base_url="https://openrouter.ai/api/v1",
-            dont_force_structured_output=is_anthropic,
         )
 
     name = model_name.lower()
@@ -104,8 +101,15 @@ def _model_supports_vision(model_name: str) -> bool:
 async def run_task_with_browser_use(
     task_url: str, task_id: str, model_name: str,
     timeout: float = 600.0, headless: bool = True,
+    trace_writer=None,
 ):
-    """Run a single CogArena task using Browser-Use."""
+    """Run a single CogArena task using Browser-Use.
+
+    If ``trace_writer`` is supplied, every model call is logged to its
+    interactions.jsonl via Browser-Use's ``register_new_step_callback``,
+    and full prompt+response transcripts are written under
+    ``<trace_dir>/conversations/<task_id>/`` via ``save_conversation_path``.
+    """
     from browser_use import Agent, BrowserSession
 
     llm = _make_llm(model_name)
@@ -118,6 +122,60 @@ async def run_task_with_browser_use(
 
     browser_session = BrowserSession(headless=headless)
 
+    # Per-step callback: log the model's parsed action(s) into our TraceWriter.
+    # Browser-Use invokes this after every successful model call (parse failures
+    # are surfaced separately via consecutive_failures and don't fire the hook).
+    step_cb = None
+    if trace_writer is not None:
+        seen_task_urls: set[str] = set()
+
+        def step_cb(browser_state, agent_output, n_steps):  # noqa: E306
+            try:
+                actions = []
+                for a in (getattr(agent_output, "action", None) or []):
+                    actions.append(a.model_dump(exclude_none=True) if hasattr(a, "model_dump") else str(a))
+                current = getattr(agent_output, "current_state", None)
+                extra = {}
+                if current is not None and hasattr(current, "model_dump"):
+                    cs = current.model_dump(exclude_none=True)
+                    # Trim verbose fields; keep the model's reasoning and goal.
+                    for k in ("evaluation_previous_goal", "memory", "next_goal"):
+                        if k in cs:
+                            extra[k] = cs[k]
+
+                # Re-navigation watchdog: a second navigate to the same task
+                # URL means the agent is restarting the experiment, which
+                # destroys jsPsych state and guarantees no data submission.
+                # Surface it loudly in the trace so the failure mode is visible.
+                renav = False
+                for a in actions:
+                    nav = isinstance(a, dict) and a.get("navigate")
+                    url = nav.get("url") if isinstance(nav, dict) else None
+                    if url and "/tasks/" in url:
+                        if url in seen_task_urls:
+                            renav = True
+                            logger.error(
+                                "RE-NAVIGATION DETECTED: agent re-navigated to %s "
+                                "(this resets jsPsych state and loses trial data)", url)
+                        seen_task_urls.add(url)
+
+                trace_writer.log_interaction(
+                    task_id=task_id,
+                    state="browser_use_renav" if renav else "browser_use_step",
+                    action_proposed=actions if len(actions) != 1 else actions[0],
+                    action_valid=not renav,
+                    validity_reason="agent re-navigated to a task URL it already visited" if renav else None,
+                    extra={"step": n_steps, **extra},
+                )
+                for a in actions:
+                    trace_writer.log_action(
+                        task_id=task_id,
+                        action_kind=next(iter(a)) if isinstance(a, dict) and a else "unknown",
+                        target=None, key=None, ok=not renav,
+                    )
+            except Exception as e:
+                logger.debug("trace callback failed (non-fatal): %s", e)
+
     agent_kwargs = dict(
         task=task_description,
         llm=llm,
@@ -127,6 +185,12 @@ async def run_task_with_browser_use(
         loop_detection_enabled=True,
         browser_session=browser_session,
     )
+    if step_cb is not None:
+        agent_kwargs["register_new_step_callback"] = step_cb
+    if trace_writer is not None:
+        agent_kwargs["save_conversation_path"] = str(
+            Path(trace_writer.trace_dir) / "conversations" / task_id
+        )
 
     agent = Agent(**agent_kwargs)
     if not use_vision:
@@ -136,7 +200,7 @@ async def run_task_with_browser_use(
     start = time.time()
 
     try:
-        result = await asyncio.wait_for(agent.run(max_steps=500), timeout=timeout)
+        await asyncio.wait_for(agent.run(max_steps=500), timeout=timeout)
         elapsed = time.time() - start
         logger.info("Task %s completed in %.1fs", task_id, elapsed)
         return True
@@ -160,27 +224,66 @@ async def run_all_tasks(
     n_trials: int | None = None,
     headless: bool = True,
     skip_tasks: set[str] | None = None,
+    session_id: str | None = None,
+    trace_dir: str | None = None,
 ):
-    """Run the Browser-Use agent through all CogArena tasks."""
+    """Run the Browser-Use agent through all CogArena tasks.
+
+    If ``session_id`` is provided, reuse it. If ``trace_dir`` is provided,
+    record per-task wall time and the resolved task URL into a small
+    ``interactions.jsonl`` so the harness has *some* per-step trail even though
+    Browser-Use's internal step loop is not directly observable from here.
+    """
     MAX_CONSECUTIVE_FAILURES = 3
 
     client = httpx.Client(base_url=base_url, timeout=30.0)
+    try:
+        return await _run_all_tasks_inner(
+            client=client, base_url=base_url, agent_name=agent_name,
+            model_name=model_name, no_deadline=no_deadline,
+            task_timeout=task_timeout, tasks_filter=tasks_filter,
+            n_trials=n_trials, headless=headless, session_id=session_id,
+            trace_dir=trace_dir,
+            max_consecutive_failures=MAX_CONSECUTIVE_FAILURES,
+        )
+    finally:
+        client.close()
+
+
+async def _run_all_tasks_inner(
+    *, client: "httpx.Client", base_url: str, agent_name: str,
+    model_name: str, no_deadline: bool, task_timeout: float,
+    tasks_filter: list[str] | None, n_trials: int | None, headless: bool,
+    session_id: str | None, trace_dir: str | None,
+    max_consecutive_failures: int,
+):
+    MAX_CONSECUTIVE_FAILURES = max_consecutive_failures
 
     resp = client.get("/api/health")
     resp.raise_for_status()
 
-    resp = client.post("/api/sessions", json={
-        "agent_name": agent_name,
-        "scaffold": "browser-use",
-        "model_name": model_name,
-        "observation_mode": "screenshot",
-    })
-    resp.raise_for_status()
-    session = resp.json()
-    session_id = session["session_id"]
-    logger.info("Session created: %s", session_id)
+    if session_id is None:
+        resp = client.post("/api/sessions", json={
+            "agent_name": agent_name,
+            "scaffold": "browser-use",
+            "model_name": model_name,
+            "observation_mode": "screenshot",
+        })
+        resp.raise_for_status()
+        session = resp.json()
+        session_id = session["session_id"]
+        logger.info("Session created: %s", session_id)
+        tasks = session["tasks"]
+    else:
+        logger.info("Reusing pre-created session: %s", session_id)
+        resp = client.get(f"/api/sessions/{session_id}")
+        resp.raise_for_status()
+        tasks = resp.json().get("tasks", [])
 
-    tasks = session["tasks"]
+    trace_writer = None
+    if trace_dir:
+        from harness.trace import TraceWriter
+        trace_writer = TraceWriter(Path(trace_dir), capture_screenshots=False)
     if tasks_filter:
         tasks = [t for t in tasks if t["task_id"] in tasks_filter]
     if skip_tasks:
@@ -206,9 +309,26 @@ async def run_all_tasks(
         if n_trials is not None:
             url += f"&n_trials={n_trials}"
 
+        if trace_writer:
+            trace_writer.log_interaction(
+                task_id=task_id, state="task_start",
+                action_proposed={"kind": "navigate", "url": url},
+                action_valid=True,
+                extra={"model": model_name},
+            )
+        task_start = time.time()
         success = await run_task_with_browser_use(
             url, task_id, model_name, timeout=task_timeout, headless=headless,
+            trace_writer=trace_writer,
         )
+        if trace_writer:
+            trace_writer.log_interaction(
+                task_id=task_id,
+                state="task_end" if success else "task_failed",
+                action_proposed=None,
+                action_valid=success,
+                extra={"wall_time_seconds": round(time.time() - task_start, 2)},
+            )
         if success:
             completed.append(task_id)
             consecutive_failures = 0
@@ -228,39 +348,60 @@ async def run_all_tasks(
     logger.info("Completed: %d/%d tasks", len(completed), len(tasks))
     if failed:
         logger.warning("Failed: %s", ", ".join(failed))
+    if trace_writer:
+        trace_writer.close()
 
     if not completed:
         raise RuntimeError("All tasks failed")
 
-    # Check if auto-evaluation ran
-    status = client.get(f"/api/sessions/{session_id}").json()
+    # Check if auto-evaluation ran. The server may be in a degraded state
+    # (e.g. after a 500 from a scoring exception), so guard the JSON parse.
+    sess_resp = client.get(f"/api/sessions/{session_id}")
+    if sess_resp.status_code != 200:
+        raise RuntimeError(
+            f"Session lookup failed: HTTP {sess_resp.status_code} "
+            f"{sess_resp.text[:200]!r}"
+        )
+    status = sess_resp.json()
     if status["status"] == "scored":
         logger.info("Auto-evaluation completed")
     else:
         logger.info("Triggering manual evaluation...")
         resp = client.post(f"/api/evaluate/{session_id}")
-        if resp.status_code == 404:
+        if resp.status_code != 200:
+            raise RuntimeError(
+                f"Evaluate failed: HTTP {resp.status_code} {resp.text[:200]!r}"
+            )
+        body = resp.json()
+        if body.get("status") == "no_data":
             raise RuntimeError("No task data found for evaluation")
-        resp.raise_for_status()
+        # Surface per-task scoring failures so the run is flagged even when
+        # /api/evaluate as a whole returned 200.
+        for err in body.get("scoring_errors") or []:
+            logger.warning("Scoring error for task %s: %s",
+                           err.get("task_id"), err.get("error"))
 
-    # Print scorecard
-    results = client.get(f"/api/results/{session_id}").json()
-    print(f"\n{'=' * 65}")
-    print(f"  COGARENA SCORECARD: {agent_name}")
-    print(f"  Model: {model_name}")
-    print(f"{'=' * 65}")
-    print(f"  Composite Score:    {results['composite_score']:.2f} / 100")
-    print(f"  L1 Completion:      {results['l1_overall']:.4f}")
-    print(f"  L2 Accuracy:        {results['l2_overall']:.4f}")
-    print(f"  L3 Behavioral:      {results['l3_overall']:.4f}")
-    print(f"{'-' * 65}")
-    print(f"  {'Task':<22s} {'Composite':>9s} {'L1':>6s} {'L2':>6s} {'L3':>6s}")
-    print(f"  {'-'*22} {'-'*9} {'-'*6} {'-'*6} {'-'*6}")
-    for ts in sorted(results["task_scores"], key=lambda t: t["task_id"]):
-        print(f"  {ts['task_id']:<22s} {ts['composite']:>9.2f} "
-              f"{ts['l1_completion']:>6.2f} {ts['l2_accuracy']:>6.2f} "
-              f"{ts['l3_behavioral']:>6.2f}")
-    print(f"{'=' * 65}")
+    # Print scorecard — but only if running standalone. When the harness
+    # CLI invokes this with trace_dir set, the harness prints its own
+    # scorecard after this returns and we'd duplicate it.
+    if trace_dir is None:
+        results = client.get(f"/api/results/{session_id}").json()
+        print(f"\n{'=' * 65}")
+        print(f"  COGARENA SCORECARD: {agent_name}")
+        print(f"  Model: {model_name}")
+        print(f"{'=' * 65}")
+        print(f"  Composite Score:    {results['composite_score']:.2f} / 100")
+        print(f"  L1 Completion:      {results['l1_overall']:.4f}")
+        print(f"  L2 Accuracy:        {results['l2_overall']:.4f}")
+        print(f"  L3 Behavioral:      {results['l3_overall']:.4f}")
+        print(f"{'-' * 65}")
+        print(f"  {'Task':<22s} {'Composite':>9s} {'L1':>6s} {'L2':>6s} {'L3':>6s}")
+        print(f"  {'-'*22} {'-'*9} {'-'*6} {'-'*6} {'-'*6}")
+        for ts in sorted(results["task_scores"], key=lambda t: t["task_id"]):
+            print(f"  {ts['task_id']:<22s} {ts['composite']:>9.2f} "
+                  f"{ts['l1_completion']:>6.2f} {ts['l2_accuracy']:>6.2f} "
+                  f"{ts['l3_behavioral']:>6.2f}")
+        print(f"{'=' * 65}")
 
     return session_id
 

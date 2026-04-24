@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CogArena - Spatial Bandit (Grid)</title>
+    <script src="https://unpkg.com/jspsych@8.2.3/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function@2.1.0/dist/index.browser.js"></script>
+    <link href="https://unpkg.com/jspsych@8.2.3/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        body {
+            background: linear-gradient(180deg, #87ceeb 0%, #4a9fc7 50%, #1d6597 100%);
+            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+        }
+        .jspsych-display-element { color: #f0f9ff; }
+        .grid-banner {
+            font-size: 16px; margin-bottom: 4px;
+            color: #f0f9ff; text-align: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 8px 18px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .grid-banner.risky {
+            color: #fff;
+            background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+            font-weight: 700;
+            border: 1px solid #fecaca;
+            box-shadow: 0 0 12px rgba(185, 28, 28, 0.5);
+        }
+        .grid-banner.safe {
+            color: #fff;
+            background: linear-gradient(135deg, #15803d 0%, #14532d 100%);
+            font-weight: 700;
+            border: 1px solid #bbf7d0;
+            box-shadow: 0 0 12px rgba(21, 128, 61, 0.4);
+        }
+        .grid-status {
+            font-size: 13px; color: #f0f9ff;
+            margin-bottom: 8px; text-align: center;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 4px 14px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .grid-status strong { color: #fde68a; }
+        .grid-wrap { display: flex; justify-content: center; padding: 6px; }
+        .grid-table {
+            border-collapse: separate;
+            border-spacing: 2px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.3);
+            padding: 8px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .grid-table td {
+            width: 36px; height: 36px;
+            border: none;
+            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(56, 178, 220, 0.6) 0%, rgba(29, 119, 178, 0.7) 100%);
+            text-align: center;
+            vertical-align: middle;
+            font-family: monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .grid-table td:hover {
+            background: linear-gradient(135deg, rgba(125, 211, 252, 0.8) 0%, rgba(56, 178, 220, 0.9) 100%);
+            transform: scale(1.05);
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+        }
+        .grid-table td.clicked {
+            background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+            color: #78350f;
+            cursor: pointer;
+            box-shadow: inset 0 0 4px rgba(120, 53, 15, 0.3);
+        }
+        .grid-table td.clicked:hover { transform: scale(1.02); }
+        .grid-table td.last-click { box-shadow: 0 0 0 3px #fef3c7, inset 0 0 4px rgba(120, 53, 15, 0.3); }
+        .grid-table td.kraken {
+            background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(185, 28, 28, 0.7);
+        }
+        /* Hide jsPsych's default button-row */
+        #jspsych-html-button-response-btngroup { display: none !important; }
+        .boat {
+            font-size: 28px;
+            text-align: center;
+            margin: 0 0 4px;
+        }
+        .feedback-block {
+            font-size: 18px; text-align: center; color: #f0f9ff; padding: 16px 0;
+        }
+        h1, h2, p { color: #f0f9ff; }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="/static/js/incremental_save.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

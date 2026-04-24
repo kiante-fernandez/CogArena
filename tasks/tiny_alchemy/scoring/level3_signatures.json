@@ -1,0 +1,38 @@
+{
+    "task_id": "tiny_alchemy",
+    "signatures": [
+        {
+            "name": "above_chance_discovery",
+            "description": "Successful combinations occur at a rate above the empirical random-agent baseline of ~0.30 (Monte Carlo sim of random pair selection from inventory; the four base elements participate in many recipes so even random play succeeds often). Brändle et al. report 0.40-0.50 success rates for adult humans.",
+            "test": "proportion_test",
+            "field": "is_success",
+            "filter": {},
+            "chance_level": 0.30,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 2.0
+        },
+        {
+            "name": "empowerment_preference",
+            "description": "On each attempt, the average in-degree of the chosen pair (how many recipes use these elements) positively correlates with whether the attempt succeeds. Brändle et al.'s headline finding: humans pick high-empowerment elements (Brändle et al. 2023, Nature Human Behaviour, Fig 4).",
+            "test": "correlation_test",
+            "field_x": "mean_input_recipes_in",
+            "field_y": "is_success",
+            "filter": {},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 2.0
+        },
+        {
+            "name": "non_redundant_attempts",
+            "description": "Humans avoid retrying the same combination — most attempts use a pair not yet attempted. Quantified via the proportion of attempts whose pair (a_idx, b_idx) is unique up to that trial. A truly random combiner would repeat pairs (and thus is_unique_pair=true) close to 1.0 only at the very start; over a long session a strategic agent maintains a high unique-pair rate.",
+            "test": "correlation_test",
+            "field_x": "mean_input_recipes_in",
+            "field_y": "is_novel_discovery",
+            "filter": {},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.0
+        }
+    ]
+}

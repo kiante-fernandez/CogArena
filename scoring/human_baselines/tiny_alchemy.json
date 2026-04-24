@@ -1,0 +1,9 @@
+{
+    "task_id": "tiny_alchemy",
+    "source": "literature_estimates",
+    "note": "Estimates derived from Brändle, Stocks, Tenenbaum, Gershman & Schulz (2023) Nature Human Behaviour aggregate statistics. The published paper reports session-level distributions for adult human participants playing Tiny Alchemy: median ~100 attempts, ~30 unique discoveries, success rate ~0.4. Replace with on-platform empirical baselines in v2.",
+    "n_attempts": {"mean": 100, "sd": 30, "n": 80},
+    "n_novel_discoveries": {"mean": 35, "sd": 15, "n": 80},
+    "success_rate": {"mean": 0.40, "sd": 0.15, "n": 80},
+    "novelty_rate": {"mean": 0.35, "sd": 0.12, "n": 80}
+}

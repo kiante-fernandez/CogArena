@@ -1,0 +1,38 @@
+{
+    "task_id": "repeated_games",
+    "signatures": [
+        {
+            "name": "tit_for_tat_reciprocity_pd",
+            "description": "In PD, the player's cooperate decision tracks the opponent's previous-round move: P(cooperate | opp cooperated last round) > P(cooperate | opp defected last round). Operationalized as a positive Pearson correlation between prev_opp_coop_pd and player_cooperate across PD rounds 2-10. The headline reciprocity signature.",
+            "test": "correlation_test",
+            "field_x": "prev_opp_coop_pd",
+            "field_y": "player_cooperate",
+            "filter": {"timed_out": false, "game": "pd"},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.5
+        },
+        {
+            "name": "above_chance_coordination_bos",
+            "description": "In BoS, the player matches the opponent's action (lands on either equilibrium F-F or J-J) at a rate above chance (0.5). Camerer 2003 reports humans converge to 0.55+ within 10 rounds against alternating bots.",
+            "test": "proportion_test",
+            "field": "coordinated",
+            "filter": {"timed_out": false, "game": "bos"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "non_zero_cooperation_pd",
+            "description": "Humans cooperate at non-trivial rates in repeated PD against TFT (typically 0.40-0.70). A pure-defect agent would score 0 here; this signature fires if cooperation rate is significantly above 0.10.",
+            "test": "proportion_test",
+            "field": "player_cooperate",
+            "filter": {"timed_out": false, "game": "pd"},
+            "chance_level": 0.10,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        }
+    ]
+}

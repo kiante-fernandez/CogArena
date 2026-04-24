@@ -1,6 +1,15 @@
 """Integration tests for CogArena API endpoints."""
 import json
+import os
 import random
+
+# CRITICAL: point the engine at a per-process throwaway SQLite file BEFORE
+# importing harness.server. Otherwise the autouse drop_all fixture below
+# will wipe the dev/prod database that long-running eval sessions are using.
+_TEST_DB = f"/tmp/cogarena_test_{os.getpid()}.db"
+os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_TEST_DB}"
+# Tests for /api/admin/* endpoints expect the admin key to be "test-key".
+os.environ.setdefault("ADMIN_API_KEY", "test-key")
 
 import pytest
 from httpx import AsyncClient, ASGITransport
@@ -11,7 +20,7 @@ from harness.db.models import Base
 
 @pytest.fixture(autouse=True)
 async def reset_db():
-    """Create fresh tables for each test."""
+    """Create fresh tables for each test (against a per-process test DB)."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)

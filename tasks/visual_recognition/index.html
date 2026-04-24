@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CogArena - Visual Recognition Memory</title>
+    <script src="https://unpkg.com/jspsych@8.2.3/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function@2.1.0/dist/index.browser.js"></script>
+    <link href="https://unpkg.com/jspsych@8.2.3/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        body { background: #f7f5ee; }
+        .stim-canvas {
+            display: block;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #999;
+            border-radius: 6px;
+            padding: 8px;
+        }
+        .fixation { font-size: 50px; color: #333; }
+        .key-mapping {
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.8;
+            margin-top: 14px;
+            color: #333;
+        }
+        .key-mapping kbd {
+            background: #eee;
+            border: 1px solid #888;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-family: monospace;
+            font-size: 18px;
+        }
+        .distractor-prompt {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            color: #222;
+        }
+        .distractor-counter {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin-top: 8px;
+        }
+        .distractor-input {
+            font-size: 22px;
+            text-align: center;
+            border: 1px solid #888;
+            border-radius: 4px;
+            padding: 6px 10px;
+            width: 80px;
+            margin: 8px auto;
+            display: block;
+        }
+        .feedback { font-size: 20px; text-align: center; padding-top: 6px; }
+        .feedback.correct { color: #15803d; }
+        .feedback.wrong { color: #b91c1c; }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="/static/js/incremental_save.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

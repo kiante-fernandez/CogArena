@@ -1,0 +1,41 @@
+{
+    "task_id": "tiny_alchemy",
+    "task_name": "Tiny Alchemy (Combinatorial Discovery)",
+    "domain": "compositionality",
+    "version": "1.0.0",
+    "citation": "Brändle, Stocks, Tenenbaum, Gershman & Schulz (2023) — Empowerment contributes to exploration behaviour in a creative video game, Nature Human Behaviour",
+    "psych201_reference": null,
+    "source": {
+        "url": "https://github.com/franziskabraendle/alchemy_empowerment/tree/main/empowermentexploration/additionalexperiments/TinyAlchemy",
+        "commit": "main",
+        "license": "MIT",
+        "note": "Adapted to jsPsych v8 from Brändle et al.'s vanilla-JS/Bootstrap/Firebase implementation. The 540-element game tree (4 base elements + 536 derivable elements with recipes) is extracted verbatim from the original main.js into assets/alchemy_data.json. Original UI uses element pictures (proppics/) and a drag-and-drop combine widget; v1 port uses a text-only inventory + click-to-combine UI to keep the task self-contained without shipping ~540 image files."
+    },
+    "description": "Discover new elements by combining pairs of elements from your inventory. Start with 4 base elements (water, fire, earth, air) and try to find as many of the 536 derivable elements as possible within the time cap. Tests combinatorial discovery, empowerment-driven exploration (preference for elements that participate in many recipes), and the discovery-rate decay curve.",
+    "parameters": {
+        "n_trials": 80,
+        "time_cap_minutes": 12,
+        "max_combinations": 200,
+        "n_base_elements": 4,
+        "n_total_elements": 540,
+        "response_type": "button",
+        "response_keys": [],
+        "response_deadline_ms": 60000
+    },
+    "randomization": {
+        "seed_from_session": false,
+        "randomize_inventory_order": false
+    },
+    "data_logging": {
+        "required_fields": [
+            "trial_index", "elapsed_time_ms",
+            "element_a", "element_b",
+            "result", "is_success", "is_novel_discovery",
+            "inventory_size_before", "inventory_size_after",
+            "a_is_base", "b_is_base",
+            "a_n_recipes_in", "b_n_recipes_in",
+            "mean_input_recipes_in", "result_n_recipes_in",
+            "rt", "timed_out"
+        ]
+    }
+}

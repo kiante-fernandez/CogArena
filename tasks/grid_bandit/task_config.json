@@ -1,0 +1,46 @@
+{
+    "task_id": "grid_bandit",
+    "task_name": "Spatial Bandit (Safe vs Risky Foraging)",
+    "domain": "learning",
+    "version": "1.0.0",
+    "citation": "Witte, Wise, Huys & Schulz (2024) — Worried exploration: Anxiety, depression, and exploration under threat",
+    "psych201_reference": null,
+    "source": {
+        "url": "https://github.com/KristinWitte/worried_exploration/tree/main/Study1/task",
+        "commit": "main",
+        "license": "MIT",
+        "note": "Adapted to jsPsych v8 from Witte et al.'s vanilla-JS/jQuery implementation. Reward grids (assets/sample_grid.json) are reused verbatim from the original repository (30 GP-sampled environments on an 11x11 grid, integer values 0-100). The original paradigm includes a battery of trait questionnaires and a bonus judgment-of-uncertainty round; this v1 port retains only the core 11-block grid-bandit paradigm."
+    },
+    "description": "Click tiles on an 11x11 grid to harvest fish. Rewards are spatially correlated. Half the blocks include a Kraken that punishes any click below the threshold (z<=50) by zeroing the block's earnings; the other half are safe. Tests value-directed exploitation, spatial generalization, and risk-sensitive exploration.",
+    "parameters": {
+        "n_trials": 110,
+        "n_blocks": 11,
+        "clicks_per_block": 10,
+        "grid_rows": 11,
+        "grid_cols": 11,
+        "n_envs_available": 30,
+        "kraken_threshold": 50,
+        "reward_noise_sd": 1.0,
+        "block_conditions": ["safe", "risky"],
+        "n_safe_blocks": 6,
+        "n_risky_blocks": 5,
+        "response_type": "button",
+        "response_keys": [],
+        "response_deadline_ms": 30000,
+        "fixation_duration_ms": 0,
+        "feedback_duration_ms": 600
+    },
+    "randomization": {
+        "seed_from_session": true,
+        "randomize_block_order": true,
+        "randomize_env_assignment": true
+    },
+    "data_logging": {
+        "required_fields": [
+            "trial_index", "block", "click_in_block", "block_condition",
+            "env_idx", "x", "y", "z", "z_true", "z_above_50", "previous_z",
+            "distance_from_last", "is_repeat_tile", "kraken_caught",
+            "timed_out", "rt"
+        ]
+    }
+}

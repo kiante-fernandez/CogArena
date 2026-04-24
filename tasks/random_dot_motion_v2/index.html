@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CogArena - Random Dot Motion (Direction)</title>
+    <script src="https://unpkg.com/jspsych@8.2.3/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function@2.1.0/dist/index.browser.js"></script>
+    <link href="https://unpkg.com/jspsych@8.2.3/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        body { background: #000; }
+        .jspsych-display-element { color: #ddd; }
+        .jspsych-content { color: #ddd; }
+        .fixation { font-size: 36px; color: #ddd; text-align: center; }
+        .key-mapping { font-size: 22px; text-align: center; line-height: 2; color: #ddd; }
+        .key-mapping kbd {
+            background: #222; border: 1px solid #888; border-radius: 4px;
+            padding: 2px 8px; font-family: monospace; font-size: 22px; color: #ddd;
+        }
+        .feedback { font-size: 26px; text-align: center; }
+        .rdm-canvas {
+            display: block;
+            margin: 0 auto;
+            background: #000;
+            border: 1px solid #222;
+        }
+        .trial-counter { position: fixed; top: 10px; right: 12px; font-size: 14px; color: #555; }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="/static/js/incremental_save.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+# Headline study for the v1 paper.
+#
+# (model, task, repeat) tuples expand to model_count * task_count * repeats runs.
+# Each run gets its own session_id and artifact directory.
+
+suite_name: headline_v1
+default_scaffold: browser-use
+
+tasks:
+  - random_dot_motion_v2
+  - grid_bandit
+  - marbles_risk
+  - repeated_games
+  - serial_recall_v2
+  - visual_recognition
+  - effort_foraging
+  - tiny_alchemy
+  - moral_machine
+  - phishing_detection_v2
+
+models:
+  - id: claude-opus-4.7
+  - id: gemini-3-pro
+  - id: gpt-5
+  - id: claude-sonnet-4.6
+  - id: kimi-k2.5
+
+repeats: 3                # number of independent sessions per (model, task) cell
+n_trials_override: null   # null = each task uses its native n_trials
+task_timeout_seconds: 1800
+no_deadline: true         # extend per-task response deadlines for agent latency

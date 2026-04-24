@@ -1,0 +1,37 @@
+{
+    "task_id": "serial_recall_v2",
+    "signatures": [
+        {
+            "name": "above_chance_recall",
+            "description": "Overall recall accuracy is significantly above the typed-3-letters chance baseline (1/26^3 ~ 0.00006, conservatively rounded up to 0.05 to account for any natural overlap in 3-letter prefixes within the stimulus pool).",
+            "test": "proportion_test",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "chance_level": 0.05,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.5
+        },
+        {
+            "name": "similarity_aids_recall",
+            "description": "Recall accuracy increases with semantic similarity of the cue-target pair (Haridi & Schulz Memory Festival; the central similarity-aids-recall finding).",
+            "test": "correlation_test",
+            "field_x": "similarity_level",
+            "field_y": "correct",
+            "filter": {"timed_out": false},
+            "threshold_p": 0.05,
+            "expected_direction": "positive",
+            "weight": 1.5
+        },
+        {
+            "name": "high_vs_low_sim_advantage",
+            "description": "Recall accuracy on highly similar pairs (similarity 0.8) significantly exceeds accuracy on dissimilar pairs (similarity 0.2).",
+            "test": "paired_proportion_test",
+            "group_a": {"filter": {"timed_out": false, "similarity_level": 0.8}, "field": "correct"},
+            "group_b": {"filter": {"timed_out": false, "similarity_level": 0.2}, "field": "correct"},
+            "threshold_p": 0.05,
+            "expected_direction": "a > b",
+            "weight": 1.0
+        }
+    ]
+}

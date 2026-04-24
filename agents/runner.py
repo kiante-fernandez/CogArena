@@ -140,6 +140,7 @@ def main():
                 no_deadline=no_deadline,
                 task_timeout=args.task_timeout,
                 tasks_filter=args.tasks,
+                n_trials=args.n_trials,
             ))
 
         elif args.agent == "browser-use":

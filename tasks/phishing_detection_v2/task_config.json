@@ -1,0 +1,42 @@
+{
+    "task_id": "phishing_detection_v2",
+    "task_name": "Phishing Detection (Singh 2019)",
+    "domain": "judgment",
+    "version": "1.0.0",
+    "citation": "Singh, Aggarwal, Rajivan & Gonzalez (2019) — Training to Detect Phishing Emails: Effects of the Frequency of Experienced Phishing Emails, HFES Annual Meeting",
+    "psych201_reference": "singh2019phishing",
+    "source": {
+        "url": "https://osf.io/r83ag/",
+        "commit": "n/a",
+        "license": "CC-BY for research",
+        "note": "v1 port uses the actual 239-email Singh et al. (2019) stimulus set (PhishingDataset_HFES2019.csv on OSF: 186 phishing + 53 ham). Emails are rendered with realistic email-client styling (header pane + HTML body) so the visual surface matches what a real participant sees in their inbox. Training-phase feedback follows Singh's outcome-feedback condition (correct/incorrect after each response, no detail). The task drops Singh's incentive and detail-feedback conditions to keep the v1 paradigm focused on the basic learn-from-feedback signature."
+    },
+    "description": "Classify emails as legitimate (ham) or phishing across three phases. Pre-training (10 trials, no feedback), training (40 trials with outcome feedback), post-training (10 trials, no feedback). Tests above-chance discrimination, training-induced improvement, and learning-from-feedback dynamics.",
+    "parameters": {
+        "n_trials": 60,
+        "n_pre_training": 10,
+        "n_training": 40,
+        "n_post_training": 10,
+        "phishing_rate": 0.5,
+        "response_keys": ["f", "j"],
+        "key_mapping": {"legitimate": "f", "phishing": "j"},
+        "response_type": "keypress",
+        "response_deadline_ms": 30000,
+        "feedback_duration_ms": 2000,
+        "iti_min_ms": 500,
+        "iti_max_ms": 1000
+    },
+    "randomization": {
+        "seed_from_session": true,
+        "randomize_email_assignment": true
+    },
+    "data_logging": {
+        "required_fields": [
+            "trial_index", "phase", "trial_in_phase",
+            "email_id", "is_phishing",
+            "response", "responded_phishing",
+            "is_hit", "is_false_alarm", "is_miss", "is_correct_rejection",
+            "correct", "rt", "timed_out"
+        ]
+    }
+}

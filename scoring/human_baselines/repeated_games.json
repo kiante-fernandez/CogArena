@@ -1,0 +1,10 @@
+{
+    "task_id": "repeated_games",
+    "source": "literature_estimates",
+    "note": "Estimates derived from Akata, Schulz, Coda-Forno et al. 2023 (arXiv:2305.16867) human-baseline aggregates and from Camerer 2003 (Behavioral Game Theory) for canonical PD/BoS rates against simple opponents. The original Akata repository ships an aggregated repgames.csv that could be used to refine these in v2.",
+    "coop_rate_pd": {"mean": 0.55, "sd": 0.20, "n": 60},
+    "coordination_rate_bos": {"mean": 0.60, "sd": 0.18, "n": 60},
+    "mean_payoff_pd": {"mean": 6.5, "sd": 1.5, "n": 60},
+    "mean_payoff_bos": {"mean": 5.5, "sd": 2.5, "n": 60},
+    "timeout_rate": {"mean": 0.02, "sd": 0.05, "n": 60}
+}

@@ -16,10 +16,21 @@ dependencies = [
     "jinja2>=3.1.0",
     "httpx>=0.28.0",
     "sqlalchemy-libsql>=0.2.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# `pip install -e .[agents]` for the LLM-driven Browser-Use scaffold.
+# Pinned version: Browser-Use's API churns aggressively across minor releases;
+# we test against 0.9.5. Loosen with care.
+agents = [
+    "browser-use==0.9.5",
+    "playwright>=1.45.0",
 ]
 
 [project.scripts]
 app = "harness.server:app"
+cogarena = "harness.cli:main"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

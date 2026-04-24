@@ -1,0 +1,10 @@
+{
+    "task_id": "moral_machine",
+    "source": "literature_estimates",
+    "note": "Estimates derived from Awad, Dsouza, Kim, Schulz, Henrich, Shariff, Bonnefon & Rahwan (2018), 'The Moral Machine experiment', Nature 563:59-64, Fig 2 (global preference effect sizes, n=39,610,809 decisions across 233 countries). Reported here as proportions in [0,1] rather than the centered effect sizes in the paper's Fig 2. Replace with on-platform empirical baselines in v2.",
+    "prop_utilitarian": {"mean": 0.77, "sd": 0.10, "n": 100},
+    "prop_save_young": {"mean": 0.72, "sd": 0.12, "n": 100},
+    "prop_save_human": {"mean": 0.85, "sd": 0.10, "n": 100},
+    "prop_save_legal": {"mean": 0.61, "sd": 0.13, "n": 100},
+    "prop_intervention": {"mean": 0.46, "sd": 0.10, "n": 100}
+}

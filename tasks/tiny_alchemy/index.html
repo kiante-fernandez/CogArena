@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CogArena - Tiny Alchemy</title>
+    <script src="https://unpkg.com/jspsych@8.2.3/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function@2.1.0/dist/index.browser.js"></script>
+    <link href="https://unpkg.com/jspsych@8.2.3/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 100%);
+            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: #f5f3ff;
+        }
+        .jspsych-display-element { color: #f5f3ff; }
+        .alchemy-shell {
+            display: flex;
+            flex-direction: row;
+            gap: 16px;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 8px 0;
+        }
+        .panel {
+            border: 1px solid rgba(196, 181, 253, 0.3);
+            border-radius: 10px;
+            background: rgba(15, 12, 41, 0.7);
+            backdrop-filter: blur(8px);
+            padding: 10px 12px;
+            min-width: 260px;
+            max-width: 380px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(168, 85, 247, 0.08);
+        }
+        .panel-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ddd6fe;
+            border-bottom: 1px solid rgba(196, 181, 253, 0.2);
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            letter-spacing: 0.04em;
+        }
+        .panel-header .small { font-size: 11px; font-weight: 400; color: #a5b4fc; }
+        .inventory-list {
+            max-height: 380px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 2px;
+        }
+        .inventory-list::-webkit-scrollbar { width: 6px; }
+        .inventory-list::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.4); border-radius: 3px; }
+        .element-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 14px;
+            background: rgba(67, 56, 202, 0.4);
+            color: #f5f3ff;
+            cursor: pointer;
+            user-select: none;
+            line-height: 1.3;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+        }
+        .element-chip .icon { font-size: 16px; line-height: 1; }
+        .element-chip:hover {
+            background: rgba(124, 58, 237, 0.6);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(168, 85, 247, 0.3);
+        }
+        .element-chip.selected {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #1e1b4b;
+            border-color: #fcd34d;
+            box-shadow: 0 0 12px rgba(252, 211, 77, 0.5);
+            transform: translateY(-1px);
+        }
+        .element-chip.base {
+            background: rgba(180, 83, 9, 0.4);
+            border-color: rgba(252, 211, 77, 0.4);
+            font-weight: 700;
+        }
+        .element-chip.base.selected {
+            background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%);
+            color: #1e1b4b;
+        }
+        .element-chip.new {
+            background: rgba(34, 197, 94, 0.4);
+            border-color: rgba(134, 239, 172, 0.5);
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+            animation: glowpulse 1.5s ease-in-out 0s 2;
+        }
+        @keyframes glowpulse {
+            0% { box-shadow: 0 0 4px rgba(74, 222, 128, 0.3); }
+            50% { box-shadow: 0 0 16px rgba(74, 222, 128, 0.7); }
+            100% { box-shadow: 0 0 4px rgba(74, 222, 128, 0.3); }
+        }
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 240px;
+        }
+        .workspace-slots {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 10px;
+            align-items: center;
+            font-size: 22px;
+            color: #c4b5fd;
+        }
+        .slot {
+            width: 110px; height: 64px;
+            border: 2px dashed rgba(196, 181, 253, 0.4);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a5b4fc;
+            font-size: 13px;
+            background: rgba(15, 12, 41, 0.4);
+            text-align: center;
+            padding: 4px;
+        }
+        .slot.filled {
+            border-style: solid;
+            border-color: #fcd34d;
+            background: linear-gradient(135deg, rgba(252, 211, 77, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
+            color: #fef3c7;
+            font-weight: 600;
+            font-size: 14px;
+            flex-direction: column;
+            gap: 2px;
+            box-shadow: 0 0 8px rgba(252, 211, 77, 0.25);
+        }
+        .slot.filled .icon { font-size: 22px; line-height: 1; }
+        .combine-btn, .clear-btn, .end-btn {
+            margin: 4px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .combine-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #1e1b4b;
+            border: 1px solid #fcd34d;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+        .combine-btn:hover:not([disabled]) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6); }
+        .combine-btn[disabled] { opacity: 0.35; cursor: not-allowed; }
+        .clear-btn {
+            background: rgba(67, 56, 202, 0.4);
+            color: #ddd6fe;
+            border: 1px solid rgba(196, 181, 253, 0.3);
+        }
+        .clear-btn:hover { background: rgba(67, 56, 202, 0.6); }
+        .end-btn {
+            margin-top: 16px;
+            background: rgba(127, 29, 29, 0.5);
+            color: #fecaca;
+            border: 1px solid rgba(248, 113, 113, 0.4);
+        }
+        .end-btn:hover { background: rgba(127, 29, 29, 0.7); }
+        .feedback-line {
+            font-size: 14px;
+            margin-top: 10px;
+            min-height: 26px;
+            text-align: center;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        .feedback-line.success { color: #86efac; background: rgba(34, 197, 94, 0.15); font-weight: 600; }
+        .feedback-line.fail { color: #fca5a5; background: rgba(127, 29, 29, 0.2); }
+        .feedback-line.novel {
+            color: #fef3c7;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(168, 85, 247, 0.3));
+            font-weight: 700;
+            font-size: 16px;
+            box-shadow: 0 0 14px rgba(252, 211, 77, 0.4);
+            animation: novelpulse 1s ease-out 0s 1;
+        }
+        @keyframes novelpulse {
+            0% { transform: scale(0.85); opacity: 0; }
+            60% { transform: scale(1.04); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .session-bar {
+            font-size: 13px;
+            color: #c4b5fd;
+            text-align: center;
+            margin-bottom: 8px;
+            padding: 6px 14px;
+            background: rgba(15, 12, 41, 0.5);
+            border-radius: 8px;
+            display: inline-block;
+            border: 1px solid rgba(196, 181, 253, 0.2);
+        }
+        .session-bar strong { color: #fef3c7; font-size: 15px; }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="/static/js/incremental_save.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

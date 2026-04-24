@@ -298,9 +298,13 @@ def run_all_tasks(
             else:
                 logger.info("Triggering manual evaluation...")
                 resp = client.post(f"/api/evaluate/{session_id}")
-                if resp.status_code == 404:
-                    raise RuntimeError("No task data found for evaluation")
                 resp.raise_for_status()
+                body = resp.json()
+                if body.get("status") == "no_data":
+                    raise RuntimeError("No task data found for evaluation")
+                for err in body.get("scoring_errors") or []:
+                    logger.warning("Scoring error for task %s: %s",
+                                   err.get("task_id"), err.get("error"))
 
             # Print scorecard
             results = client.get(f"/api/results/{session_id}").json()

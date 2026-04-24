@@ -1,0 +1,47 @@
+{
+    "task_id": "effort_foraging",
+    "task_name": "Effort Foraging (Apple Patches)",
+    "domain": "foraging",
+    "version": "1.0.0",
+    "citation": "Bustamante, Lieder, Musslick, Shenhav & Cohen (2023) — Effort foraging task reveals a positive correlation between cognitive effort exertion and the marginal value of effort. PNAS 120(46):e2308775120.",
+    "psych201_reference": null,
+    "source": {
+        "url": "https://github.com/lcnbu/effort_foraging_task_code",
+        "commit": "main",
+        "license": "see upstream",
+        "note": "Adapted to jsPsych v8 from Bustamante et al.'s Princeton Nivturk-hosted jsPsych-6 + d3 implementation. The original includes physical-effort (rapid button pressing) and cognitive-effort (Multi-source Interference Task) travel manipulations; this v1 port simplifies to a fixed travel duration with two cost levels (low vs high) so the task is a clean MVT (marginal value theorem) test rather than a cognitive-vs-physical-effort comparison. Each trial is one stay/leave decision; n_trials is the total number of decisions across the two travel-cost blocks."
+    },
+    "description": "Foraging on a series of apple patches. Each patch yields rewards that decay with each harvest. On every trial the agent chooses to STAY (F) and harvest the patch again, or LEAVE (J) and travel to a fresh patch. Travel takes time. Two within-subject blocks vary the travel cost (low vs high) — the marginal value theorem predicts longer residence times when travel is more costly.",
+    "parameters": {
+        "n_trials": 80,
+        "n_blocks": 2,
+        "trials_per_block": 40,
+        "block_conditions": ["low_cost", "high_cost"],
+        "travel_cost_seconds_low": 4,
+        "travel_cost_seconds_high": 8,
+        "start_reward_mean": 70,
+        "start_reward_sd": 6,
+        "decay_rate_mean": 0.88,
+        "decay_rate_sd": 0.04,
+        "harvest_animation_ms": 600,
+        "response_keys": ["f", "j"],
+        "key_mapping": {"stay": "f", "leave": "j"},
+        "response_type": "keypress",
+        "response_deadline_ms": 5000
+    },
+    "randomization": {
+        "seed_from_session": true,
+        "randomize_block_order": true,
+        "patch_decay_per_patch": true
+    },
+    "data_logging": {
+        "required_fields": [
+            "trial_index", "block", "block_condition", "travel_cost_seconds",
+            "patch_id", "harvest_in_patch", "current_reward_offered",
+            "running_block_avg_per_decision", "action", "is_stay",
+            "harvest_reward", "harvest_reward_above_chance",
+            "harvests_stayed_in_patch", "mvt_optimal_action", "mvt_optimal_match",
+            "rt", "timed_out"
+        ]
+    }
+}

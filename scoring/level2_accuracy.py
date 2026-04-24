@@ -6,8 +6,20 @@ def score_accuracy(trial_data: list[dict], metrics_spec: dict) -> dict:
     metric_results = []
 
     for metric in metrics_spec["metrics"]:
-        filtered = _apply_filter(trial_data, metric.get("filter"))
-        raw_value = _compute_metric(filtered, metric)
+        # Per-metric isolation: a malformed spec (missing field, unknown type)
+        # or upstream data corruption shouldn't crash the entire L2 score and
+        # cascade-500 the whole /api/evaluate.
+        try:
+            filtered = _apply_filter(trial_data, metric.get("filter"))
+            raw_value = _compute_metric(filtered, metric)
+        except Exception as e:
+            metric_results.append({
+                "name": metric.get("name", "<unnamed>"),
+                "raw_value": None,
+                "normalized_score": 0.0,
+                "error": f"{type(e).__name__}: {e}",
+            })
+            continue
 
         if raw_value is None:
             metric_results.append({

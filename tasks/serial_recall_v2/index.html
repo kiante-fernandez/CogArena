@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CogArena - Cued Paired-Associate Recall</title>
+    <script src="https://unpkg.com/jspsych@8.2.3/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function@2.1.0/dist/index.browser.js"></script>
+    <link href="https://unpkg.com/jspsych@8.2.3/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        body { background: #f7f5ee; }
+        .stage-label {
+            font-size: 12px; color: #6b7280; text-transform: uppercase;
+            letter-spacing: 0.05em; text-align: center; margin-bottom: 6px;
+        }
+        .pair-card {
+            border: 2px solid #555;
+            border-radius: 12px;
+            padding: 22px 28px;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: inline-block;
+            text-align: center;
+            margin: 18px auto;
+        }
+        .pair-words {
+            font-size: 30px; font-weight: 600; color: #111827;
+            letter-spacing: 0.02em;
+        }
+        .pair-divider {
+            display: inline-block; padding: 0 12px; color: #9ca3af; font-weight: 400;
+        }
+        .cue-card {
+            border: 2px solid #555; border-radius: 12px;
+            padding: 22px 28px; background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: inline-block; text-align: center; margin: 18px auto;
+            min-width: 320px;
+        }
+        .cue-word {
+            font-size: 28px; font-weight: 600; color: #111827; margin-bottom: 14px;
+        }
+        .recall-input {
+            font-size: 22px; font-family: inherit; padding: 8px 12px;
+            border: 1px solid #6b7280; border-radius: 6px;
+            width: 180px; text-align: center; outline: none;
+            background: #fff; color: #111827;
+        }
+        .recall-input:focus { border-color: #1f6fb2; box-shadow: 0 0 0 2px rgba(31,111,178,0.15); }
+        .recall-submit {
+            margin-left: 10px; padding: 8px 16px;
+            background: #1f6fb2; color: #fff; border: none; border-radius: 6px;
+            font-size: 16px; cursor: pointer;
+        }
+        .recall-submit:hover { background: #1c5f99; }
+        .stim-prompt { font-size: 16px; color: #444; text-align: center; margin: 12px 0; }
+        .countdown {
+            font-size: 48px; font-weight: 700; color: #4b5563;
+            text-align: center; margin: 60px auto 30px;
+        }
+        .key-hint {
+            display: inline-block;
+            background: #eee; border: 1px solid #888; border-radius: 4px;
+            padding: 2px 10px; margin: 0 2px;
+            font-family: monospace; font-size: 16px; color: #222;
+        }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="/static/js/incremental_save.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

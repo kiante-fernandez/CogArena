@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CogArena Session Replay — {{ meta.session_id }}</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    margin: 0; padding: 20px;
+    background: #f7f5ee; color: #1f2937;
+  }
+  header {
+    background: #ffffff; border: 1px solid #d1d5db; border-radius: 12px;
+    padding: 16px 22px; margin-bottom: 18px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+  h1 { margin: 0 0 8px 0; font-size: 22px; }
+  .meta-grid {
+    display: grid; grid-template-columns: max-content 1fr; gap: 4px 18px;
+    font-size: 13px;
+  }
+  .meta-grid .k { color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; align-self: center; }
+  .meta-grid .v { font-family: monospace; }
+  .scorecard {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    margin-top: 14px; padding-top: 12px; border-top: 1px solid #e5e7eb;
+  }
+  .score-box {
+    flex: 1; min-width: 130px;
+    text-align: center; padding: 8px 12px;
+    background: #f9fafb; border-radius: 8px;
+  }
+  .score-box .label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+  .score-box .value { font-size: 22px; font-weight: 700; color: #1f6fb2; font-family: monospace; }
+  .score-box .value.composite { color: #b45309; }
+
+  .task-summary {
+    background: #ffffff; border: 1px solid #d1d5db; border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 16px;
+  }
+  .task-summary table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .task-summary th { text-align: left; font-weight: 600; color: #6b7280;
+                     text-transform: uppercase; letter-spacing: 0.05em;
+                     font-size: 11px; padding: 4px 8px; border-bottom: 1px solid #e5e7eb; }
+  .task-summary td { padding: 4px 8px; font-family: monospace; }
+
+  details.task-block {
+    background: #ffffff; border: 1px solid #d1d5db; border-radius: 8px;
+    padding: 8px 14px; margin-bottom: 12px;
+  }
+  details.task-block > summary {
+    cursor: pointer; font-weight: 600; padding: 6px 0;
+  }
+  details.task-block[open] > summary { border-bottom: 1px solid #e5e7eb; margin-bottom: 8px; }
+
+  .step {
+    display: grid; grid-template-columns: 80px 1fr 320px;
+    gap: 12px; padding: 8px 0; border-bottom: 1px dashed #e5e7eb;
+    align-items: start;
+  }
+  .step:last-child { border-bottom: none; }
+  .step .step-no { font-family: monospace; color: #9ca3af; font-size: 12px; }
+  .step .step-state { font-weight: 600; font-size: 12px; color: #4b5563;
+                      text-transform: uppercase; letter-spacing: 0.04em; }
+  .step .step-action {
+    font-family: monospace; font-size: 11px; color: #1f2937;
+    background: #f3f4f6; padding: 4px 8px; border-radius: 4px;
+    overflow-x: auto;
+  }
+  .step .step-action pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
+  .step img.screenshot {
+    max-width: 100%; max-height: 220px;
+    border: 1px solid #d1d5db; border-radius: 4px;
+  }
+  .step .invalid { background: #fee2e2; color: #991b1b; }
+  .toolbar {
+    margin-bottom: 14px;
+    font-size: 13px; color: #6b7280;
+  }
+  .toolbar a { color: #1f6fb2; text-decoration: none; margin-right: 14px; }
+  .toolbar a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CogArena Session Replay</h1>
+  <div class="meta-grid">
+    <div class="k">Session</div><div class="v">{{ meta.session_id or "?" }}</div>
+    <div class="k">Model</div><div class="v">{{ meta.model.id if meta.model else "?" }} ({{ meta.model.api if meta.model else "?" }})</div>
+    <div class="k">Scaffold</div><div class="v">{{ meta.model.scaffold if meta.model else "?" }}</div>
+    <div class="k">Agent name</div><div class="v">{{ meta.agent_name or "?" }}</div>
+    <div class="k">Started</div><div class="v">{{ meta.started_at_utc or "?" }}</div>
+    <div class="k">Tasks</div><div class="v">{{ (meta.tasks or [])|join(", ") }}</div>
+    <div class="k">Git SHA</div><div class="v">{{ meta.env.git_sha if meta.env else "?" }}{% if meta.env and meta.env.git_dirty %} (dirty){% endif %}</div>
+    <div class="k">Steps</div><div class="v">{{ total_interactions }} interactions · {{ total_actions }} actions</div>
+  </div>
+
+  {% if score and score.composite_score is defined %}
+  <div class="scorecard">
+    <div class="score-box">
+      <div class="label">Composite</div>
+      <div class="value composite">{{ "%.2f"|format(score.composite_score or 0) }}</div>
+    </div>
+    <div class="score-box">
+      <div class="label">L1 completion</div>
+      <div class="value">{{ "%.3f"|format(score.l1_overall or 0) }}</div>
+    </div>
+    <div class="score-box">
+      <div class="label">L2 accuracy</div>
+      <div class="value">{{ "%.3f"|format(score.l2_overall or 0) }}</div>
+    </div>
+    <div class="score-box">
+      <div class="label">L3 behavioral</div>
+      <div class="value">{{ "%.3f"|format(score.l3_overall or 0) }}</div>
+    </div>
+  </div>
+  {% endif %}
+</header>
+
+<div class="toolbar">
+  <strong>Per-task summary:</strong>
+</div>
+<div class="task-summary">
+  <table>
+    <thead><tr><th>Task</th><th>Steps</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for s in summary %}
+      <tr>
+        <td><a href="#task-{{ s.task_id }}">{{ s.task_id }}</a></td>
+        <td>{{ s.n_steps }}</td>
+        <td>{{ s.n_actions }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% for grp in task_groups %}
+<details class="task-block" id="task-{{ grp.task_id }}" open>
+  <summary>{{ grp.task_id }} <span style="color:#6b7280;font-weight:normal">— {{ grp.steps|length }} steps</span></summary>
+  {% for step in grp.steps %}
+    <div class="step">
+      <div>
+        <div class="step-no">#{{ step.step }}</div>
+        <div class="step-state">{{ step.state or "?" }}</div>
+      </div>
+      <div>
+        {% if step.action_proposed %}
+          <div class="step-action {{ 'invalid' if step.action_valid is sameas false else '' }}">
+            <pre>{{ step.action_proposed | short_json }}</pre>
+          </div>
+        {% endif %}
+        {% if step.validity_reason %}
+          <div style="font-size:11px;color:#991b1b;margin-top:4px">{{ step.validity_reason }}</div>
+        {% endif %}
+        {% if step.extra %}
+          <details style="margin-top:4px;font-size:11px;color:#6b7280"><summary>extra</summary>
+            <pre>{{ step.extra | json }}</pre>
+          </details>
+        {% endif %}
+      </div>
+      <div>
+        {# Both src values are server-generated, but defensively guard against
+           any unexpected scheme by requiring the expected prefix. #}
+        {% if step.screenshot_data_url and step.screenshot_data_url.startswith("data:image/") %}
+          <img class="screenshot" src="{{ step.screenshot_data_url }}" alt="step {{ step.step }} screenshot">
+        {% elif step.screenshot_path and step.screenshot_path.startswith("screenshots/") %}
+          <img class="screenshot" src="{{ step.screenshot_path }}" alt="step {{ step.step }} screenshot">
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+</details>
+{% endfor %}
+
+<footer style="margin-top:20px;font-size:11px;color:#9ca3af;text-align:center">
+  Generated by harness.replay · {{ meta.session_id }}
+</footer>
+
+</body>
+</html>

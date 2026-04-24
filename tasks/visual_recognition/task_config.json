@@ -1,0 +1,42 @@
+{
+    "task_id": "visual_recognition",
+    "task_name": "Visual Recognition Memory (Old/New)",
+    "domain": "memory_recognition",
+    "version": "1.0.0",
+    "citation": "Brady, Konkle, Alvarez & Oliva (2008) — Visual long-term memory has a massive storage capacity for object details, PNAS 105(38):14325-14329",
+    "psych201_reference": null,
+    "source": {
+        "url": "https://bradylab.ucsd.edu/stimuli.html",
+        "commit": "n/a",
+        "license": "Brady stimulus set is CC-BY for research; v1 port does NOT use the Brady image set to keep the task self-contained without shipping ~30 MB of image assets",
+        "note": "The original Brady et al. 2008 paradigm uses ~2,500 unique object photographs in a study/test recognition design. v1 port reproduces the structural design (study phase + distractor + 2AFC old/new test) using procedurally-generated SVG stimuli (shape × color × pattern × orientation) with 768 unique combinations. The procedural approach (a) ships the entire task in a single experiment.js file, (b) lets us scale stimulus difficulty, and (c) is honest about the simplification (a v2 with the actual Brady photographs will be shipped as a supplementary task)."
+    },
+    "description": "Visual recognition memory in study/test format. Study phase: 50 unique procedurally-generated stimuli, 2.5s each. Distractor: 30s arithmetic. Test phase: 100 trials (50 'old' + 50 'new' lures), 2AFC old/new judgment with 4s deadline.",
+    "parameters": {
+        "n_trials": 100,
+        "n_study_trials": 50,
+        "n_test_trials": 100,
+        "n_lures": 50,
+        "study_duration_ms": 2500,
+        "study_iti_ms": 500,
+        "distractor_duration_ms": 30000,
+        "test_response_deadline_ms": 4000,
+        "test_iti_ms": 500,
+        "response_keys": ["f", "j"],
+        "response_type": "keypress",
+        "key_mapping": {"old": "f", "new": "j"}
+    },
+    "randomization": {
+        "seed_from_session": true,
+        "randomize_test_order": true,
+        "randomize_stimulus_assignment": true
+    },
+    "data_logging": {
+        "required_fields": [
+            "trial_index", "phase", "stimulus_id",
+            "is_old", "response", "responded_old",
+            "is_hit", "is_false_alarm", "is_miss", "is_correct_rejection",
+            "correct", "rt", "timed_out"
+        ]
+    }
+}

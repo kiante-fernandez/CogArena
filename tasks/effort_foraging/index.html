@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CogArena - Effort Foraging</title>
+    <script src="https://unpkg.com/jspsych@8.2.3/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@2.1.0/dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function@2.1.0/dist/index.browser.js"></script>
+    <link href="https://unpkg.com/jspsych@8.2.3/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        body {
+            background: linear-gradient(180deg, #cce7d6 0%, #f3ecd8 85%);
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #1f2937;
+        }
+        .jspsych-display-element { overflow-x: hidden; }
+
+        /* ---- Block banner ---- */
+        .block-banner {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 13px; font-weight: 600; letter-spacing: 0.04em;
+            padding: 4px 12px; border-radius: 999px;
+            text-transform: uppercase;
+        }
+        .block-banner.low  { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        .block-banner.high { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .block-banner .dot {
+            width: 8px; height: 8px; border-radius: 50%; background: currentColor;
+        }
+
+        .stage-label {
+            font-size: 11px; color: #6b7280; text-transform: uppercase;
+            letter-spacing: 0.08em; text-align: center; margin: 8px 0 2px;
+        }
+
+        /* ---- Orchard scene card ---- */
+        .scene-card {
+            position: relative;
+            border: 1px solid #cbd5e1;
+            border-radius: 18px;
+            padding: 14px 16px 18px;
+            background: #fefdf7;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            width: 720px;
+            max-width: 95vw;
+            margin: 10px auto;
+            text-align: center;
+        }
+        .scene-stage {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #bfe4f5 0%, #d5efd4 55%, #a8cf90 100%);
+        }
+        .scene-stage .sun {
+            position: absolute; top: 18px; right: 24px;
+            width: 42px; height: 42px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #fff5b7, #fcd34d 70%, #f59e0b);
+            box-shadow: 0 0 24px rgba(252, 211, 77, 0.6);
+        }
+        .scene-stage .cloud {
+            position: absolute; top: 28px;
+            width: 80px; height: 20px; border-radius: 20px;
+            background: #ffffff; opacity: 0.88;
+            box-shadow: 14px -8px 0 -2px #ffffff, -14px -6px 0 -4px #ffffff;
+        }
+        .scene-stage .cloud.c1 { left: 12%; animation: cloudDrift 60s linear infinite; }
+        .scene-stage .cloud.c2 { left: 45%; top: 48px; width: 60px; animation: cloudDrift 90s linear infinite; }
+        @keyframes cloudDrift {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(80px); }
+        }
+        .scene-stage .ground-path {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            height: 60px;
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(122, 146, 86, 0.5) 0%, rgba(122, 146, 86, 0) 60%),
+                linear-gradient(180deg, #9db876 0%, #7a9256 100%);
+        }
+        .scene-stage .trail {
+            position: absolute; bottom: 8px; left: -5%; right: -5%;
+            height: 14px;
+            background: repeating-linear-gradient(90deg, #c7a17a 0 14px, #b08757 14px 22px);
+            border-radius: 20px;
+            opacity: 0.55;
+            transform: perspective(180px) rotateX(35deg);
+        }
+
+        /* Tree slot (current patch) */
+        .tree-slot {
+            position: absolute; left: 32%; bottom: 18px;
+            transform: translateX(-50%);
+            transition: transform 300ms ease;
+        }
+        .tree-slot.wilt { transform: translateX(-50%) rotate(-1.5deg); }
+
+        /* Horizon trees */
+        .horizon-tree {
+            position: absolute; bottom: 28px;
+            font-size: 0;
+            opacity: 0.75;
+        }
+        .horizon-tree.t1 { left: 62%; transform: scale(0.55); }
+        .horizon-tree.t2 { left: 78%; transform: scale(0.38); opacity: 0.55; }
+        .horizon-tree.t3 { left: 90%; transform: scale(0.28); opacity: 0.4; }
+
+        /* Basket (bottom-right of scene) */
+        .basket-anchor {
+            position: absolute; right: 32px; bottom: 14px;
+            width: 120px; height: 70px;
+        }
+        .basket-body {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            height: 38px;
+            background: repeating-linear-gradient(135deg, #a16207 0 6px, #854d0e 6px 12px);
+            border: 2px solid #713f12;
+            border-radius: 0 0 20px 20px;
+            box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.2);
+        }
+        .basket-rim {
+            position: absolute; left: -4px; right: -4px; bottom: 34px;
+            height: 10px;
+            background: #854d0e; border: 2px solid #713f12; border-radius: 6px;
+        }
+        .basket-pile {
+            position: absolute; left: 10px; right: 10px; bottom: 30px;
+            height: 26px;
+            pointer-events: none;
+        }
+        .pile-apple {
+            position: absolute; width: 10px; height: 10px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #fca5a5, #dc2626 60%, #7f1d1d);
+        }
+        .basket-count {
+            position: absolute; right: 0; top: -28px;
+            background: #fef3c7; border: 1px solid #facc15; border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 14px; font-weight: 700; color: #92400e;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            transition: transform 200ms ease;
+        }
+        .basket-count.bump { transform: scale(1.15); }
+
+        /* Walking person + progress */
+        .walker {
+            position: absolute; bottom: 18px; left: -40px;
+            font-size: 40px;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+            z-index: 3;
+        }
+        .walker .bob {
+            display: inline-block;
+            animation: bob 0.4s infinite alternate;
+        }
+        @keyframes bob {
+            0%   { transform: translateY(0) rotate(-2deg); }
+            100% { transform: translateY(-3px) rotate(2deg); }
+        }
+        .travel-progress {
+            position: absolute; left: 20px; right: 20px; top: 54px;
+            height: 10px; background: rgba(255, 255, 255, 0.6);
+            border-radius: 8px; overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .travel-progress .bar {
+            height: 100%;
+            background: linear-gradient(90deg, #fbbf24, #f97316);
+            width: 0%;
+        }
+        .travel-label {
+            position: absolute; top: 72px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px; font-weight: 600; color: #78350f;
+            background: rgba(255, 255, 255, 0.85); padding: 2px 10px; border-radius: 10px;
+        }
+
+        /* Reward offer + decision row */
+        .reward-offer {
+            font-size: 26px; font-weight: 700; color: #b45309;
+            margin: 12px 0 2px;
+        }
+        .reward-offer .unit {
+            font-size: 14px; font-weight: 500; color: #4b5563; margin-left: 6px;
+        }
+        .patch-meta {
+            font-size: 12px; color: #6b7280; margin-top: 2px;
+        }
+        .key-row {
+            margin-top: 14px; font-size: 17px; color: #111827;
+            display: flex; justify-content: center; gap: 28px;
+        }
+        .key-hint {
+            display: inline-block;
+            background: #f3f4f6; border: 1px solid #9ca3af; border-radius: 6px;
+            padding: 2px 10px; margin: 0 4px;
+            font-family: ui-monospace, Menlo, monospace; font-size: 15px; color: #1f2937;
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.08);
+        }
+        .choice-stay { color: #15803d; }
+        .choice-leave { color: #b91c1c; }
+
+        /* HUD row (trial counter + basket summary) */
+        .hud {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 12px; color: #4b5563;
+            margin: 6px 6px 0;
+        }
+        .hud .progress-track {
+            flex: 1; height: 6px; margin: 0 12px;
+            background: #e5e7eb; border-radius: 6px; overflow: hidden;
+        }
+        .hud .progress-fill {
+            height: 100%; background: #16a34a; transition: width 300ms ease;
+        }
+        .hud .running { font-weight: 600; color: #1f2937; }
+
+        /* Flying apple overlay */
+        .flying-apple {
+            position: absolute;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #fca5a5, #dc2626 60%, #7f1d1d);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+            pointer-events: none;
+            z-index: 4;
+        }
+        .flying-apple .leaf {
+            position: absolute; top: -4px; left: 10px; width: 6px; height: 6px;
+            background: #16a34a; border-radius: 0 60% 0 60%;
+            transform: rotate(20deg);
+        }
+
+        /* Outcome banner */
+        .outcome-banner {
+            position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+            padding: 6px 14px; border-radius: 999px;
+            font-size: 15px; font-weight: 700;
+            z-index: 5;
+            animation: popIn 260ms ease-out;
+        }
+        .outcome-banner.harvest { background: #dcfce7; color: #166534; border: 1px solid #4ade80; }
+        .outcome-banner.travel  { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
+        @keyframes popIn {
+            0%   { transform: translate(-50%, -8px) scale(0.9); opacity: 0; }
+            100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+        }
+
+        /* Tree shake on harvest */
+        @keyframes treeShake {
+            0%   { transform: translateX(-50%) rotate(0deg); }
+            25%  { transform: translateX(-50%) rotate(-3deg); }
+            50%  { transform: translateX(-50%) rotate(2deg); }
+            75%  { transform: translateX(-50%) rotate(-1deg); }
+            100% { transform: translateX(-50%) rotate(0deg); }
+        }
+        .tree-slot.shake { animation: treeShake 400ms ease-in-out; }
+
+        /* Intro + block summary */
+        .intro-card, .summary-card {
+            max-width: 640px; margin: 20px auto;
+            background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px;
+            padding: 20px 24px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            text-align: left;
+        }
+        .intro-card h2, .summary-card h2 { margin-top: 0; }
+        .intro-card ul { line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <script src="/static/js/timing.js"></script>
+    <script src="/static/js/incremental_save.js"></script>
+    <script src="experiment.js"></script>
+</body>
+</html>

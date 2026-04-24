@@ -1,0 +1,51 @@
+{
+    "task_id": "serial_recall_v2",
+    "metrics": [
+        {
+            "name": "overall_accuracy",
+            "description": "Proportion of recall trials in which the first three typed letters match the first three letters of the target word. Random typing has effectively zero chance of matching (1/26^3 per trial). Haridi & Schulz (Memory Festival, MPI Tübingen) report adult human recall accuracies in the 0.55-0.75 range across similarity levels.",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false},
+            "human_mean": 0.65,
+            "human_sd": 0.18
+        },
+        {
+            "name": "accuracy_high_sim",
+            "description": "Recall accuracy on highly similar pairs (similarity_level >= 0.8). Easier than low-similarity pairs because semantic association supports retrieval.",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false, "similarity_level": 0.8},
+            "human_mean": 0.78,
+            "human_sd": 0.16
+        },
+        {
+            "name": "accuracy_low_sim",
+            "description": "Recall accuracy on dissimilar pairs (similarity_level <= 0.2). Hardest condition.",
+            "type": "proportion_correct",
+            "field": "correct",
+            "filter": {"timed_out": false, "similarity_level": 0.2},
+            "human_mean": 0.50,
+            "human_sd": 0.20
+        },
+        {
+            "name": "mean_recall_rt",
+            "description": "Mean response time on recall trials (ms from cue onset to submit). Indicates retrieval ease.",
+            "type": "mean",
+            "field": "rt",
+            "filter": {"timed_out": false},
+            "human_mean": 3500,
+            "human_sd": 1200,
+            "direction": "lower_is_better"
+        },
+        {
+            "name": "timeout_rate",
+            "description": "Fraction of recall trials that ended without a submitted response. Should be low for engaged participants.",
+            "type": "proportion_correct",
+            "field": "timed_out",
+            "human_mean": 0.05,
+            "human_sd": 0.08,
+            "direction": "lower_is_better"
+        }
+    ]
+}

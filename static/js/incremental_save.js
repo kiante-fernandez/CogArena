@@ -28,9 +28,53 @@
     var _lastSavedCount = 0;
     var _lastSaveTime = Date.now();
     var _saveInFlight = false;
+    var _statusEl = null;
 
+    // Tasks use varying trial_part values for the "main" trial: "stimulus",
+    // "scenario" (moral_machine), "click" (grid_bandit), "pump_decision"
+    // (bart), "decision"/"outcome" (effort_foraging), etc. We count ANY
+    // trial that has a trial_part marker AND isn't a transient screen
+    // (fixation, iti, feedback, practice). This is also what we ship to the
+    // server for incremental saves so the data lands regardless of task
+    // convention without polluting scores with practice trials.
+    var _TRANSIENT_PARTS = {
+        fixation: 1, iti: 1, feedback: 1,
+        practice: 1, study_iti: 1, test_iti: 1,
+    };
     function getStimulusTrials(jsPsychRef) {
-        return jsPsychRef.data.get().filter({ trial_part: "stimulus" }).values();
+        return jsPsychRef.data.get().filter(function (t) {
+            if (!t.trial_part || _TRANSIENT_PARTS[t.trial_part]) return false;
+            // Some tasks tag practice trials with practice:true rather than
+            // a separate trial_part — exclude those too.
+            if (t.practice === true) return false;
+            return true;
+        }).values();
+    }
+
+    // Always-on progress indicator. DOM-scanning agents (Browser-Use, etc.)
+    // panic and try to reload the page if they see no interactive elements
+    // during inter-trial intervals — that destroys jsPsych state. Keeping a
+    // visible "Trials saved" element keeps the page non-blank at all times.
+    function _ensureStatusEl() {
+        if (_statusEl) return _statusEl;
+        if (!document || !document.body) return null;
+        var el = document.createElement("div");
+        el.id = "cogarena-status";
+        el.setAttribute("data-testid", "cogarena-status");
+        el.style.cssText =
+            "position:fixed;bottom:8px;right:8px;z-index:99999;" +
+            "padding:4px 8px;font:12px system-ui,sans-serif;" +
+            "color:#aaa;background:rgba(0,0,0,0.4);border-radius:4px;" +
+            "pointer-events:none;user-select:none;";
+        el.textContent = "CogArena: 0 trials completed";
+        document.body.appendChild(el);
+        _statusEl = el;
+        return el;
+    }
+
+    function _updateStatusEl(nTrials) {
+        var el = _ensureStatusEl();
+        if (el) el.textContent = "CogArena: " + nTrials + " trials completed";
     }
 
     function doSave(trialData) {
@@ -43,7 +87,7 @@
                 is_complete: false,
             }),
         })
-            .then(function () { _saveInFlight = false; })
+            .then(function () { _saveInFlight = false; _updateStatusEl(trialData.length); })
             .catch(function () { _saveInFlight = false; });
     }
 
@@ -54,10 +98,18 @@
 
         opts.on_data_update = function (data) {
             if (userOnDataUpdate) userOnDataUpdate(data);
-            if (data.trial_part !== "stimulus" || !_jsPsychRef) return;
-            if (_saveInFlight) return;
+            if (!_jsPsychRef) return;
+            // Only react to "main" trials, not transient ITI/fixation/feedback
+            // or practice trials.
+            if (!data.trial_part || _TRANSIENT_PARTS[data.trial_part]) return;
+            if (data.practice === true) return;
 
             var allStimuli = getStimulusTrials(_jsPsychRef);
+            // Always update the visible counter on every stimulus trial so
+            // the agent sees forward progress even between saves.
+            _updateStatusEl(allStimuli.length);
+
+            if (_saveInFlight) return;
             var newTrials = allStimuli.length - _lastSavedCount;
             var elapsed = Date.now() - _lastSaveTime;
 
@@ -69,6 +121,9 @@
         };
 
         _jsPsychRef = _originalInitJsPsych(opts);
+        // Mount the indicator as soon as the body exists.
+        if (document.body) _ensureStatusEl();
+        else document.addEventListener("DOMContentLoaded", _ensureStatusEl);
 
         // Last-resort save on page unload (keepalive allows fetch during unload)
         window.addEventListener("beforeunload", function () {

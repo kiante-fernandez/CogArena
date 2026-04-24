@@ -1,0 +1,9 @@
+{
+    "task_id": "visual_recognition",
+    "source": "literature_estimates",
+    "note": "Baselines drawn from Brady, Konkle, Alvarez & Oliva (2008, PNAS) recognition memory paradigm. The published study used ~2,500 unique object photographs and reports d' ~2.5, hit rate ~0.92, false alarm ~0.08, overall accuracy ~0.87 for adult human participants. v1 port uses procedural SVG stimuli (768 unique combinations of shape × color × pattern × orientation), which are likely *easier* to discriminate than photographs because of their compositional structure; we may need to revise these baselines downward after on-platform calibration in v2.",
+    "overall_accuracy": {"mean": 0.87, "sd": 0.07, "n": 60},
+    "hit_rate": {"mean": 0.92, "sd": 0.06, "n": 60},
+    "false_alarm_rate": {"mean": 0.08, "sd": 0.06, "n": 60},
+    "mean_correct_rt": {"mean": 1100, "sd": 350, "n": 60}
+}

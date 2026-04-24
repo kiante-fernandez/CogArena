@@ -13,6 +13,7 @@ import json
 import logging
 import random
 import time
+from pathlib import Path
 
 import httpx
 from playwright.async_api import async_playwright, Page
@@ -58,6 +59,16 @@ TASK_KEYS = {
     "safe_exploration": ["f", "j"],
     "observe_or_bet": ["f", "j", "k"],
     "random_dot_motion": ["f", "j"],
+    "random_dot_motion_v2": ["f", "j"],  # v1 curated: motion-direction RDM
+    "grid_bandit": [],                    # v1 curated: click-grid bandit; uses GRID_TASKS handler
+    "repeated_games": ["f", "j"],         # v1 curated: PD + BoS, F/J keypress per round
+    "marbles_risk": ["f", "j"],           # v1 curated: risky-choice from description, F/J keypress
+    "serial_recall_v2": [],               # v1 curated: cued paired-associate recall; uses text_input handler
+    "moral_machine": ["f", "j"],          # v1 curated: AV moral dilemmas, F/J keypress
+    "tiny_alchemy": [],                   # v1 curated: combinatorial discovery; uses ALCHEMY_TASKS handler
+    "visual_recognition": ["f", "j"],     # v1 curated: Brady-style old/new memory, F=old/J=new
+    "effort_foraging": ["f", "j"],        # v1 curated: stay (F) vs leave (J) patch foraging
+    "phishing_detection_v2": ["f", "j"],  # v1 curated: Singh 2019 phishing dataset, F=legit/J=phish
     "lexical_decision": ["f", "j"],
     "heuristics_biases": ["f", "j"],
     "phishing_detection": ["f", "j"],
@@ -70,6 +81,18 @@ SLIDER_TASKS = {
     "trust_game", "dictator_game", "function_estimation",
     "public_goods", "contingency_judgment", "serial_recall",
 }
+
+# Tasks that use a custom clickable HTML grid rather than a jsPsych button group.
+# Random agent picks a random unclicked cell.
+GRID_TASKS = {"grid_bandit"}
+
+# Tasks that use the custom Tiny Alchemy workspace UI.
+# Random agent picks 2 chips + Combine until ~80 attempts, then End early.
+ALCHEMY_TASKS = {"tiny_alchemy"}
+
+# Tasks that present a typed-text input (e.g., serial_recall_v2 cued recall).
+# Random agent types a few random letters into the input and submits.
+TEXT_INPUT_TASKS = {"serial_recall_v2"}
 
 
 async def wait_for_jspsych_content(page: Page, timeout: float = 30.0):
@@ -94,6 +117,15 @@ async def detect_state(page: Page) -> str:
 
         // Slider trial
         if (document.querySelector('#jspsych-html-slider-response-response')) return 'slider';
+
+        // Custom clickable grid (e.g., grid_bandit)
+        if (document.querySelector('.grid-table td')) return 'grid';
+
+        // Custom alchemy workspace (e.g., tiny_alchemy)
+        if (document.querySelector('.alchemy-shell')) return 'alchemy';
+
+        // Custom text-input recall (e.g., serial_recall_v2)
+        if (document.querySelector('#recall-input')) return 'text_input';
 
         // Fixation cross
         const stimulus = content.querySelector('.jspsych-html-keyboard-response-stimulus');
@@ -161,6 +193,75 @@ async def handle_slider(page: Page, task_id: str):
         await submit.click()
 
 
+async def handle_alchemy(page: Page, max_attempts: int = 80):
+    """Drive a custom Tiny Alchemy workspace by picking 2 random elements + Combine.
+
+    After max_attempts have been recorded (visible in the session-bar element count),
+    click End early to terminate the trial.
+    """
+    # Check whether we've reached enough attempts; the session-bar shows current count.
+    n_attempts_so_far = await page.evaluate("""() => {
+        const bar = document.querySelector('.session-bar');
+        if (!bar) return 0;
+        const matches = bar.innerText.match(/(\\d+)\\s*attempts/);
+        return matches ? parseInt(matches[1]) : 0;
+    }""")
+    if n_attempts_so_far >= max_attempts:
+        end_btn = page.locator("#end-btn")
+        if await end_btn.count() > 0:
+            await end_btn.click()
+            return
+
+    # Pick two random distinct chips, then click Combine.
+    n_chips = await page.locator(".element-chip").count()
+    if n_chips < 2:
+        return
+    idx_a = random.randint(0, n_chips - 1)
+    idx_b = random.randint(0, n_chips - 1)
+    while idx_b == idx_a:
+        idx_b = random.randint(0, n_chips - 1)
+    await page.locator(".element-chip").nth(idx_a).click()
+    await page.locator(".element-chip").nth(idx_b).click()
+    combine = page.locator("#combine-btn")
+    if await combine.count() > 0 and not await combine.is_disabled():
+        await combine.click()
+
+
+async def handle_grid(page: Page):
+    """Click a random cell on a custom grid task (e.g., grid_bandit).
+
+    Prefer unclicked cells; fall back to any cell if none are unclicked.
+    """
+    n_unclicked = await page.locator(".grid-table td:not(.clicked)").count()
+    if n_unclicked > 0:
+        idx = random.randint(0, n_unclicked - 1)
+        await page.locator(".grid-table td:not(.clicked)").nth(idx).click()
+        return
+    n_total = await page.locator(".grid-table td").count()
+    if n_total > 0:
+        idx = random.randint(0, n_total - 1)
+        await page.locator(".grid-table td").nth(idx).click()
+
+
+async def handle_text_input(page: Page):
+    """Type a few random letters into a recall-input field and submit.
+
+    Used for typed-recall tasks (e.g., serial_recall_v2). The random agent has
+    effectively zero chance of typing the correct prefix, which yields the
+    expected near-zero L2 accuracy floor.
+    """
+    inp = page.locator("#recall-input")
+    if await inp.count() == 0:
+        return
+    # Type 3 random lowercase letters.
+    letters = "".join(random.choice("abcdefghijklmnopqrstuvwxyz") for _ in range(3))
+    await inp.click()
+    await inp.fill(letters)
+    submit = page.locator("#recall-submit")
+    if await submit.count() > 0:
+        await submit.click()
+
+
 async def handle_forced(page: Page):
     """Handle forced-choice trials (two-armed bandit) by pressing the highlighted arm's key."""
     forced_key = await page.evaluate("""() => {
@@ -188,7 +289,7 @@ async def handle_stimulus(page: Page, task_id: str):
     await page.keyboard.press(key)
 
 
-async def run_task(page: Page, task_url: str, task_id: str, timeout: float = 600.0):
+async def run_task(page: Page, task_url: str, task_id: str, timeout: float = 600.0, trace_writer=None):
     """Run a single task to completion."""
     logger.info("Starting task: %s", task_id)
     await page.goto(task_url, wait_until="networkidle")
@@ -198,6 +299,10 @@ async def run_task(page: Page, task_url: str, task_id: str, timeout: float = 600
     prev_state = None
     stuck_count = 0
 
+    # State transitions to log to the trace (skip noisy auto-advancing states).
+    _LOG_STATES = {"instruction", "stimulus", "slider", "grid", "text_input",
+                   "alchemy", "forced"}
+
     while time.time() - start < timeout:
         state = await detect_state(page)
 
@@ -206,6 +311,11 @@ async def run_task(page: Page, task_url: str, task_id: str, timeout: float = 600
 
         if state == "complete":
             logger.info("Task %s complete", task_id)
+            if trace_writer:
+                trace_writer.log_interaction(
+                    task_id=task_id, state="complete",
+                    action_proposed=None, action_valid=True,
+                )
             # Wait for auto-submission
             await asyncio.sleep(2)
             return True
@@ -222,17 +332,43 @@ async def run_task(page: Page, task_url: str, task_id: str, timeout: float = 600
             stuck_count = 0
         prev_state = state
 
+        # Capture screenshot only on actionable states to keep on-disk size manageable.
+        screenshot_rel = None
+        if trace_writer and state in _LOG_STATES:
+            screenshot_rel = await trace_writer.capture_screenshot(page, task_id)
+
+        action_kind = None
+        action_target = None
+        action_key = None
         if state == "instruction":
             await handle_instruction(page)
+            action_kind = "click"; action_target = "instructions-next"
             await asyncio.sleep(0.3)
         elif state == "slider":
             await handle_slider(page, task_id)
+            action_kind = "slider_submit"
             await asyncio.sleep(0.3)
+        elif state == "grid":
+            await handle_grid(page)
+            action_kind = "grid_click"
+            await asyncio.sleep(0.2)
+        elif state == "text_input":
+            await handle_text_input(page)
+            action_kind = "text_submit"
+            await asyncio.sleep(0.2)
+        elif state == "alchemy":
+            await handle_alchemy(page)
+            action_kind = "alchemy_combine"
+            await asyncio.sleep(0.15)
         elif state == "forced":
             await handle_forced(page)
+            action_kind = "press_key"; action_key = "forced"
             await asyncio.sleep(0.1)
         elif state == "stimulus":
+            keys = TASK_KEYS.get(task_id, ["f"])
+            chosen = random.choice(keys) if keys else " "
             await handle_stimulus(page, task_id)
+            action_kind = "press_key"; action_key = chosen
             await asyncio.sleep(0.1)
         elif state in ("fixation", "feedback", "waiting"):
             await asyncio.sleep(0.2)
@@ -240,6 +376,18 @@ async def run_task(page: Page, task_url: str, task_id: str, timeout: float = 600
             await asyncio.sleep(0.5)
         else:
             await asyncio.sleep(0.2)
+
+        if trace_writer and state in _LOG_STATES:
+            trace_writer.log_interaction(
+                task_id=task_id, state=state,
+                action_proposed={"kind": action_kind, "key": action_key, "target": action_target},
+                action_valid=True, screenshot_path=screenshot_rel,
+            )
+            if action_kind:
+                trace_writer.log_action(
+                    task_id=task_id, action_kind=action_kind,
+                    target=action_target, key=action_key,
+                )
 
     logger.warning("Task %s timed out after %.0fs", task_id, timeout)
     return False
@@ -251,52 +399,108 @@ async def run_all_tasks(
     no_deadline: bool = True,
     task_timeout: float = 600.0,
     tasks_filter: list[str] | None = None,
+    n_trials: int | None = None,
+    session_id: str | None = None,
+    trace_dir: str | None = None,
 ):
-    """Run the random agent through all CogArena tasks."""
-    client = httpx.Client(base_url=base_url, timeout=30.0)
+    """Run the random agent through all CogArena tasks.
 
+    If ``session_id`` is provided, reuse that pre-created session instead of
+    POSTing /api/sessions. If ``trace_dir`` is provided, per-step JSONL +
+    screenshots are written there via :class:`harness.trace.TraceWriter`.
+    """
+    client = httpx.Client(base_url=base_url, timeout=30.0)
+    try:
+        return await _run_all_tasks_inner(
+            client=client, base_url=base_url, agent_name=agent_name,
+            no_deadline=no_deadline, task_timeout=task_timeout,
+            tasks_filter=tasks_filter, n_trials=n_trials,
+            session_id=session_id, trace_dir=trace_dir,
+        )
+    finally:
+        client.close()
+
+
+async def _run_all_tasks_inner(
+    *, client: "httpx.Client", base_url: str, agent_name: str,
+    no_deadline: bool, task_timeout: float,
+    tasks_filter: list[str] | None, n_trials: int | None,
+    session_id: str | None, trace_dir: str | None,
+):
     # Health check
     resp = client.get("/api/health")
     resp.raise_for_status()
 
-    # Create session
-    resp = client.post("/api/sessions", json={
-        "agent_name": agent_name,
-        "scaffold": "random",
-        "model_name": "none",
-        "observation_mode": "dom",
-    })
-    resp.raise_for_status()
-    session = resp.json()
-    session_id = session["session_id"]
-    logger.info("Session created: %s", session_id)
+    if session_id is None:
+        # Create session
+        resp = client.post("/api/sessions", json={
+            "agent_name": agent_name,
+            "scaffold": "random",
+            "model_name": "none",
+            "observation_mode": "dom",
+        })
+        resp.raise_for_status()
+        session = resp.json()
+        session_id = session["session_id"]
+        logger.info("Session created: %s", session_id)
+        tasks = session["tasks"]
+    else:
+        logger.info("Reusing pre-created session: %s", session_id)
+        # Pull the task list for this session.
+        resp = client.get(f"/api/sessions/{session_id}")
+        resp.raise_for_status()
+        tasks = resp.json().get("tasks", [])
 
-    tasks = session["tasks"]
     if tasks_filter:
         tasks = [t for t in tasks if t["task_id"] in tasks_filter]
     logger.info("Tasks to complete: %d", len(tasks))
+
+    trace_writer = None
+    if trace_dir:
+        from harness.trace import TraceWriter
+        trace_writer = TraceWriter(Path(trace_dir))
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(viewport={"width": 1280, "height": 800})
         page = await context.new_page()
 
+        # Single browser-error listener for the whole session. We track which task is
+        # currently running via a closed-over mutable list so each event is labelled
+        # with the right task_id and we don't accumulate duplicate listeners across tasks.
+        current_task = ["?"]
+
+        def _on_pageerror(err):
+            logger.error("[%s] BROWSER ERROR: %s", current_task[0], err)
+
+        def _on_console(m):
+            if m.type in ("error", "warning"):
+                logger.error("[%s] BROWSER %s: %s", current_task[0], m.type, m.text)
+
+        page.on("pageerror", _on_pageerror)
+        page.on("console", _on_console)
+
         completed = []
         failed = []
 
         for task_info in tasks:
+            current_task[0] = task_info["task_id"]
             task_id = task_info["task_id"]
             url = f"{base_url}{task_info['url']}"
             if no_deadline:
                 url += "&no_deadline=true"
+            if n_trials is not None and n_trials > 0:
+                url += f"&n_trials={n_trials}"
 
-            success = await run_task(page, url, task_id, timeout=task_timeout)
+            success = await run_task(page, url, task_id, timeout=task_timeout, trace_writer=trace_writer)
             if success:
                 completed.append(task_id)
             else:
                 failed.append(task_id)
 
         await browser.close()
+    if trace_writer:
+        trace_writer.close()
 
     logger.info("Completed: %d/%d tasks", len(completed), len(tasks))
     if failed:
@@ -310,28 +514,35 @@ async def run_all_tasks(
         # Manually trigger evaluation if not all tasks completed
         logger.info("Triggering manual evaluation...")
         resp = client.post(f"/api/evaluate/{session_id}")
-        if resp.status_code == 404:
+        resp.raise_for_status()
+        body = resp.json()
+        if body.get("status") == "no_data":
             logger.error("No task data found")
             return session_id
-        resp.raise_for_status()
+        for err in body.get("scoring_errors") or []:
+            logger.warning("Scoring error for task %s: %s",
+                           err.get("task_id"), err.get("error"))
 
-    # Print scorecard
-    results = client.get(f"/api/results/{session_id}").json()
-    print(f"\n{'=' * 65}")
-    print(f"  COGARENA SCORECARD: {agent_name}")
-    print(f"{'=' * 65}")
-    print(f"  Composite Score:    {results['composite_score']:.2f} / 100")
-    print(f"  L1 Completion:      {results['l1_overall']:.4f}")
-    print(f"  L2 Accuracy:        {results['l2_overall']:.4f}")
-    print(f"  L3 Behavioral:      {results['l3_overall']:.4f}")
-    print(f"{'-' * 65}")
-    print(f"  {'Task':<22s} {'Composite':>9s} {'L1':>6s} {'L2':>6s} {'L3':>6s}")
-    print(f"  {'-'*22} {'-'*9} {'-'*6} {'-'*6} {'-'*6}")
-    for ts in sorted(results["task_scores"], key=lambda t: t["task_id"]):
-        print(f"  {ts['task_id']:<22s} {ts['composite']:>9.2f} "
-              f"{ts['l1_completion']:>6.2f} {ts['l2_accuracy']:>6.2f} "
-              f"{ts['l3_behavioral']:>6.2f}")
-    print(f"{'=' * 65}")
+    # Print scorecard — but only if running standalone. When the harness
+    # CLI invokes this with trace_dir set, the harness prints its own
+    # scorecard after this returns and we'd duplicate it.
+    if trace_dir is None:
+        results = client.get(f"/api/results/{session_id}").json()
+        print(f"\n{'=' * 65}")
+        print(f"  COGARENA SCORECARD: {agent_name}")
+        print(f"{'=' * 65}")
+        print(f"  Composite Score:    {results['composite_score']:.2f} / 100")
+        print(f"  L1 Completion:      {results['l1_overall']:.4f}")
+        print(f"  L2 Accuracy:        {results['l2_overall']:.4f}")
+        print(f"  L3 Behavioral:      {results['l3_overall']:.4f}")
+        print(f"{'-' * 65}")
+        print(f"  {'Task':<22s} {'Composite':>9s} {'L1':>6s} {'L2':>6s} {'L3':>6s}")
+        print(f"  {'-'*22} {'-'*9} {'-'*6} {'-'*6} {'-'*6}")
+        for ts in sorted(results["task_scores"], key=lambda t: t["task_id"]):
+            print(f"  {ts['task_id']:<22s} {ts['composite']:>9.2f} "
+                  f"{ts['l1_completion']:>6.2f} {ts['l2_accuracy']:>6.2f} "
+                  f"{ts['l3_behavioral']:>6.2f}")
+        print(f"{'=' * 65}")
 
     return session_id
 

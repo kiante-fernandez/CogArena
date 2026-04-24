@@ -1,0 +1,10 @@
+{
+    "task_id": "random_dot_motion_v2",
+    "source": "literature_estimates",
+    "note": "Baselines drawn from Roitman & Shadlen (2002, J. Neurosci.) for the per-coherence psychometric/chronometric shape and from Pinet et al. (2024) for the human-adult absolute levels under jsPsych RDK presentation. Replace with on-platform empirical baselines in v2.",
+    "overall_accuracy": {"mean": 0.79, "sd": 0.07, "n": 100},
+    "accuracy_low_coherence": {"mean": 0.60, "sd": 0.10, "n": 100},
+    "accuracy_medium_coherence": {"mean": 0.85, "sd": 0.08, "n": 100},
+    "accuracy_high_coherence": {"mean": 0.97, "sd": 0.04, "n": 100},
+    "mean_correct_rt": {"mean": 750, "sd": 150, "n": 100}
+}

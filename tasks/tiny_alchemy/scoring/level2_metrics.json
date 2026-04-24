@@ -1,0 +1,23 @@
+{
+    "task_id": "tiny_alchemy",
+    "metrics": [
+        {
+            "name": "success_rate",
+            "description": "Proportion of attempts that yielded a recipe (whether or not the result was already in the inventory). The game tree has ~600 valid recipes from a search space of ~145k pairs, so a uniform-random combiner would succeed at ~0.4%; humans achieve 30-50% by leveraging the inventory's empowerment structure.",
+            "type": "proportion_correct",
+            "field": "is_success",
+            "filter": {},
+            "human_mean": 0.40,
+            "human_sd": 0.15
+        },
+        {
+            "name": "novelty_rate",
+            "description": "Proportion of attempts that yielded a novel discovery (a new element added to the inventory). Adults achieve 30-40% novelty rate.",
+            "type": "proportion_correct",
+            "field": "is_novel_discovery",
+            "filter": {},
+            "human_mean": 0.35,
+            "human_sd": 0.12
+        }
+    ]
+}
