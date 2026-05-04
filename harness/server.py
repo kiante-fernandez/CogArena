@@ -311,6 +311,20 @@ async def health():
     return {"status": "ok", "version": "0.1.0"}
 
 
+@app.get("/api/debug/render", include_in_schema=False)
+async def debug_render(request: Request):
+    """Try to render leaderboard.html and return the actual exception."""
+    import traceback
+    try:
+        resp = templates.TemplateResponse("leaderboard.html", {"request": request})
+        return PlainTextResponse(f"OK: {len(resp.body)} bytes")
+    except Exception as e:
+        return PlainTextResponse(
+            f"{type(e).__name__}: {e}\n\n{traceback.format_exc()}",
+            status_code=500,
+        )
+
+
 @app.get("/api/debug/paths", include_in_schema=False)
 async def debug_paths():
     import os
