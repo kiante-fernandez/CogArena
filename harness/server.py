@@ -311,6 +311,24 @@ async def health():
     return {"status": "ok", "version": "0.1.0"}
 
 
+@app.get("/api/debug/paths", include_in_schema=False)
+async def debug_paths():
+    import os
+    tdir = PROJECT_ROOT / "templates"
+    info = {
+        "cwd": os.getcwd(),
+        "server_file": __file__,
+        "project_root": str(PROJECT_ROOT),
+        "project_root_listing": sorted(os.listdir(PROJECT_ROOT))[:40] if PROJECT_ROOT.exists() else "MISSING",
+        "templates_dir": str(tdir),
+        "templates_dir_exists": tdir.exists(),
+        "templates_listing": sorted(os.listdir(tdir)) if tdir.exists() else "MISSING",
+    }
+    for cand in [Path("/var/task/templates"), Path("/var/task/harness/templates"), Path.cwd() / "templates"]:
+        info[f"alt::{cand}"] = sorted(os.listdir(cand))[:20] if cand.exists() else "missing"
+    return info
+
+
 @app.get("/api/tasks", summary="List all available tasks with configuration")
 async def list_tasks():
     return {"tasks": _load_tasks_meta()}
