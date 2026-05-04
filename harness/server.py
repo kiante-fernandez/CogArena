@@ -216,8 +216,7 @@ app.add_middleware(
 async def landing_page(request: Request):
     tasks = _v1_only(_load_tasks_meta())
     domains = set(t["domain"] for t in tasks)
-    return templates.TemplateResponse("index.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "index.html", {
         "task_count": len(tasks),
         "domain_count": len(domains),
     })
@@ -227,8 +226,7 @@ async def landing_page(request: Request):
 async def catalog_page(request: Request):
     tasks = _v1_only(_load_tasks_meta())
     domains = set(t["domain"] for t in tasks)
-    return templates.TemplateResponse("catalog.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "catalog.html", {
         "tasks": tasks,
         "domains": domains,
     })
@@ -241,22 +239,20 @@ async def task_detail_page(request: Request, task_id: str):
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    return templates.TemplateResponse("task_detail.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "task_detail.html", {
         "task": task,
     })
 
 
 @app.get("/leaderboard", include_in_schema=False)
 async def leaderboard_page(request: Request):
-    return templates.TemplateResponse("leaderboard.html", {"request": request})
+    return templates.TemplateResponse(request, "leaderboard.html", {})
 
 
 @app.get("/try", include_in_schema=False)
 async def try_page(request: Request):
     tasks = _v1_only(_load_tasks_meta())
-    return templates.TemplateResponse("try.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "try.html", {
         "tasks": tasks,
     })
 
@@ -264,8 +260,7 @@ async def try_page(request: Request):
 @app.get("/submit", include_in_schema=False)
 async def submit_page(request: Request):
     base_url = str(request.base_url).rstrip("/")
-    return templates.TemplateResponse("submit.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "submit.html", {
         "base_url": base_url,
     })
 
@@ -501,7 +496,7 @@ async def verify_admin(x_admin_key: str = Header(...)):
 
 @app.get("/admin", include_in_schema=False)
 async def admin_page(request: Request):
-    return templates.TemplateResponse("admin.html", {"request": request})
+    return templates.TemplateResponse(request, "admin.html", {})
 
 
 @app.get("/api/admin/submissions", summary="List scored sessions for admin review")
