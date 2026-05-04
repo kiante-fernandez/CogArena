@@ -120,6 +120,12 @@ def _load_tasks_meta() -> list[dict]:
             with open(sig_path) as f:
                 n_sigs = len(json.load(f).get("signatures", []))
 
+        response_type = config.get("response_type", "keyboard")
+        response_labels = {
+            "keyboard": "Keyboard", "button": "Button Click",
+            "slider": "Slider", "text": "Text Input",
+        }
+
         tasks.append({
             "task_id": config["task_id"],
             "task_name": config.get("task_name", config["task_id"]),
@@ -129,6 +135,8 @@ def _load_tasks_meta() -> list[dict]:
             "citation": config.get("citation", ""),
             "n_trials": params.get("n_trials", 0),
             "n_signatures": n_sigs,
+            "parameters": params,
+            "response_label": response_labels.get(response_type, response_type),
         })
     _tasks_meta_cache = tasks
     return tasks
