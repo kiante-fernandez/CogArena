@@ -20,8 +20,8 @@ tasks:
 
 models:
   - id: claude-opus-4.7
-  - id: gemini-3-pro
-  - id: gpt-5
+  - id: gemini-3-flash-preview
+  - id: gpt-5.2
   - id: claude-sonnet-4.6
   - id: kimi-k2.5
 

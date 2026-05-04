@@ -1,0 +1,38 @@
+# Phase-1 frontier smoke pilot for the v1 task set.
+#
+# Three paper-faithful frontier generalists from GameWorld (arXiv 2604.07429):
+#   - gemini-3-flash-preview  — paper #1 (PG=41.9), cheapest of the three.
+#   - gpt-5.2                  — exact paper model (OpenRouter still carries it).
+#   - claude-sonnet-4.6        — paper #3 (PG=39.3).
+#
+# 1 repeat × 10 tasks × 3 models = 30 sessions. Goal: surface Browser-Use
+# compatibility issues per model and get a per-task wall-time read before
+# committing to a full 3-repeat sweep.
+#
+# Estimated cost: ~$50 (gemini ~$5 + gpt ~$18 + sonnet ~$28; ~$1.7/sonnet w/ cache).
+# Estimated wall time: ~75 min at --max-parallel 4.
+
+suite_name: pilot_v1
+default_scaffold: browser-use
+
+tasks:
+  - random_dot_motion_v2
+  - grid_bandit
+  - marbles_risk
+  - repeated_games
+  - serial_recall_v2
+  - visual_recognition
+  - effort_foraging
+  - tiny_alchemy
+  - moral_machine
+  - phishing_detection_v2
+
+models:
+  - id: gemini-3-flash-preview
+  - id: gpt-5.2
+  - id: claude-sonnet-4.6
+
+repeats: 1
+n_trials_override: null
+task_timeout_seconds: 1800
+no_deadline: true

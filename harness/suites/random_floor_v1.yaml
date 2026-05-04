@@ -1,0 +1,28 @@
+# Random-agent floor sweep across the v1 task set.
+#
+# Used to calibrate L2/L3 lower bounds before frontier-model runs. The random
+# agent presses random valid keys (no LLM), so this also surfaces task-side
+# bugs cheaply.
+
+suite_name: random_floor_v1
+default_scaffold: random
+
+tasks:
+  - random_dot_motion_v2
+  - grid_bandit
+  - marbles_risk
+  - repeated_games
+  - serial_recall_v2
+  - visual_recognition
+  - effort_foraging
+  - tiny_alchemy
+  - moral_machine
+  - phishing_detection_v2
+
+models:
+  - id: random
+
+repeats: 2
+n_trials_override: null
+task_timeout_seconds: 900
+no_deadline: true
