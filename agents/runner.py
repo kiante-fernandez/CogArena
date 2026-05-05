@@ -65,7 +65,7 @@ def wait_for_server(base_url: str, timeout: float = 30.0) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description="CogArena Agent Runner")
-    parser.add_argument("--agent", choices=["random", "browser-use", "openhands"],
+    parser.add_argument("--agent", choices=["random", "browser-use"],
                         default="random", help="Agent type to run")
     parser.add_argument("--base-url", default="http://localhost:8000",
                         help="CogArena server URL")
@@ -160,20 +160,6 @@ def main():
                 n_trials=args.n_trials,
                 skip_tasks=skip_tasks,
             ))
-
-        elif args.agent == "openhands":
-            from agents.openhands_agent import run_all_tasks
-            agent_name = agent_name or f"OpenHands-{args.model}"
-            run_all_tasks(
-                base_url=args.base_url,
-                agent_name=agent_name,
-                model_name=args.model,
-                no_deadline=no_deadline,
-                task_timeout=args.task_timeout,
-                tasks_filter=args.tasks,
-                n_trials=args.n_trials,
-                skip_tasks=skip_tasks,
-            )
 
     finally:
         if server_proc:

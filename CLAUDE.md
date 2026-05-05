@@ -79,7 +79,6 @@ To add a new task you need: `tasks/{id}/{index.html, experiment.js, task_config.
 ### Agents (`agents/`)
 - `runner.py` is the orchestrator (server lifecycle, session creation, agent dispatch, scoring trigger).
 - `browser_use_agent.py` is the primary LLM agent. Model strings containing `/` (e.g. `google/gemini-2.5-flash`) are routed through OpenRouter (needs `OPENROUTER_API_KEY`); plain model IDs use native provider SDKs.
-- `openhands_agent.py` uses Docker-sandboxed browser control.
 - `random_agent.py` presses random valid keys — no LLM, used as floor.
 
 ### Known agent quirks

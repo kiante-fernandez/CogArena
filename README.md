@@ -95,7 +95,7 @@ The catalog includes 50 task directories: 47 unique cognitive paradigms plus thr
 
 ## Running Agents
 
-CogArena includes three reference agents: a random baseline, a Browser-Use LLM agent, and an OpenHands Docker-based agent. The recommended entry point is `agents.runner`, which handles server startup, session creation, agent execution, and scoring.
+CogArena includes two reference agents: a random baseline and a Browser-Use LLM agent. The recommended entry point is `agents.runner`, which handles server startup, session creation, agent execution, and scoring.
 
 ### Agent Runner (recommended)
 
@@ -128,14 +128,6 @@ Requires the [browser-use](https://github.com/browser-use/browser-use) package a
 ```bash
 pip install browser-use
 python -m agents.browser_use_agent --base-url http://localhost:8000 --model o3
-```
-
-### OpenHands Agent
-
-Requires [OpenHands](https://github.com/All-Hands-AI/OpenHands) with Docker for sandboxed browser control.
-
-```bash
-python -m agents.openhands_agent --base-url http://localhost:8000 --model anthropic/claude-sonnet-4
 ```
 
 ### Random Baseline Agent
@@ -212,8 +204,7 @@ cogarena/
 ├── agents/                     # Reference agent implementations
 │   ├── runner.py               # Orchestrator CLI (start server, run agent, evaluate)
 │   ├── random_agent.py         # Random baseline (no LLM)
-│   ├── browser_use_agent.py    # Browser-Use LLM agent (multi-provider)
-│   └── openhands_agent.py      # OpenHands Docker-based agent
+│   └── browser_use_agent.py    # Browser-Use LLM agent (multi-provider)
 ├── harness/                    # FastAPI server, eval CLI, sweep runner
 │   ├── server.py               # API + website routes
 │   ├── cli.py                  # `python -m harness {eval,sweep,replay}` entry
