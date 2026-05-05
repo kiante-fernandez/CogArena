@@ -73,8 +73,10 @@ def main():
                         help="Start the CogArena server automatically")
     parser.add_argument("--agent-name", default=None,
                         help="Agent name for the session")
-    parser.add_argument("--model", default="claude-sonnet-4-20250514",
-                        help="Model name for LLM agents")
+    parser.add_argument("--model", default=None,
+                        help="Model name for LLM agents (required for --agent browser-use). "
+                             "OpenRouter IDs contain '/', e.g. google/gemini-3-flash-preview; "
+                             "plain IDs use native provider SDKs.")
     parser.add_argument("--use-deadline", action="store_true",
                         help="Enable task deadlines (default: no deadline)")
     parser.add_argument("--task-timeout", type=float, default=1800.0,
@@ -144,10 +146,13 @@ def main():
             ))
 
         elif args.agent == "browser-use":
+            if not args.model:
+                logger.error("--model is required for --agent browser-use")
+                sys.exit(1)
             try:
                 from agents.browser_use_agent import run_all_tasks
             except ImportError:
-                logger.error("browser-use not installed. Run: pip install browser-use")
+                logger.error("browser-use not installed. Run: pip install -e .[agents]")
                 sys.exit(1)
             agent_name = agent_name or f"BrowserUseAgent-{args.model}"
             asyncio.run(run_all_tasks(
