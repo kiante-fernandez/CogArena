@@ -1,0 +1,33 @@
+# Phase-1b cheap-frontier addon to the gemini-only pilot.
+#
+# Adds two cheaper models from the same comparison set so Table 1
+# has 3 model rows (gemini-3-flash-preview already covered by pilot_v1.yaml):
+#   - grok-4.1-fast  ($0.20/M in, $0.50/M out)
+#   - glm-4.6v       ($0.30/M in, $0.90/M out)
+#
+# 10 tasks x 2 models x 1 repeat = 20 sessions. ~$5 estimated, ~30 min wall
+# at --max-parallel 4.
+
+suite_name: pilot_v1_cheap
+default_scaffold: browser-use
+
+tasks:
+  - random_dot_motion_v2
+  - grid_bandit
+  - marbles_risk
+  - repeated_games
+  - serial_recall_v2
+  - visual_recognition
+  - effort_foraging
+  - tiny_alchemy
+  - moral_machine
+  - phishing_detection_v2
+
+models:
+  - id: grok-4.1-fast
+  - id: glm-4.6v
+
+repeats: 1
+n_trials_override: null
+task_timeout_seconds: 1800
+no_deadline: true
