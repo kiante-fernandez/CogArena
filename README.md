@@ -4,6 +4,8 @@ A benchmark that tests AI agents on interactive behavioral experiments through a
 
 Agents interact with real jsPsych experiments (the same framework used on Prolific/MTurk), and their behavioral data is scored across three levels: task completion, performance accuracy, and human-like behavioral signatures.
 
+**Paper scope (v1 launch set, 10 tasks):** the accompanying paper introduces and evaluates a curated 10-task subset — `random_dot_motion_v2`, `grid_bandit`, `marbles_risk`, `repeated_games`, `serial_recall_v2`, `visual_recognition`, `effort_foraging`, `tiny_alchemy`, `moral_machine`, `phishing_detection_v2` — chosen to span the seven cognitive domains covered by the full catalog. The remaining 30 tasks are provided as a community catalog and are not evaluated in the paper. To reproduce the paper's tables see [REPRODUCING.md](REPRODUCING.md).
+
 ## Quick Start
 
 ### Prerequisites
