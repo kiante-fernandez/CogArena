@@ -38,8 +38,10 @@ def test_l3_humanlike_recovers_signatures(human_like_tiny_alchemy_data):
     sig_by_name = {s["name"]: s for s in result["signatures"]}
     # Headline: above-chance discovery.
     assert sig_by_name["above_chance_discovery"]["direction_correct"]
-    # Empowerment-preference: high in-degree pairs more likely to succeed.
-    assert sig_by_name["empowerment_preference"]["direction_correct"]
+    # The v1.1 audit dropped empowerment_preference (it fired for random
+    # play 8/8 due to inventory mechanics, not strategy).
+    # The remaining test is non_redundant_attempts.
+    assert "non_redundant_attempts" in sig_by_name
     # Composite L3 should be substantially above chance.
     assert result["score"] >= 0.5
 
@@ -47,8 +49,9 @@ def test_l3_humanlike_recovers_signatures(human_like_tiny_alchemy_data):
 def test_l3_random_low_score(random_tiny_alchemy_data):
     sigs = _load_spec("level3_signatures.json")
     result = score_behavioral(random_tiny_alchemy_data, sigs)
-    # Random data should not consistently fire all directional signatures.
-    assert result["score"] <= 0.55
+    # Random data should not fire any signature now that the audit
+    # dropped empowerment_preference. Tightened from 0.55 to 0.05.
+    assert result["score"] <= 0.05
 
 
 def test_empty_data_l1_zero(tiny_alchemy_config):
