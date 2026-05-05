@@ -223,6 +223,36 @@ def fetch_trial_data(base_url: str, session_id: str) -> dict[str, Any] | None:
     return None
 
 
+def fetch_and_save_raw_trial_data(
+    base_url: str, session_id: str, task_ids: list[str], out_dir: Path
+) -> list[str]:
+    """Pull raw jsPsych trial-data for each task and write trial_data/<task_id>.json.
+
+    Returns the list of task_ids successfully saved. The saved files are exactly
+    what scoring.score_session expects via --trial-data, so any future scoring
+    update can be re-applied without rerunning the agent.
+    """
+    saved: list[str] = []
+    raw_dir = out_dir / "trial_data"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    with httpx.Client(timeout=60.0) as client:
+        for tid in task_ids:
+            try:
+                r = client.get(f"{base_url}/api/data/{session_id}/{tid}")
+                if r.status_code != 200:
+                    logger.warning("No raw trial data for %s/%s (HTTP %d)",
+                                   session_id, tid, r.status_code)
+                    continue
+                payload = r.json()
+                with open(raw_dir / f"{tid}.json", "w") as f:
+                    json.dump(payload["trial_data"], f, indent=2)
+                saved.append(tid)
+            except (httpx.HTTPError, KeyError, json.JSONDecodeError) as e:
+                logger.warning("Failed to archive raw trial data for %s/%s: %s",
+                               session_id, tid, e)
+    return saved
+
+
 # ---------------------------------------------------------------------------
 # Eval driver
 # ---------------------------------------------------------------------------
@@ -317,6 +347,13 @@ def run_eval(args) -> int:
             with open(sdir / "score.json", "w") as f:
                 json.dump(results, f, indent=2)
             _print_scorecard(agent_name, results)
+            # Archive raw jsPsych trial data per task so scoring is rerunnable
+            # without replaying the agent (e.g. after scoring rule changes).
+            task_ids = [ts["task_id"] for ts in results.get("task_scores", [])]
+            saved = fetch_and_save_raw_trial_data(args.base_url, session_id, task_ids, sdir)
+            if saved:
+                logger.info("Archived raw trial data for %d task(s) under %s/trial_data/",
+                            len(saved), sdir)
         else:
             logger.warning("No results JSON available for session %s", session_id)
 

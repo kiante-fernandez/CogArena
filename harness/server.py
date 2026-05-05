@@ -334,6 +334,21 @@ async def get_session(session_id: str, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail=str(e))
 
 
+@app.get("/api/data/{session_id}/{task_id}", summary="Get raw trial data for a task")
+async def get_data(session_id: str, task_id: str, db: AsyncSession = Depends(get_db)):
+    """Returns the raw jsPsych trial-data list submitted by the client.
+
+    Lets the harness archive raw behavioral data per session/task, so the
+    same data can be re-scored later (e.g. after scoring rules change).
+    """
+    mgr = SessionManager(db, settings.TASKS_DIR)
+    trial_data = await mgr.get_trial_data(session_id, task_id)
+    if trial_data is None:
+        raise HTTPException(status_code=404, detail="Trial data not found")
+    return {"session_id": session_id, "task_id": task_id,
+            "n_trials": len(trial_data), "trial_data": trial_data}
+
+
 @app.post("/api/data/{session_id}/{task_id}", summary="Submit trial data for a task")
 async def submit_data(session_id: str, task_id: str, body: TrialDataSubmission, db: AsyncSession = Depends(get_db)):
     mgr = SessionManager(db, settings.TASKS_DIR)
