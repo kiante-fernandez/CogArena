@@ -19,9 +19,15 @@ Agents interact with real jsPsych experiments (the same framework used on Prolif
 python -m venv .venv
 source .venv/bin/activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install pinned dependencies (reproducible)
+pip install -r requirements-lock.txt
+
+# Optional: agent runtime (browser-use 0.9.5 + playwright)
+pip install -e .[agents]
+playwright install chromium
 ```
+
+For loose minimum-version installs use `requirements.txt`. To reproduce the paper's tables exactly, use `requirements-lock.txt` and follow [REPRODUCING.md](REPRODUCING.md).
 
 ### Run the Server
 
@@ -34,9 +40,10 @@ Visit [http://localhost:8000](http://localhost:8000) to see the benchmark site, 
 ### Run Tests
 
 ```bash
-pytest scoring/tests/ -v        # Scoring tests
-pytest harness/tests/ -v        # API + field alignment tests
+pytest scoring/tests/ harness/tests/ -v
 ```
+
+Expected: 374 passed (313 scoring + 10 harness unit + 51 field-alignment).
 
 ## Tasks (40)
 
@@ -90,23 +97,26 @@ CogArena includes three reference agents: a random baseline, a Browser-Use LLM a
 ### Agent Runner (recommended)
 
 ```bash
-# Run browser-use agent on all tasks (starts server automatically)
-python -m agents.runner --agent browser-use --model claude-sonnet-4-20250514 --start-server
+# Run browser-use agent on all v1 tasks (starts server automatically)
+python -m agents.runner --agent browser-use --model google/gemini-3-flash-preview --start-server
 
 # Run on specific tasks only
-python -m agents.runner --agent browser-use --model google/gemini-2.5-flash --start-server --tasks stroop n_back
+python -m agents.runner --agent browser-use --model google/gemini-3-flash-preview --start-server --tasks marbles_risk grid_bandit
 
-# Run multiple trials per task, skip already-scored tasks
-python -m agents.runner --agent browser-use --model google/gemini-2.5-flash --start-server --n-trials 40 --skip-scored
+# Skip tasks already scored for this (model, scaffold) pair
+python -m agents.runner --agent browser-use --model anthropic/claude-sonnet-4.6 --start-server --skip-scored
 
-# Run OpenHands agent
-python -m agents.runner --agent openhands --model anthropic/claude-sonnet-4 --start-server
-
-# Run random baseline
+# Run random baseline (no API key needed)
 python -m agents.runner --agent random --start-server
 ```
 
-Models containing `/` (e.g. `google/gemini-2.5-flash`, `anthropic/claude-sonnet-4`) are routed through [OpenRouter](https://openrouter.ai/) (requires `OPENROUTER_API_KEY`). Direct provider models (e.g. `claude-sonnet-4-20250514`, `o3`, `gemini-flash-latest`) use native APIs.
+Models containing `/` (e.g. `google/gemini-3-flash-preview`, `anthropic/claude-sonnet-4.6`) are routed through [OpenRouter](https://openrouter.ai/) (requires `OPENROUTER_API_KEY`). Direct provider IDs without `/` (e.g. `gpt-5`, `claude-sonnet-4-6`) use native provider SDKs and require the matching provider API key. The registry of vetted models is in [harness/models.yaml](harness/models.yaml).
+
+For sweeps across many (model, task, repeat) cells, use the harness CLI directly:
+
+```bash
+python -m harness sweep --suite harness/suites/pilot_v1.yaml --max-parallel 4
+```
 
 ### Browser-Use Agent (direct)
 
@@ -236,9 +246,9 @@ cogarena/
 │       ├── task_config.json    #   Metadata and parameters
 │       └── scoring/            #   level2_metrics.json,
 │                               #   level3_signatures.json
-├── run_study.sh               # Full-study runner (all models × tasks × frameworks)
-├── paper/                      # NeurIPS paper (LaTeX)
-└── jsPsych-8.2.3/             # Vendored jsPsych library
+├── run_study.sh                # Full-study runner (all models × tasks × frameworks)
+├── results/                    # Tracked reference results: floor + pilot CSVs, example replay
+└── jsPsych-8.2.3/              # Vendored jsPsych library
 ```
 
 ## Psych-101/201 Overlap
