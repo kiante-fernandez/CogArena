@@ -2,17 +2,8 @@
     "task_id": "marbles_risk",
     "metrics": [
         {
-            "name": "prop_chose_risky",
-            "description": "Proportion of trials where the agent chose the risky option. Random would be 0.50; risk-averse humans typically pick risky <0.5 of the time when expected values are matched.",
-            "type": "proportion_correct",
-            "field": "chose_risky",
-            "filter": {"timed_out": false},
-            "human_mean": 0.45,
-            "human_sd": 0.15
-        },
-        {
             "name": "prop_chose_higher_ev",
-            "description": "On trials where one option has a clearly higher expected value, proportion of trials where the agent picked the higher-EV option. Random ~0.50; humans typically 0.70-0.80.",
+            "description": "On trials where one option has a clearly higher expected value, proportion of trials where the agent picked the higher-EV option. Random ~0.50; humans typically 0.70-0.80. (The previous prop_chose_risky metric, with baseline 0.45, was dropped in the v1.1 audit because random play (~0.50) was within one SD of its baseline and the metric could not discriminate random from risk-averse human play.)",
             "type": "proportion_correct",
             "field": "chose_higher_ev",
             "filter": {"timed_out": false, "has_clear_better": true},

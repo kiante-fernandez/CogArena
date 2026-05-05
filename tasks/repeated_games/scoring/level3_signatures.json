@@ -24,12 +24,12 @@
             "weight": 1.5
         },
         {
-            "name": "non_zero_cooperation_pd",
-            "description": "Humans cooperate at non-trivial rates in repeated PD against TFT (typically 0.40-0.70). A pure-defect agent would score 0 here; this signature fires if cooperation rate is significantly above 0.10.",
+            "name": "cooperation_when_opp_cooperated",
+            "description": "Conditional cooperation: in PD rounds where the opponent (TFT bot) cooperated in the previous round, the player's cooperation rate is significantly above 0.5. This is the directional version of the reciprocity test - it asks 'when the opponent's last move was C, do you cooperate above chance?' Humans answer yes; random agents (~0.5 in any conditional bin) do not. Replaces the original non_zero_cooperation_pd signature which had a non-discriminative threshold (random cooperation ~0.5 trivially passes any threshold below 0.5).",
             "test": "proportion_test",
             "field": "player_cooperate",
-            "filter": {"timed_out": false, "game": "pd"},
-            "chance_level": 0.10,
+            "filter": {"timed_out": false, "game": "pd", "prev_opp_coop_pd": true},
+            "chance_level": 0.5,
             "threshold_p": 0.05,
             "expected_direction": "above_chance",
             "weight": 1.0

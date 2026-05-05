@@ -33,6 +33,28 @@
             "threshold_p": 0.05,
             "expected_direction": "above_chance",
             "weight": 1.5
+        },
+        {
+            "name": "legality_preference_save_lawful",
+            "description": "When legality differs, agents prefer to save the lawful pedestrians (kill the jaywalkers). Awad et al. 2018 global aggregate ~0.61 — mild but reliable.",
+            "test": "proportion_test",
+            "field": "chose_legal",
+            "filter": {"timed_out": false, "dimension": "legality"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "above_chance",
+            "weight": 1.0
+        },
+        {
+            "name": "intervention_aversion",
+            "description": "When the choice is whether the car should swerve (intervene) or stay on course, agents prefer the car to stay its course. Awad et al. 2018 global aggregate ~0.46 — humans show a mild aversion to intervention. Tested as a below-chance proportion of intervention choices.",
+            "test": "proportion_test",
+            "field": "chose_intervention",
+            "filter": {"timed_out": false, "dimension": "intervention"},
+            "chance_level": 0.5,
+            "threshold_p": 0.05,
+            "expected_direction": "below_chance",
+            "weight": 0.5
         }
     ]
 }

@@ -22,7 +22,7 @@ tasks:
 models:
   - id: random
 
-repeats: 2
+repeats: 10
 n_trials_override: null
 task_timeout_seconds: 900
 no_deadline: true

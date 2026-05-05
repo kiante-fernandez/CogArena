@@ -44,8 +44,10 @@ def test_l3_humanlike_recovers_signatures(human_like_repeated_games_data):
     assert sig_by_name["tit_for_tat_reciprocity_pd"]["direction_correct"]
     # Above-chance coordination in BoS.
     assert sig_by_name["above_chance_coordination_bos"]["direction_correct"]
-    # Non-zero cooperation in PD.
-    assert sig_by_name["non_zero_cooperation_pd"]["direction_correct"]
+    # Conditional cooperation: when opp cooperated last round, player cooperates >0.5.
+    # (Replaced the old non-discriminative non_zero_cooperation_pd >0.10 signature
+    #  in the v1.1 audit.)
+    assert sig_by_name["cooperation_when_opp_cooperated"]["direction_correct"]
     # Composite L3 should be substantially above the random floor.
     assert result["score"] >= 0.6
 
@@ -53,8 +55,10 @@ def test_l3_humanlike_recovers_signatures(human_like_repeated_games_data):
 def test_l3_random_low_score(random_repeated_games_data):
     sigs = _load_spec("level3_signatures.json")
     result = score_behavioral(random_repeated_games_data, sigs)
-    # Random play should not reliably fire reciprocity or coordination signatures.
-    assert result["score"] <= 0.7  # one signature (non_zero_cooperation_pd) may still fire by chance
+    # Random play should not reliably fire any signature. The audit raised
+    # cooperation_when_opp_cooperated's chance level to 0.5 (was 0.10), which
+    # is the major reason the random floor here is now expected to be low.
+    assert result["score"] <= 0.5
 
 
 def test_empty_data_l1_zero(repeated_games_config):

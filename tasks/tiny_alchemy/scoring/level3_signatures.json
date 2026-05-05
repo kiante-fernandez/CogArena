@@ -3,35 +3,35 @@
     "signatures": [
         {
             "name": "above_chance_discovery",
-            "description": "Successful combinations occur at a rate above the empirical random-agent baseline of ~0.30 (Monte Carlo sim of random pair selection from inventory; the four base elements participate in many recipes so even random play succeeds often). Brändle et al. report 0.40-0.50 success rates for adult humans.",
+            "description": "Successful combinations occur at a rate above 0.55. The original 0.30 threshold underestimated random play in this v1 implementation: the four base elements participate in many recipes and the inventory grows quickly, so a uniform-random combiner with growing inventory empirically reaches ~0.65-0.70 success. Brändle et al. report 0.40-0.50 success rates for adult humans, but human play is *more selective* than random; the threshold here gates whether the agent reproduces success on a per-attempt basis above the empirical chance ceiling.",
             "test": "proportion_test",
             "field": "is_success",
             "filter": {},
-            "chance_level": 0.30,
+            "chance_level": 0.55,
             "threshold_p": 0.05,
             "expected_direction": "above_chance",
             "weight": 2.0
         },
         {
             "name": "empowerment_preference",
-            "description": "On each attempt, the average in-degree of the chosen pair (how many recipes use these elements) positively correlates with whether the attempt succeeds. Brändle et al.'s headline finding: humans pick high-empowerment elements (Brändle et al. 2023, Nature Human Behaviour, Fig 4).",
+            "description": "On each attempt, the average in-degree of the chosen pair (how many recipes use these elements) positively correlates with whether the attempt succeeds. Brändle et al.'s headline finding: humans pick high-empowerment elements (Brändle et al. 2023, Nature Human Behaviour, Fig 4). Weight reduced from 2.0 to 1.0 because random pair selection from a growing inventory partially reproduces this correlation (early-discovered, high-empowerment elements are over-represented in random pairs by inventory mechanics, not by strategy).",
             "test": "correlation_test",
             "field_x": "mean_input_recipes_in",
             "field_y": "is_success",
             "filter": {},
             "threshold_p": 0.05,
             "expected_direction": "positive",
-            "weight": 2.0
+            "weight": 1.0
         },
         {
             "name": "non_redundant_attempts",
-            "description": "Humans avoid retrying the same combination — most attempts use a pair not yet attempted. Quantified via the proportion of attempts whose pair (a_idx, b_idx) is unique up to that trial. A truly random combiner would repeat pairs (and thus is_unique_pair=true) close to 1.0 only at the very start; over a long session a strategic agent maintains a high unique-pair rate.",
-            "test": "correlation_test",
-            "field_x": "mean_input_recipes_in",
-            "field_y": "is_novel_discovery",
+            "description": "Humans avoid retrying the same combination — most attempts use an (element_a_idx, element_b_idx) pair not yet attempted. Operationalized as the proportion of attempts whose ordered pair has not been seen earlier in the session (`is_unique_pair` is computed by the scorer from the (a_idx, b_idx) sequence, treating (a,b) and (b,a) as the same pair). Random play with a small inventory will repeat pairs frequently; a strategic agent keeps this proportion high. Threshold 0.85: a uniform-random combiner over the v1 trial budget repeats enough pairs that the unique-pair rate sits below this.",
+            "test": "proportion_test",
+            "field": "is_unique_pair",
             "filter": {},
+            "chance_level": 0.85,
             "threshold_p": 0.05,
-            "expected_direction": "positive",
+            "expected_direction": "above_chance",
             "weight": 1.0
         }
     ]
