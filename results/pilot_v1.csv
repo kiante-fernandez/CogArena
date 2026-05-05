@@ -1,0 +1,11 @@
+run_index,repeat_index,model_id,task_id,rc,wall_time,composite,l1,l2,l3
+3,0,gemini-3-flash-preview,repeated_games,0,238.8,36.32,1.0000,0.3411,0.1875
+4,0,gemini-3-flash-preview,serial_recall_v2,0,217.5,64.02,0.6000,0.5898,0.6875
+1,0,gemini-3-flash-preview,grid_bandit,0,520.4,84.17,1.0000,0.5478,1.0000
+2,0,gemini-3-flash-preview,marbles_risk,0,695.0,87.28,1.0000,0.6367,1.0000
+6,0,gemini-3-flash-preview,effort_foraging,0,435.4,45.02,1.0000,0.6989,0.1111
+0,0,gemini-3-flash-preview,random_dot_motion_v2,0,1116.2,39.94,1.0000,0.0697,0.4500
+7,0,gemini-3-flash-preview,tiny_alchemy,0,572.1,66.70,1.0000,0.4772,0.7000
+8,0,gemini-3-flash-preview,moral_machine,0,437.2,92.38,1.0000,0.7823,1.0000
+5,0,gemini-3-flash-preview,visual_recognition,0,1201.7,15.09,1.0000,0.0025,0.0000
+9,0,gemini-3-flash-preview,phishing_detection_v2,0,544.3,85.50,1.0000,0.8237,0.8333
