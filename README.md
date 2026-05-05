@@ -190,16 +190,6 @@ curl -X POST http://localhost:8000/api/evaluate/{session_id}
 curl http://localhost:8000/api/results/{session_id}
 ```
 
-### Benchmark Runner CLI
-
-```bash
-# Create session and print task URLs (manual mode)
-python -m harness.run_benchmark --agent-name "My Agent" --no-wait
-
-# Create session, poll for completion, evaluate, print scorecard
-python -m harness.run_benchmark --agent-name "My Agent" --scaffold "browser-use" --model "gpt-4o"
-```
-
 ## Scoring
 
 Three-level evaluation with weighted composite (0–100):
@@ -221,11 +211,15 @@ cogarena/
 │   ├── random_agent.py         # Random baseline (no LLM)
 │   ├── browser_use_agent.py    # Browser-Use LLM agent (multi-provider)
 │   └── openhands_agent.py      # OpenHands Docker-based agent
-├── harness/                    # FastAPI server & session management
+├── harness/                    # FastAPI server, eval CLI, sweep runner
 │   ├── server.py               # API + website routes
+│   ├── cli.py                  # `python -m harness {eval,sweep,replay}` entry
+│   ├── eval.py                 # Single (model × tasks) run with raw-data archive
+│   ├── sweep.py                # Multi-(model, task, repeat) parallel sweep
+│   ├── replay.py               # Self-contained HTML replay builder
 │   ├── session_manager.py      # Session lifecycle
 │   ├── config.py               # Settings (pydantic-settings)
-│   ├── run_benchmark.py        # CLI benchmark runner
+│   ├── suites/                 # Reproducible run definitions (pilot_v1.yaml etc.)
 │   ├── db/models.py            # SQLAlchemy + Pydantic models
 │   └── tests/                  # Integration + field alignment tests
 ├── scoring/                    # Three-level grading pipeline
