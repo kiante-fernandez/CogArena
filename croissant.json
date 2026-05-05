@@ -77,10 +77,9 @@
       "@type": "cr:FileObject",
       "@id": "code-archive",
       "name": "code-archive",
-      "description": "Source code for tasks, scoring pipeline, and reference agents.",
-      "contentUrl": "[ZENODO_DOI_TBD]",
-      "encodingFormat": "application/zip",
-      "sha256": "[TBD]"
+      "description": "Source code for tasks, scoring pipeline, and reference agents. Pinned to the v1 release tag at camera-ready; the URL below is the GitHub tarball at the time of submission.",
+      "contentUrl": "https://github.com/kiante-fernandez/CogArena/archive/refs/heads/main.tar.gz",
+      "encodingFormat": "application/gzip"
     },
     {
       "@type": "cr:FileObject",
