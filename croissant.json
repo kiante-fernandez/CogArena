@@ -51,8 +51,8 @@
   "version": "1.0.0",
   "datePublished": "2026-05-06",
   "license": "https://creativecommons.org/licenses/by/4.0/",
-  "url": "https://[ANONYMIZED FOR REVIEW]/",
-  "citeAs": "[Anonymous]. CogArena: Verifiable Behavioral-Signature Benchmarking of Multimodal Agents on Interactive Cognitive Experiments. NeurIPS 2026 Datasets and Benchmarks (under review).",
+  "url": "https://github.com/kiante-fernandez/CogArena",
+  "citeAs": "Fernandez, K., Chen, C., Zhou, J., Sadowski, B., Miceli, A. C., & Krajbich, I. (2026). CogArena: Benchmarking Multimodal Agents on Interactive Behavioral Experiments. NeurIPS 2026 Evaluations and Datasets Track (under review).",
   "keywords": [
     "benchmark",
     "multimodal agents",
@@ -66,7 +66,7 @@
   "creator": [
     {
       "@type": "Person",
-      "name": "[ANONYMIZED FOR REVIEW]"
+      "name": "Kianté Fernandez"
     }
   ],
   "rai:dataCollection": "Tasks are ported from vetted research codebases (cited per task in the paper). Trial-data records in this dataset come from the empirical study reported in the accompanying paper: each record is one (model, task, session) triple, where the agent is a closed- or open-weight large language model invoked through a single shared scaffold (Browser-Use). No human-subject data is included in this release.",
@@ -77,24 +77,16 @@
       "@type": "cr:FileObject",
       "@id": "code-archive",
       "name": "code-archive",
-      "description": "Source code for tasks, scoring pipeline, and reference agents. Pinned to the v1 release tag at camera-ready; the URL below is the GitHub tarball at the time of submission.",
+      "description": "Source code archive (GitHub tarball, main branch at submission time). Tasks, scoring pipeline, agents, and committed reference results.",
       "contentUrl": "https://github.com/kiante-fernandez/CogArena/archive/refs/heads/main.tar.gz",
-      "encodingFormat": "application/gzip"
-    },
-    {
-      "@type": "cr:FileObject",
-      "@id": "scored-sessions-archive",
-      "name": "scored-sessions-archive",
-      "description": "All scored sessions from the empirical study reported in the paper.",
-      "contentUrl": "[ZENODO_DOI_TBD]",
-      "encodingFormat": "application/zip",
-      "sha256": "[TBD]"
+      "encodingFormat": "application/gzip",
+      "sha256": "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
     },
     {
       "@type": "cr:FileSet",
       "@id": "task-configs",
       "name": "task-configs",
-      "description": "Per-task configuration JSONs.",
+      "description": "Per-task configuration JSONs describing each experimental paradigm.",
       "containedIn": {
         "@id": "code-archive"
       },
@@ -122,6 +114,17 @@
       },
       "encodingFormat": "application/json",
       "includes": "scoring/human_baselines/*.json"
+    },
+    {
+      "@type": "cr:FileSet",
+      "@id": "results-csv",
+      "name": "results-csv",
+      "description": "Reference scored-session CSVs (random-agent chance floor and frontier-model pilot).",
+      "containedIn": {
+        "@id": "code-archive"
+      },
+      "encodingFormat": "text/csv",
+      "includes": "results/*.csv"
     }
   ],
   "recordSet": [
@@ -129,28 +132,51 @@
       "@type": "cr:RecordSet",
       "@id": "tasks",
       "name": "tasks",
-      "description": "Metadata record for each of the ten v1 tasks (category, source repo, license, response modality, parameters).",
+      "description": "Metadata record for each task in the catalog (task_id, cognitive domain, upstream source repository).",
       "field": [
         {
           "@type": "cr:Field",
           "@id": "tasks/task_id",
           "name": "task_id",
-          "description": "Unique task identifier.",
-          "dataType": "sc:Text"
+          "description": "Unique task identifier matching the directory name under tasks/.",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": { "@id": "task-configs" },
+            "extract": { "jsonPath": "$.task_id" }
+          }
         },
         {
           "@type": "cr:Field",
-          "@id": "tasks/category",
-          "name": "category",
-          "description": "One of: learning, risk_ambiguity, social_economic, memory_recall, memory_recognition, perception, judgment, foraging, compositionality, moral.",
-          "dataType": "sc:Text"
+          "@id": "tasks/domain",
+          "name": "domain",
+          "description": "Cognitive domain category (e.g. perception, learning, risk_ambiguity, social_economic, memory_recall, memory_recognition, foraging, compositional, moral, judgment).",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": { "@id": "task-configs" },
+            "extract": { "jsonPath": "$.domain" }
+          }
         },
         {
           "@type": "cr:Field",
           "@id": "tasks/source_repo",
           "name": "source_repo",
           "description": "URL of the upstream research repository the task was ported from.",
-          "dataType": "sc:URL"
+          "dataType": "sc:URL",
+          "source": {
+            "fileSet": { "@id": "task-configs" },
+            "extract": { "jsonPath": "$.source.url" }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "tasks/citation",
+          "name": "citation",
+          "description": "Primary literature reference for the paradigm.",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": { "@id": "task-configs" },
+            "extract": { "jsonPath": "$.citation" }
+          }
         }
       ]
     },
@@ -158,65 +184,117 @@
       "@type": "cr:RecordSet",
       "@id": "scored-sessions",
       "name": "scored-sessions",
-      "description": "One record per scored (model, task, session) triple from the empirical study.",
+      "description": "One record per scored (model, task, repeat) triple from the empirical study. Sources from results/*.csv (the random-floor and frontier-pilot CSVs committed in the repo).",
       "field": [
         {
           "@type": "cr:Field",
-          "@id": "scored-sessions/session_id",
-          "name": "session_id",
-          "dataType": "sc:Text"
+          "@id": "scored-sessions/run_index",
+          "name": "run_index",
+          "description": "Sequential index assigned by the harness sweep runner.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": { "@id": "results-csv" },
+            "extract": { "column": "run_index" }
+          }
         },
         {
           "@type": "cr:Field",
-          "@id": "scored-sessions/model",
-          "name": "model",
-          "dataType": "sc:Text"
+          "@id": "scored-sessions/repeat_index",
+          "name": "repeat_index",
+          "description": "Repeat number for the (model, task) cell, zero-indexed.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": { "@id": "results-csv" },
+            "extract": { "column": "repeat_index" }
+          }
         },
         {
           "@type": "cr:Field",
-          "@id": "scored-sessions/scaffold",
-          "name": "scaffold",
-          "dataType": "sc:Text"
+          "@id": "scored-sessions/model_id",
+          "name": "model_id",
+          "description": "Identifier of the agent model (e.g. random, gemini-3-flash-preview, grok-4.1-fast, glm-4.6v).",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": { "@id": "results-csv" },
+            "extract": { "column": "model_id" }
+          }
         },
         {
           "@type": "cr:Field",
           "@id": "scored-sessions/task_id",
           "name": "task_id",
-          "dataType": "sc:Text"
+          "description": "Task identifier (matches tasks recordSet).",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": { "@id": "results-csv" },
+            "extract": { "column": "task_id" }
+          }
         },
         {
           "@type": "cr:Field",
-          "@id": "scored-sessions/seed",
-          "name": "seed",
-          "dataType": "sc:Integer"
+          "@id": "scored-sessions/rc",
+          "name": "rc",
+          "description": "Process exit code: 0 = successful run, non-zero = timeout or schema-rejection failure.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": { "@id": "results-csv" },
+            "extract": { "column": "rc" }
+          }
         },
         {
           "@type": "cr:Field",
-          "@id": "scored-sessions/l1",
-          "name": "l1",
-          "description": "Level 1 (completion) score in [0, 1].",
-          "dataType": "sc:Float"
-        },
-        {
-          "@type": "cr:Field",
-          "@id": "scored-sessions/l2",
-          "name": "l2",
-          "description": "Level 2 (accuracy) score in [0, 1].",
-          "dataType": "sc:Float"
-        },
-        {
-          "@type": "cr:Field",
-          "@id": "scored-sessions/l3",
-          "name": "l3",
-          "description": "Level 3 (behavioral alignment) score in [0, 1].",
-          "dataType": "sc:Float"
+          "@id": "scored-sessions/wall_time",
+          "name": "wall_time",
+          "description": "Wall-clock seconds for the agent run.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": { "@id": "results-csv" },
+            "extract": { "column": "wall_time" }
+          }
         },
         {
           "@type": "cr:Field",
           "@id": "scored-sessions/composite",
           "name": "composite",
-          "description": "Composite CogArena score in [0, 100].",
-          "dataType": "sc:Float"
+          "description": "Composite CogArena score in [0, 100], computed as 100 * (0.15*L1 + 0.35*L2 + 0.50*L3).",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": { "@id": "results-csv" },
+            "extract": { "column": "composite" }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/l1",
+          "name": "l1",
+          "description": "Level 1 (completion) score in [0, 1]: fraction of required trials answered with a valid key/click.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": { "@id": "results-csv" },
+            "extract": { "column": "l1" }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/l2",
+          "name": "l2",
+          "description": "Level 2 (accuracy) score in [0, 1]: agent performance metric vs. literature-derived human baseline.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": { "@id": "results-csv" },
+            "extract": { "column": "l2" }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "scored-sessions/l3",
+          "name": "l3",
+          "description": "Level 3 (behavioral signature) score in [0, 1]: weighted alignment with canonical task-specific effects.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": { "@id": "results-csv" },
+            "extract": { "column": "l3" }
+          }
         }
       ]
     }
