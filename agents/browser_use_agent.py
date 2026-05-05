@@ -243,7 +243,7 @@ async def run_all_tasks(
             model_name=model_name, no_deadline=no_deadline,
             task_timeout=task_timeout, tasks_filter=tasks_filter,
             n_trials=n_trials, headless=headless, session_id=session_id,
-            trace_dir=trace_dir,
+            trace_dir=trace_dir, skip_tasks=skip_tasks,
             max_consecutive_failures=MAX_CONSECUTIVE_FAILURES,
         )
     finally:
@@ -255,6 +255,7 @@ async def _run_all_tasks_inner(
     model_name: str, no_deadline: bool, task_timeout: float,
     tasks_filter: list[str] | None, n_trials: int | None, headless: bool,
     session_id: str | None, trace_dir: str | None,
+    skip_tasks: set[str] | None,
     max_consecutive_failures: int,
 ):
     MAX_CONSECUTIVE_FAILURES = max_consecutive_failures
