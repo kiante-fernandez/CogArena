@@ -27,3 +27,4 @@ paper/
 .env*.local
 skills-lock.json
 PRE_SUBMISSION_REVIEW*.md
+AGENTS.md
