@@ -45,7 +45,10 @@ pytest scoring/tests/ harness/tests/ -v
 
 Expected: 374 passed (313 scoring + 10 harness unit + 51 field-alignment).
 
-## Tasks (40)
+## Tasks (50)
+
+The catalog includes 50 task directories: 47 unique cognitive paradigms plus three v2 revisions (`phishing_detection_v2`, `random_dot_motion_v2`, `serial_recall_v2`) used in the paper's v1 launch set. The table below lists the 40 originally-documented tasks; the additions (`effort_foraging`, `grid_bandit`, `marbles_risk`, `moral_machine`, `repeated_games`, `tiny_alchemy`, `visual_recognition`, plus the three v2 revisions) extend the catalog and are browseable at [`/catalog`](https://cog-arena.vercel.app/catalog) on the live site.
+
 
 | Task | Description |
 |------|-------------|
