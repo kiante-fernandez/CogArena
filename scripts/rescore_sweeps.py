@@ -100,46 +100,54 @@ def _process_sweep(sweep_dir: Path) -> Path | None:
     original = _read_aggregate(sweep_dir)
     by_run = {r["run_index"]: dict(r) for r in original}
 
+    # Run directories follow the convention "r{repeat_index:02d}_{model_id}_{task_id}".
+    # Match each artifact dir to its unique aggregate row by the
+    # (repeat_index, model_id, task_id) tuple — random_floor sweeps repeat the
+    # same (model, task) cell N times, so run_index alone is fine for ordering
+    # but doesn't survive into the dir name.
+    import re
+    by_key = {(r["repeat_index"], r["model_id"], r["task_id"]): r["run_index"]
+              for r in original}
+
     rescored = 0
     skipped = 0
     for run_dir in sorted((sweep_dir / "runs").iterdir()):
         artifacts = run_dir / "artifacts"
         if not artifacts.exists():
             continue
-        # Pull run_index from the rebuilt score.json or the directory name.
-        # Easiest: match against original aggregate by directory order, so we
-        # use the artifact's score.json's task_scores[0].task_id and meta.json
-        # to find which original row corresponds.
+        m = re.match(r"r(\d+)_(.+)_([^_]+(?:_v[0-9]+)?)$", run_dir.name)
+        if not m:
+            logger.warning("can't parse %s", run_dir.name)
+            skipped += 1
+            continue
         meta_path = artifacts / "meta.json"
         if not meta_path.exists():
+            skipped += 1
             continue
         meta = json.loads(meta_path.read_text())
-        # The original aggregate row's run_index is just the index field;
-        # we identify by (model_id, task_id) since trial_data/ has only one
-        # task per session in the current sweep layout.
+        repeat_index = str(int(m.group(1)))
+        model_id = meta.get("model", {}).get("id", "?")
         task_files = list((artifacts / "trial_data").glob("*.json")) if (artifacts / "trial_data").exists() else []
         if not task_files:
             skipped += 1
             continue
         task_id = task_files[0].stem
-        model_id = meta.get("model", {}).get("id", "?")
 
-        # Find the matching original row
-        match_rows = [r for r in original if r["model_id"] == model_id and r["task_id"] == task_id]
-        if not match_rows:
-            logger.warning("no aggregate row for model=%s task=%s", model_id, task_id)
+        run_index = by_key.get((repeat_index, model_id, task_id))
+        if run_index is None:
+            logger.warning("no aggregate row for (repeat=%s, model=%s, task=%s)",
+                           repeat_index, model_id, task_id)
             skipped += 1
             continue
-        agg_row = match_rows[0]
 
         result = _rescore_session(artifacts)
         if result is None:
             skipped += 1
             continue
 
-        # Update the row in place with new scores
         ts = result["task_scores"][0]
-        by_run[agg_row["run_index"]] = {
+        agg_row = by_run[run_index]
+        by_run[run_index] = {
             **agg_row,
             "composite": f"{ts['composite']:.2f}",
             "l1": f"{ts['l1_completion']:.4f}",
