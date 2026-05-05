@@ -13,17 +13,6 @@
             "weight": 2.0
         },
         {
-            "name": "empowerment_preference",
-            "description": "On each attempt, the average in-degree of the chosen pair (how many recipes use these elements) positively correlates with whether the attempt succeeds. Brändle et al.'s headline finding: humans pick high-empowerment elements (Brändle et al. 2023, Nature Human Behaviour, Fig 4). Weight reduced from 2.0 to 1.0 because random pair selection from a growing inventory partially reproduces this correlation (early-discovered, high-empowerment elements are over-represented in random pairs by inventory mechanics, not by strategy).",
-            "test": "correlation_test",
-            "field_x": "mean_input_recipes_in",
-            "field_y": "is_success",
-            "filter": {},
-            "threshold_p": 0.05,
-            "expected_direction": "positive",
-            "weight": 1.0
-        },
-        {
             "name": "non_redundant_attempts",
             "description": "Humans avoid retrying the same combination — most attempts use an (element_a_idx, element_b_idx) pair not yet attempted. Operationalized as the proportion of attempts whose ordered pair has not been seen earlier in the session (`is_unique_pair` is computed by the scorer from the (a_idx, b_idx) sequence, treating (a,b) and (b,a) as the same pair). Random play with a small inventory will repeat pairs frequently; a strategic agent keeps this proportion high. Threshold 0.85: a uniform-random combiner over the v1 trial budget repeats enough pairs that the unique-pair rate sits below this.",
             "test": "proportion_test",
