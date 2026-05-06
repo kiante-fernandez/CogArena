@@ -1,0 +1,32 @@
+# Phase-1c follow-on additions to the pilot.
+#
+# Adds two more paper-faithful frontier models from the GameWorld set
+# (arXiv 2604.07429), both vetted via single-task smoke before launching:
+#   - kimi-k2.5         ($0.44/M in, $2/M out)  — proprietary frontier
+#   - qwen3-vl-235b-instruct ($0.20/M in, $0.88/M out) — open-source flagship
+#
+# 10 tasks x 2 models x 1 repeat = 20 sessions. Estimated total ~$5-7.
+
+suite_name: pilot_v1_addons
+default_scaffold: browser-use
+
+tasks:
+  - random_dot_motion_v2
+  - grid_bandit
+  - marbles_risk
+  - repeated_games
+  - serial_recall_v2
+  - visual_recognition
+  - effort_foraging
+  - tiny_alchemy
+  - moral_machine
+  - phishing_detection_v2
+
+models:
+  - id: kimi-k2.5
+  - id: qwen3-vl-235b-instruct
+
+repeats: 1
+n_trials_override: null
+task_timeout_seconds: 1800
+no_deadline: true

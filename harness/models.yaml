@@ -59,3 +59,28 @@ models:
     api: z-ai/glm-4.6v
     scaffold: browser-use
     notes: "GameWorld paper model. Vision-capable. $0.30/M in, $0.90/M out."
+
+  - id: qwen3-vl-235b-instruct
+    api: qwen/qwen3-vl-235b-a22b-instruct
+    scaffold: browser-use
+    notes: "GameWorld paper open-source model. Vision-capable. $0.20/M in, $0.88/M out."
+
+  - id: minimax-01
+    api: minimax/minimax-01
+    scaffold: browser-use
+    notes: "MiniMax 01. Vision-capable. $0.20/M in, $1.10/M out. NOTE: smoke test failed (no LLM calls completed)."
+
+  - id: qwen3-vl-30b-instruct
+    api: qwen/qwen3-vl-30b-a3b-instruct
+    scaffold: browser-use
+    notes: "GameWorld paper open-source model used for reproducibility study. $0.13/M in, $0.52/M out."
+
+  - id: ui-tars-1.5-7b
+    api: bytedance/ui-tars-1.5-7b
+    scaffold: browser-use
+    notes: "GameWorld paper specialty UI-navigation model. $0.10/M in, $0.20/M out."
+
+  - id: gpt-5.4-nano
+    api: openai/gpt-5.4-nano
+    scaffold: browser-use
+    notes: "OpenAI cheap model (paper used GPT-5.2 which is too expensive). $0.20/M in, $1.25/M out."
