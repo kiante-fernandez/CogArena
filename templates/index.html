@@ -40,18 +40,25 @@
     </div>
 </section>
 
-<!-- Quick Stats -->
+<!-- Live Stats -->
 <section class="bg-gray-950 text-white py-12">
     <div class="max-w-4xl mx-auto px-4 sm:px-6">
-        <div class="grid grid-cols-2 gap-8 text-center max-w-md mx-auto">
+        <div class="grid grid-cols-3 gap-8 text-center">
             <div>
-                <div class="text-3xl font-bold">{{ task_count }}</div>
-                <div class="text-gray-500 text-sm mt-1">Tasks</div>
+                <div id="stat-agents" class="text-3xl font-bold">&mdash;</div>
+                <div class="text-gray-500 text-sm mt-1 uppercase tracking-wider">Agents</div>
             </div>
             <div>
-                <div class="text-3xl font-bold">{{ domain_count }}</div>
-                <div class="text-gray-500 text-sm mt-1">Cognitive Domains</div>
+                <div id="stat-evaluations" class="text-3xl font-bold">&mdash;</div>
+                <div class="text-gray-500 text-sm mt-1 uppercase tracking-wider">Evaluations</div>
             </div>
+            <div>
+                <div id="stat-tasks" class="text-3xl font-bold">&mdash;</div>
+                <div class="text-gray-500 text-sm mt-1 uppercase tracking-wider">Tasks</div>
+            </div>
+        </div>
+        <div class="text-center text-gray-600 text-xs mt-6">
+            Live from the <a href="/leaderboard" class="text-gray-400 hover:text-white transition-colors">leaderboard</a>
         </div>
     </div>
 </section>
@@ -75,6 +82,7 @@
 
 {% block scripts %}
 <script>
+// Copy BibTeX
 (function() {
     var btn = document.getElementById('copy-btn');
     var bibtex = document.getElementById('bibtex');
@@ -87,6 +95,26 @@
             timer = setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
         }).catch(function() {});
     });
+})();
+
+// Live counters in the dark band
+(function() {
+    fetch('/api/leaderboard')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            var entries = d.entries || [];
+            var agents = entries.length;
+            var evaluations = entries.reduce(function(sum, e) {
+                return sum + Object.keys(e.best_by_task || {}).length;
+            }, 0);
+            var tasks = d.total_tasks || 0;
+            document.getElementById('stat-agents').textContent = agents;
+            document.getElementById('stat-evaluations').textContent = evaluations;
+            document.getElementById('stat-tasks').textContent = tasks;
+        })
+        .catch(function() {
+            // Fallback: leave the em-dashes in place.
+        });
 })();
 </script>
 {% endblock %}

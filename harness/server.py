@@ -223,12 +223,7 @@ app.add_middleware(
 
 @app.get("/", include_in_schema=False)
 async def landing_page(request: Request):
-    tasks = _v1_only(_load_tasks_meta())
-    domains = set(t["domain"] for t in tasks)
-    return templates.TemplateResponse(request, "index.html", {
-        "task_count": len(tasks),
-        "domain_count": len(domains),
-    })
+    return templates.TemplateResponse(request, "index.html", {})
 
 
 @app.get("/catalog", include_in_schema=False)
