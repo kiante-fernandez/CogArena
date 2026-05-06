@@ -105,7 +105,7 @@
             var entries = d.entries || [];
             var agents = entries.length;
             var evaluations = entries.reduce(function(sum, e) {
-                return sum + Object.keys(e.best_by_task || {}).length;
+                return sum + (e.tasks_completed || 0);
             }, 0);
             var tasks = d.total_tasks || 0;
             document.getElementById('stat-agents').textContent = agents;
