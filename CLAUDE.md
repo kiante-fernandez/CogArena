@@ -22,22 +22,23 @@ python -m agents.runner --agent browser-use --model google/gemini-2.5-flash \
 # Skip tasks already scored for the same model+scaffold
 python -m agents.runner --agent browser-use --model <m> --start-server --skip-scored
 
-# Full study (5 models × 40 tasks, parallel ports)
-./run_study.sh                          # all
-./run_study.sh --model google/gemini-3-flash-preview
-./run_study.sh --dry-run
-
 # Reference harness (wraps random + browser-use agents under one CLI;
 # captures interactions.jsonl + screenshots + replay.html + server.log per session)
 python -m harness eval --model random --tasks stroop --start-server --replay
-python -m harness eval --model gpt-5-mini --tasks marbles_risk --start-server --trace-dir /tmp/run1
-python -m harness sweep --suite harness/suites/headline.yaml --max-parallel 2 --dry-run
+python -m harness eval --model gemini-3-flash-preview --tasks marbles_risk --start-server --trace-dir /tmp/run1
+python -m harness sweep --suite harness/suites/pilot_v1.yaml --max-parallel 4
 python -m harness replay --session <session_id> --inline   # standalone HTML
+
+# Re-score archived sessions against current specs (no agent re-run, no API cost)
+python -m scripts.rescore_sweeps --sweep data/sweeps/<sweep_dir>
+
+# Re-score every approved session on a remote server against deployed specs
+python -m scripts.rescore_production --base-url https://cog-arena.vercel.app
 ```
 
-The harness writes per-session artifacts under `<trace_dir>/` (or `data/sessions/<id>/` by default): `meta.json`, `interactions.jsonl`, `actions.jsonl`, `score.json`, `server.log` (uvicorn access + tracebacks), `conversations/<task_id>/...txt`, `screenshots/`. Use `replay.html` to scrub the run.
+The harness writes per-session artifacts under `<trace_dir>/` (or `data/sessions/<id>/` by default): `meta.json`, `interactions.jsonl`, `actions.jsonl`, `score.json`, `server.log` (uvicorn access + tracebacks), `conversations/<task_id>/...txt`, `screenshots/`, and `trial_data/<task_id>.json` (raw jsPsych data — used by `rescore_sweeps.py` to apply spec changes without re-running agents). Use `replay.html` to scrub the run.
 
-`CONDA_PYTHON` overrides which Python `run_study.sh` uses for `browser_use` imports. The `harness` CLI sets `ANONYMIZED_TELEMETRY=false` by default to disable Browser-Use + PostHog telemetry.
+The `harness` CLI sets `ANONYMIZED_TELEMETRY=false` by default to disable Browser-Use + PostHog telemetry.
 
 ### Model registry & suite YAMLs
 

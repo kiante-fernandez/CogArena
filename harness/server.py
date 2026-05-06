@@ -208,7 +208,8 @@ async def lifespan(app: FastAPI):
         await engine.dispose()
 
 
-app = FastAPI(title="CogArena", version="0.2.0", lifespan=lifespan)
+APP_VERSION = "1.1.1"
+app = FastAPI(title="CogArena", version=APP_VERSION, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -290,7 +291,7 @@ async def api_info():
 
     return {
         "name": "CogArena",
-        "version": "0.1.0",
+        "version": APP_VERSION,
         "description": "Benchmark for testing AI agents on interactive behavioral experiments",
         "docs": "/docs",
         "endpoints": {
@@ -311,7 +312,7 @@ async def api_info():
 
 @app.get("/api/health", summary="Health check")
 async def health():
-    return {"status": "ok", "version": "0.1.0"}
+    return {"status": "ok", "version": APP_VERSION}
 
 
 @app.get("/api/tasks", summary="List all available tasks with configuration")

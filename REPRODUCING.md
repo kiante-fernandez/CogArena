@@ -68,42 +68,60 @@ python -m harness sweep --suite harness/suites/random_floor_v1.yaml \
     --max-parallel 4 --verbose
 ```
 
-20 sessions (10 v1 tasks × 2 repeats), ~12 min wall time, $0 API cost. Output goes to `data/sweeps/random_floor_v1_<timestamp>/aggregate.csv`.
+100 sessions (10 v1 tasks × 10 repeats), ~60 min wall time, $0 API cost. Some sessions may drop to transient Playwright `Page.goto` timeouts (~15% in our run); the per-task chance-ceiling estimates use whatever sessions complete. Output goes to `data/sweeps/random_floor_v1_<timestamp>/aggregate.csv`.
 
-Compare against the committed reference: [`results/random_floor_v1.csv`](results/random_floor_v1.csv).
+Reference: [`results/random_floor_v1.csv`](results/random_floor_v1.csv).
 
 ---
 
 ## 4. Reproduce the frontier-model results
 
-Frontier-model evaluation requires `OPENROUTER_API_KEY` in `.env` (or your shell env). All paper models route through OpenRouter so a single key is sufficient. Estimated cost per (model, 10-task) run, based on observed token usage:
+Frontier-model evaluation requires `OPENROUTER_API_KEY` in `.env` (or your shell env). All paper models route through OpenRouter, so a single key is sufficient. Estimated cost per (model × 10-task) run, based on observed token usage at v1.1.1:
 
-| Model | $/M in | $/M out | ≈ $ per 10 tasks |
-|---|---:|---:|---:|
-| `gemini-3-flash-preview` | $0.50 | $3 | ~$5 |
-| `gpt-5.2` | $1.75 | $14 | ~$19 |
-| `claude-sonnet-4.6` | $3 | $15 | ~$29 |
-| `kimi-k2.5` | $0.44 | $2 | ~$4 |
-| `grok-4.1-fast` | $0.20 | $0.50 | ~$2 |
-| `glm-4.6v` | $0.30 | $0.90 | ~$3 |
+| Model | $/M in | $/M out | ≈ $ per 10 tasks | OK / 10 in our run |
+|---|---:|---:|---:|---:|
+| `gemini-3-flash-preview` | $0.50 | $3.00 | ~$5  | 10 |
+| `kimi-k2.5`               | $0.44 | $2.00 | ~$4  | 7  |
+| `qwen3-vl-235b-instruct`  | $0.20 | $0.88 | ~$2  | 7  |
+| `qwen3-vl-30b-instruct`   | $0.13 | $0.52 | ~$1.50 | 7  |
+| `grok-4.1-fast`           | $0.20 | $0.50 | ~$2  | 6  |
+| `gpt-5.4-nano`            | $0.20 | $1.25 | ~$2.50 | 8  |
 
-To rerun the paper's pilot study (3 frontier models × 10 tasks × 1 repeat):
+The paper reports the canonical v1 pilot as 6 models × 10 tasks × 1 repeat = 60 sessions. The full set of suite YAMLs that produced it:
 
 ```bash
+# Three frontier proprietary models (gemini, gpt-5.2-tier, claude-sonnet-4.6).
+# Note: only gemini was actually run in the v1 pilot — gpt-5.2 and Sonnet
+# are listed but skipped because their per-session cost was outside the
+# pilot budget. To rerun gemini alone:
 python -m harness sweep --suite harness/suites/pilot_v1.yaml \
-    --max-parallel 4 --verbose
+    --models gemini-3-flash-preview --max-parallel 4
+
+# Cheap-frontier additions (grok, glm — glm fails Browser-Use schema):
+python -m harness sweep --suite harness/suites/pilot_v1_cheap.yaml \
+    --max-parallel 4
+
+# Open + cheap-frontier expansion (kimi, qwen-235):
+python -m harness sweep --suite harness/suites/pilot_v1_addons.yaml \
+    --max-parallel 4
+
+# Smaller open + OpenAI nano (qwen-30, ui-tars [also fails], gpt-5.4-nano):
+python -m harness sweep --suite harness/suites/pilot_v1_addons2.yaml \
+    --max-parallel 4
 ```
 
-~75 min wall time at parallel=4, ~$50 OpenRouter spend. Output: `data/sweeps/pilot_v1_<timestamp>/aggregate.csv`.
+Aggregate cost across all four sweeps in our run: ~$15-20 OpenRouter credit. ~75-90 min wall time per sweep at `--max-parallel 4`.
 
-To reproduce a single model only (cheaper, e.g. `gemini-3-flash-preview` for ~$5):
+To reproduce a single model cheaply (e.g. `gemini-3-flash-preview` for ~$5):
 
 ```bash
 python -m harness sweep --suite harness/suites/pilot_v1.yaml \
     --models gemini-3-flash-preview --max-parallel 4 --verbose
 ```
 
-Reference results: [`results/pilot_v1.csv`](results/pilot_v1.csv).
+Reference results: [`results/pilot_v1.csv`](results/pilot_v1.csv) (60 rows, 6 models).
+
+Two models were excluded from the canonical results — `glm-4.6v` and `ui-tars-1.5-7b` both produced 0/10 successful sessions because Browser-Use's strict pydantic action validator rejected their native action shapes (`{"key": " "}` and `{"input": ...}` respectively, where the validator requires `{"send_keys": {"keys": " "}}`). The suite YAMLs that reference them are kept in the repo for reproducibility but the failure pattern is a scaffold-compatibility note, not a model-capability claim.
 
 ---
 
@@ -133,8 +151,10 @@ Expected: 374 passed (313 scoring + 10 harness unit + 51 field-alignment tests).
 
 ## What each result file contains
 
-- **`results/random_floor_v1.csv`** — 20-row chance floor: `(model_id, task_id, repeat_index, rc, wall_time, composite, l1, l2, l3)`. `model_id="random"` for all rows.
-- **`results/pilot_v1.csv`** — frontier-model results, same schema. Columns: composite (0–100), L1 (completion 0–1), L2 (accuracy 0–1), L3 (behavioral signature score 0–1). Composite = 0.15·L1 + 0.35·L2 + 0.50·L3, scaled to 100.
+- **`results/random_floor_v1.csv`** — 100-row chance floor: `(run_index, repeat_index, model_id, task_id, rc, wall_time, composite, l1, l2, l3)`. `model_id="random"` for all rows. Some rows have `rc=1` (transient Playwright timeouts) and empty score columns; the chance-ceiling analysis in `results/AUDIT.md` uses only `rc=0` rows.
+- **`results/pilot_v1.csv`** — 60-row frontier-model pilot, same schema. 6 models × 10 tasks × 1 repeat. Composite = 100 × (0.15·L1 + 0.35·L2 + 0.50·L3).
+- **`results/AUDIT.md`** — record of the v1.0.0 → v1.1.0 spec audit (what changed in L2/L3 and why, with per-task before/after chance ceilings).
+- **`results/example_replay.html`** — self-contained HTML scrub of one agent run (gemini × moral_machine).
 - **Per-session `score.json`** (under `data/sweeps/<run>/runs/<r##>/artifacts/`) — full signature-level detail: every L3 effect's measured statistic, expected direction, score, and weight.
 
 ---

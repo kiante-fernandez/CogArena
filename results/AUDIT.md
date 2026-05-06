@@ -69,15 +69,34 @@ For both, the meaningful signature is the paired test; the auxiliaries provide d
 
 ## Affected pilot results
 
-The audit shifts published pilot composites for the two most-touched tasks:
+The audit shifts published pilot composites for the most-touched tasks:
 
-| Model × Task | v1.0.0 composite | v1.1.0 composite | Δ |
+| Model × Task | v1.0.0 composite | v1.1.0+ composite | Δ |
 |---|---:|---:|---:|
 | gemini-3-flash-preview × tiny_alchemy | 66.70 | **26.17** | −40.53 |
 | gemini-3-flash-preview × moral_machine | 92.38 | 78.74 | −13.64 |
 | gemini-3-flash-preview × marbles_risk | 87.28 | 81.92 | −5.36 |
 | grok-4.1-fast × marbles_risk | 24.63 | 22.92 | −1.71 |
 
-All other pilot results unchanged.
-
 Mean composite for gemini-3-flash-preview across the 10 v1 tasks: **61.64 → 55.69** (−5.95). The drops reflect tightened discrimination, not a new agent capability.
+
+## Pilot expansion at v1.1.1
+
+After the spec audit, the canonical pilot was expanded to 6 models × 10 tasks × 1 repeat = 60 sessions, all scored under the audited specs. Mean composite per model (over completed sessions only):
+
+| Model | Sessions OK | Mean composite |
+|---|---:|---:|
+| `kimi-k2.5` | 7/10 | **58.24** |
+| `gemini-3-flash-preview` | 10/10 | **55.69** |
+| `grok-4.1-fast` | 6/10 | 30.36 |
+| `qwen3-vl-235b-instruct` | 7/10 | 27.42 |
+| `gpt-5.4-nano` | 8/10 | 20.75 |
+| `qwen3-vl-30b-instruct` | 7/10 | 19.61 |
+
+Two additional models — `glm-4.6v` and `ui-tars-1.5-7b` — were attempted but produced 0/10 successful sessions because Browser-Use's strict pydantic action validator rejected their native action shapes. The suite YAMLs that reference them are kept in `harness/suites/` for reproducibility, but the failures are scaffold-compatibility data, not model-capability claims, and are excluded from the canonical results.
+
+Notable cross-model deltas worth mentioning in the paper:
+
+- **`repeated_games`**: `kimi-k2.5` 75.8 vs `gemini-3-flash-preview` 36.3. Gemini cooperates 0/15 in the PD block (pure defector); kimi shows reciprocal cooperation. The post-audit `cooperation_when_opp_cooperated` signature captures this directly.
+- **`tiny_alchemy`**: `kimi-k2.5` 72.5 vs `gemini-3-flash-preview` 26.2 (post-audit). The audit fix (drop `empowerment_preference`, raise `above_chance_discovery` chance ceiling) means this delta now reflects genuine model selectivity, not inventory mechanics.
+- **`visual_recognition`**: every model except gemini scores at or below the random floor; gemini also fails (15.1) but with L1=1.0 (completed task, picked wrong answers). This task is a robust failure mode for all v1 frontier models tested.
