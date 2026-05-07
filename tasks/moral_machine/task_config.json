@@ -11,7 +11,7 @@
         "license": "Apache-2.0 (reference implementation by MIT Media Lab); paradigm is freely usable",
         "note": "v1 port presents trolley-style binary dilemmas in the Moral Machine factorial design (Awad et al. 2018, Nature). Stimuli are procedurally generated text vignettes that vary one of five orthogonal dimensions per trial: number-of-lives, age, species, legality, and intervention. Synthetic vignettes (no scraping of moralmachine.net assets); inspired in spirit by both moralmachine.net and neal.fun/absurd-trolley-problems but lighter on humor and tighter on factor manipulation so behavioral signatures are well-defined."
     },
-    "description": "Forced-choice between two outcomes of an autonomous-vehicle dilemma. 24 scenarios drawn to vary one factor at a time across five dimensions: number-of-lives, age, species, legality, and intervention.",
+    "description": "Forced-choice between two outcomes of an autonomous-vehicle dilemma. 40 trials varying one factor at a time across five dimensions: number of lives, age, species, legality, and intervention.",
     "parameters": {
         "n_trials": 40,
         "n_practice_trials": 2,

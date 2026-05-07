@@ -3,7 +3,7 @@
     "task_name": "Spatial Bandit (Safe vs Risky Foraging)",
     "domain": "learning",
     "version": "1.0.0",
-    "citation": "Witte, Wise, Huys & Schulz (2024) — Worried exploration: Anxiety, depression, and exploration under threat",
+    "citation": "Witte, Wise, Huys & Schulz (2024) — Exploring the unexplored: Worry as a catalyst for exploratory behavior in anxiety and depression",
     "psych201_reference": null,
     "source": {
         "url": "https://github.com/KristinWitte/worried_exploration/tree/main/Study1/task",

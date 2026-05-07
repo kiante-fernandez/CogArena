@@ -83,7 +83,7 @@
       "name": "code-archive",
       "description": "Source code archive pinned to the v1.0.0 release tag (immutable; sha256 will not drift as main advances). Tasks, scoring pipeline, agents, and committed reference results.",
       "contentUrl": "https://github.com/kiante-fernandez/CogArena/archive/refs/tags/v1.1.1.tar.gz",
-      "encodingFormat": "application/gzip",
+      "encodingFormat": "application/x-tar",
       "sha256": "8361afd0134937ede91e59d7edd78703225b1284b558a31ad6c706f6aaa87386"
     },
     {
