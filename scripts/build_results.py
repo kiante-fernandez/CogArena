@@ -101,6 +101,37 @@ def _task_entry(score: dict[str, Any], task_id: str) -> dict[str, Any] | None:
     return None
 
 
+def _observation_mode(meta: dict, artifacts: Path) -> str | None:
+    """Modality the run actually used.
+
+    Prefer meta.json, but fall back to the per-step record in
+    interactions.jsonl: sweeps run before meta.json carried the field still hold
+    the answer, and reviewers asked specifically which modality each run used.
+    """
+    direct = (meta.get("model") or {}).get("observation_mode") or meta.get("observation_mode")
+    if direct:
+        return direct
+    inter = artifacts / "interactions.jsonl"
+    if not inter.exists():
+        return None
+    modes = set()
+    try:
+        with open(inter) as f:
+            for line in f:
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                m = (rec.get("extra") or {}).get("observation_mode")
+                if m:
+                    modes.add(m)
+    except OSError:
+        return None
+    if not modes:
+        return None
+    return modes.pop() if len(modes) == 1 else "mixed:" + ",".join(sorted(modes))
+
+
 def _float(x: Any) -> float | None:
     try:
         return float(x)
@@ -161,8 +192,7 @@ def collect(sweep_dir: Path, max_repeat: int | None = None) -> tuple[list[dict],
             "l2": row.get("l2") or (entry.get("l2_accuracy") if entry else None),
             "l3": row.get("l3") or (entry.get("l3_behavioral") if entry else None),
             "n_trials": n_trials,
-            "observation_mode": (meta.get("model") or {}).get("observation_mode")
-                                or meta.get("observation_mode"),
+            "observation_mode": _observation_mode(meta, artifacts),
             "git_sha": (meta.get("env") or {}).get("git_sha"),
             "session_id": meta.get("session_id"),
         })

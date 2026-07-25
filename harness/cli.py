@@ -48,6 +48,9 @@ def _add_eval_args(p: argparse.ArgumentParser) -> None:
                    help="Build replay.html immediately after the run.")
     p.add_argument("--replay-inline", action="store_true",
                    help="With --replay, base64-inline screenshots into the HTML (single-file artifact).")
+    p.add_argument("--no-vision", action="store_true",
+                   help="Force DOM-text-only observation, disabling screenshots to the model. "
+                        "Use to measure how much of a task's performance depends on pixels.")
     p.add_argument("--verbose", "-v", action="store_true")
 
 

@@ -102,7 +102,7 @@ def _model_supports_vision(model_name: str) -> bool:
 async def run_task_with_browser_use(
     task_url: str, task_id: str, model_name: str,
     timeout: float = 600.0, headless: bool = True,
-    trace_writer=None,
+    trace_writer=None, force_no_vision: bool = False,
 ):
     """Run a single CogArena task using Browser-Use.
 
@@ -114,7 +114,9 @@ async def run_task_with_browser_use(
     from browser_use import Agent, BrowserSession
 
     llm = _make_llm(model_name)
-    use_vision = _model_supports_vision(model_name)
+    # force_no_vision drives the ablation: same model, same scaffold, DOM text
+    # only. Any performance drop is attributable to the loss of pixels.
+    use_vision = (not force_no_vision) and _model_supports_vision(model_name)
     # Recorded per step so the archive states what the model was actually given,
     # rather than asserting a modality the run may not have used.
     observation_mode = "screenshot" if use_vision else "dom"
@@ -246,6 +248,7 @@ async def run_all_tasks(
     tasks_filter: list[str] | None = None,
     n_trials: int | None = None,
     headless: bool = True,
+    force_no_vision: bool = False,
     skip_tasks: set[str] | None = None,
     session_id: str | None = None,
     trace_dir: str | None = None,
@@ -268,6 +271,7 @@ async def run_all_tasks(
             n_trials=n_trials, headless=headless, session_id=session_id,
             trace_dir=trace_dir, skip_tasks=skip_tasks,
             max_consecutive_failures=MAX_CONSECUTIVE_FAILURES,
+            force_no_vision=force_no_vision,
         )
     finally:
         client.close()
@@ -280,6 +284,7 @@ async def _run_all_tasks_inner(
     session_id: str | None, trace_dir: str | None,
     skip_tasks: set[str] | None,
     max_consecutive_failures: int,
+    force_no_vision: bool = False,
 ):
     MAX_CONSECUTIVE_FAILURES = max_consecutive_failures
 
@@ -291,7 +296,8 @@ async def _run_all_tasks_inner(
             "agent_name": agent_name,
             "scaffold": "browser-use",
             "model_name": model_name,
-            "observation_mode": "screenshot" if _model_supports_vision(model_name) else "dom",
+            "observation_mode": ("dom" if force_no_vision
+                                 else ("screenshot" if _model_supports_vision(model_name) else "dom")),
         })
         resp.raise_for_status()
         session = resp.json()
@@ -343,7 +349,7 @@ async def _run_all_tasks_inner(
         task_start = time.time()
         success = await run_task_with_browser_use(
             url, task_id, model_name, timeout=task_timeout, headless=headless,
-            trace_writer=trace_writer,
+            trace_writer=trace_writer, force_no_vision=force_no_vision,
         )
         if trace_writer:
             trace_writer.log_interaction(

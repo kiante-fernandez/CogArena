@@ -171,6 +171,25 @@ def _git_sha() -> tuple[str, bool]:
         return "unknown", False
 
 
+def _resolve_observation_mode(model: "ModelEntry", args) -> str | None:
+    """What the model will actually be shown, resolved before the run starts.
+
+    The random agent sees no model input at all. For browser-use, --no-vision
+    forces DOM-text-only; otherwise it depends on whether the model accepts
+    images. Recording the resolved value means the archive states the modality
+    rather than assuming it.
+    """
+    if model.scaffold == "random":
+        return None
+    if getattr(args, "no_vision", False):
+        return "dom"
+    try:
+        from agents.browser_use_agent import _model_supports_vision
+        return "screenshot" if _model_supports_vision(model.api) else "dom"
+    except ImportError:
+        return None
+
+
 def write_meta(
     sdir: Path,
     *,
@@ -182,6 +201,7 @@ def write_meta(
     n_trials: int | None,
     use_deadline: bool,
     task_timeout: float,
+    observation_mode: str | None = None,
 ) -> dict[str, Any]:
     git_sha, git_dirty = _git_sha()
     meta = {
@@ -192,6 +212,9 @@ def write_meta(
             "api": model.api,
             "scaffold": model.scaffold,
             "enable_memory": model.enable_memory,
+            # Resolved, not assumed: reviewers asked which modality each run
+            # actually received, and the answer belongs in the archive.
+            "observation_mode": observation_mode,
         },
         "agent_name": agent_name,
         "base_url": base_url,
@@ -317,6 +340,7 @@ def run_eval(args) -> int:
             sdir, session_id=session_id, model=model, agent_name=agent_name,
             base_url=args.base_url, tasks=args.tasks, n_trials=args.n_trials,
             use_deadline=args.use_deadline, task_timeout=args.task_timeout,
+            observation_mode=_resolve_observation_mode(model, args),
         )
 
         # Now hand off to the existing agent driver, but pass the pre-created
@@ -350,6 +374,7 @@ def run_eval(args) -> int:
                 n_trials=args.n_trials,
                 session_id=session_id,
                 trace_dir=str(sdir),
+                force_no_vision=getattr(args, "no_vision", False),
             ))
         else:
             logger.error("Unknown scaffold: %s", scaffold)
