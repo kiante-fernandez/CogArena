@@ -1,0 +1,157 @@
+model_id,task_id,signature,n,k_passed,pass_rate,wilson_lo,wilson_hi,effect_size_mean,effect_size_sd,unstable,n_untestable,n_attempted,note
+gemini-3-flash-preview,effort_foraging,above_chance_mvt_match,5,0,0.0,0.0,0.4345,-0.315,0.133,False,0,5,
+gemini-3-flash-preview,effort_foraging,above_chance_total_reward,5,1,0.2,0.0362,0.6245,-0.1075,0.1573,True,0,5,
+gemini-3-flash-preview,effort_foraging,harvest_rt_speedup,5,0,0.0,0.0,0.4345,-0.0066,0.1022,False,0,5,
+gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gemini-3-flash-preview,grid_bandit,above_chance_reward,5,5,1.0,0.5655,1.0,0.3145,0.0367,False,0,5,
+gemini-3-flash-preview,grid_bandit,kraken_avoidance_in_risky,5,5,1.0,0.5655,1.0,-0.352,0.046,False,0,5,
+gemini-3-flash-preview,grid_bandit,value_directed_exploitation,5,4,0.8,0.3755,0.9638,-0.3774,0.2329,True,0,5,
+gemini-3-flash-preview,grid_bandit,within_block_learning,5,5,1.0,0.5655,1.0,0.3391,0.0216,False,0,5,
+gemini-3-flash-preview,grid_bandit,within_block_rt_speedup,5,0,0.0,0.0,0.4345,0.2141,0.2008,False,0,5,
+gemini-3-flash-preview,marbles_risk,above_chance_ev_optimal,5,5,1.0,0.5655,1.0,0.45,0.0471,False,0,5,
+gemini-3-flash-preview,marbles_risk,ev_difference_rt_effect,5,0,0.0,0.0,0.4345,0.0813,0.0915,False,0,5,
+gemini-3-flash-preview,marbles_risk,ev_sensitivity,5,5,1.0,0.5655,1.0,0.5729,0.0101,False,0,5,
+gemini-3-flash-preview,marbles_risk,magnitude_effect_high_payoff,5,4,0.8,0.3755,0.9638,0.3614,0.137,True,0,5,
+gemini-3-flash-preview,moral_machine,age_preference_save_young,5,5,1.0,0.5655,1.0,0.5,0.0,False,0,5,
+gemini-3-flash-preview,moral_machine,intervention_aversion,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gemini-3-flash-preview,moral_machine,legality_preference_save_lawful,5,2,0.4,0.1176,0.7693,0.1667,0.4249,True,0,5,
+gemini-3-flash-preview,moral_machine,species_preference_save_human,5,5,1.0,0.5655,1.0,0.5,0.0,False,0,5,
+gemini-3-flash-preview,moral_machine,utilitarian_preference,5,5,1.0,0.5655,1.0,0.5,0.0,False,0,5,
+gemini-3-flash-preview,phishing_detection_v2,above_chance_discrimination,5,5,1.0,0.5655,1.0,0.6667,0.1,False,0,5,
+gemini-3-flash-preview,phishing_detection_v2,above_chance_overall,5,5,1.0,0.5655,1.0,0.3333,0.05,False,0,5,
+gemini-3-flash-preview,phishing_detection_v2,learning_effect,5,0,0.0,0.0,0.4345,0.0,0.0707,False,0,5,
+gemini-3-flash-preview,phishing_detection_v2,practice_rt_speedup,5,2,0.4,0.1176,0.7693,-0.164,0.1255,True,0,5,
+gemini-3-flash-preview,random_dot_motion_v2,above_chance_low_coherence,5,2,0.4,0.1176,0.7693,0.1486,0.1093,True,0,5,
+gemini-3-flash-preview,random_dot_motion_v2,above_chance_overall,5,5,1.0,0.5655,1.0,0.2352,0.0564,False,0,5,
+gemini-3-flash-preview,random_dot_motion_v2,coherence_accuracy_psychometric,5,2,0.4,0.1176,0.7693,0.1582,0.096,True,0,5,
+gemini-3-flash-preview,random_dot_motion_v2,coherence_rt_chronometric,5,0,0.0,0.0,0.4345,0.0603,0.2032,False,0,5,
+gemini-3-flash-preview,repeated_games,above_chance_coordination_bos,5,1,0.2,0.0362,0.6245,-0.1533,0.3445,True,0,5,
+gemini-3-flash-preview,repeated_games,cooperation_when_opp_cooperated,3,3,1.0,0.4385,1.0,0.5,0.0,False,2,5,
+gemini-3-flash-preview,repeated_games,round_rt_speedup,5,2,0.4,0.1176,0.7693,-0.1989,0.2585,True,0,5,
+gemini-3-flash-preview,repeated_games,tit_for_tat_reciprocity_pd,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gemini-3-flash-preview,serial_recall_v2,above_chance_recall,5,5,1.0,0.5655,1.0,0.775,0.1425,False,0,5,
+gemini-3-flash-preview,serial_recall_v2,high_vs_low_sim_advantage,5,1,0.2,0.0362,0.6245,0.0,0.4677,True,0,5,
+gemini-3-flash-preview,serial_recall_v2,similarity_aids_recall,4,1,0.25,0.0456,0.6994,-0.0555,0.4219,True,1,5,
+gemini-3-flash-preview,serial_recall_v2,similarity_rt_effect,5,1,0.2,0.0362,0.6245,-0.0582,0.3967,True,0,5,
+gemini-3-flash-preview,tiny_alchemy,above_chance_discovery,5,0,0.0,0.0,0.4345,-0.2144,0.0827,False,0,5,
+gemini-3-flash-preview,tiny_alchemy,non_redundant_attempts,5,3,0.6,0.2307,0.8824,0.0968,0.0584,True,0,5,
+gemini-3-flash-preview,visual_recognition,above_chance_accuracy,5,0,0.0,0.0,0.4345,0.004,0.0055,False,0,5,
+gemini-3-flash-preview,visual_recognition,above_chance_discrimination,5,0,0.0,0.0,0.4345,0.008,0.011,False,0,5,
+gemini-3-flash-preview,visual_recognition,low_false_alarm_rate,5,5,1.0,0.5655,1.0,-0.5,0.0,False,0,5,
+gpt-5.4-nano,effort_foraging,above_chance_mvt_match,5,1,0.2,0.0362,0.6245,-0.3247,0.2896,True,0,5,
+gpt-5.4-nano,effort_foraging,above_chance_total_reward,5,1,0.2,0.0362,0.6245,-0.1506,0.2682,True,0,5,
+gpt-5.4-nano,effort_foraging,harvest_rt_speedup,5,0,0.0,0.0,0.4345,0.0366,0.1932,False,0,5,
+gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gpt-5.4-nano,grid_bandit,above_chance_reward,5,4,0.8,0.3755,0.9638,0.14,0.0448,True,0,5,
+gpt-5.4-nano,grid_bandit,kraken_avoidance_in_risky,5,5,1.0,0.5655,1.0,-0.292,0.0626,False,0,5,
+gpt-5.4-nano,grid_bandit,value_directed_exploitation,5,2,0.4,0.1176,0.7693,-0.1652,0.1385,True,0,5,
+gpt-5.4-nano,grid_bandit,within_block_learning,5,3,0.6,0.2307,0.8824,0.1215,0.0718,True,0,5,
+gpt-5.4-nano,grid_bandit,within_block_rt_speedup,5,0,0.0,0.0,0.4345,-0.0565,0.0582,False,0,5,
+gpt-5.4-nano,marbles_risk,above_chance_ev_optimal,5,0,0.0,0.0,0.4345,-0.0683,0.1803,False,0,5,
+gpt-5.4-nano,marbles_risk,ev_difference_rt_effect,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gpt-5.4-nano,marbles_risk,ev_sensitivity,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gpt-5.4-nano,marbles_risk,magnitude_effect_high_payoff,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gpt-5.4-nano,moral_machine,age_preference_save_young,1,0,0.0,0.0,0.7935,0.1667,0.0,False,4,5,
+gpt-5.4-nano,moral_machine,intervention_aversion,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gpt-5.4-nano,moral_machine,legality_preference_save_lawful,1,0,0.0,0.0,0.7935,-0.1667,0.0,False,4,5,
+gpt-5.4-nano,moral_machine,species_preference_save_human,1,0,0.0,0.0,0.7935,-0.2273,0.0,False,4,5,
+gpt-5.4-nano,moral_machine,utilitarian_preference,1,1,1.0,0.2065,1.0,0.5,0.0,False,4,5,
+gpt-5.4-nano,phishing_detection_v2,above_chance_discrimination,5,5,1.0,0.5655,1.0,0.636,0.0348,False,0,5,
+gpt-5.4-nano,phishing_detection_v2,above_chance_overall,5,5,1.0,0.5655,1.0,0.318,0.0191,False,0,5,
+gpt-5.4-nano,phishing_detection_v2,learning_effect,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gpt-5.4-nano,phishing_detection_v2,practice_rt_speedup,5,0,0.0,0.0,0.4345,0.483,0.2196,False,0,5,
+gpt-5.4-nano,random_dot_motion_v2,above_chance_low_coherence,1,0,0.0,0.0,0.7935,0.1364,0.0,False,4,5,
+gpt-5.4-nano,random_dot_motion_v2,above_chance_overall,5,0,0.0,0.0,0.4345,0.1355,0.1606,False,0,5,
+gpt-5.4-nano,random_dot_motion_v2,coherence_accuracy_psychometric,1,0,0.0,0.0,0.7935,-0.1639,0.0,False,4,5,
+gpt-5.4-nano,random_dot_motion_v2,coherence_rt_chronometric,1,0,0.0,0.0,0.7935,-0.0169,0.0,False,4,5,
+gpt-5.4-nano,repeated_games,above_chance_coordination_bos,2,0,0.0,0.0,0.6576,-0.0333,0.0,False,3,5,
+gpt-5.4-nano,repeated_games,cooperation_when_opp_cooperated,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gpt-5.4-nano,repeated_games,round_rt_speedup,2,2,1.0,0.3424,1.0,-0.4577,0.1406,False,3,5,
+gpt-5.4-nano,repeated_games,tit_for_tat_reciprocity_pd,1,0,0.0,0.0,0.7935,-0.1667,0.0,False,4,5,
+gpt-5.4-nano,serial_recall_v2,above_chance_recall,5,1,0.2,0.0362,0.6245,0.05,0.1296,True,0,5,
+gpt-5.4-nano,serial_recall_v2,high_vs_low_sim_advantage,5,0,0.0,0.0,0.4345,0.1,0.1369,False,0,5,
+gpt-5.4-nano,serial_recall_v2,similarity_aids_recall,3,0,0.0,0.0,0.5615,0.0943,0.2287,False,2,5,
+gpt-5.4-nano,serial_recall_v2,similarity_rt_effect,5,0,0.0,0.0,0.4345,-0.0218,0.2481,False,0,5,
+gpt-5.4-nano,tiny_alchemy,above_chance_discovery,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gpt-5.4-nano,tiny_alchemy,non_redundant_attempts,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+gpt-5.4-nano,visual_recognition,above_chance_accuracy,3,0,0.0,0.0,0.5615,0.0667,0.0577,False,2,5,
+gpt-5.4-nano,visual_recognition,above_chance_discrimination,1,0,0.0,0.0,0.7935,0.0,0.0,False,4,5,
+gpt-5.4-nano,visual_recognition,low_false_alarm_rate,1,1,1.0,0.2065,1.0,-0.5,0.0,False,4,5,
+kimi-k2.5,effort_foraging,above_chance_mvt_match,5,0,0.0,0.0,0.4345,-0.27,0.1175,False,0,5,
+kimi-k2.5,effort_foraging,above_chance_total_reward,5,1,0.2,0.0362,0.6245,-0.0375,0.1627,True,0,5,
+kimi-k2.5,effort_foraging,harvest_rt_speedup,5,1,0.2,0.0362,0.6245,0.0255,0.162,True,0,5,
+kimi-k2.5,effort_foraging,travel_cost_residence_effect,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+kimi-k2.5,grid_bandit,above_chance_reward,3,3,1.0,0.4385,1.0,0.3152,0.1617,False,2,5,
+kimi-k2.5,grid_bandit,kraken_avoidance_in_risky,3,2,0.6667,0.2077,0.9385,-0.3311,0.185,True,2,5,
+kimi-k2.5,grid_bandit,value_directed_exploitation,2,1,0.5,0.0945,0.9055,-0.2246,0.3607,True,3,5,
+kimi-k2.5,grid_bandit,within_block_learning,2,1,0.5,0.0945,0.9055,0.2404,0.0605,True,3,5,
+kimi-k2.5,grid_bandit,within_block_rt_speedup,2,0,0.0,0.0,0.6576,0.0983,0.1723,False,3,5,
+kimi-k2.5,marbles_risk,above_chance_ev_optimal,5,3,0.6,0.2307,0.8824,0.3351,0.1155,True,0,5,
+kimi-k2.5,marbles_risk,ev_difference_rt_effect,4,0,0.0,0.0,0.4899,0.2673,0.2638,False,1,5,
+kimi-k2.5,marbles_risk,ev_sensitivity,4,2,0.5,0.15,0.85,0.5602,0.2789,True,1,5,
+kimi-k2.5,marbles_risk,magnitude_effect_high_payoff,4,1,0.25,0.0456,0.6994,0.0807,0.4747,True,1,5,
+kimi-k2.5,moral_machine,age_preference_save_young,4,0,0.0,0.0,0.4899,0.175,0.1893,False,1,5,
+kimi-k2.5,moral_machine,intervention_aversion,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+kimi-k2.5,moral_machine,legality_preference_save_lawful,4,0,0.0,0.0,0.4899,0.2083,0.0833,False,1,5,
+kimi-k2.5,moral_machine,species_preference_save_human,4,3,0.75,0.3006,0.9544,0.4,0.1414,True,1,5,
+kimi-k2.5,moral_machine,utilitarian_preference,4,4,1.0,0.5101,1.0,0.5,0.0,False,1,5,
+kimi-k2.5,phishing_detection_v2,above_chance_discrimination,5,5,1.0,0.5655,1.0,0.7267,0.0796,False,0,5,
+kimi-k2.5,phishing_detection_v2,above_chance_overall,5,5,1.0,0.5655,1.0,0.3633,0.0398,False,0,5,
+kimi-k2.5,phishing_detection_v2,learning_effect,5,0,0.0,0.0,0.4345,-0.06,0.1949,False,0,5,
+kimi-k2.5,phishing_detection_v2,practice_rt_speedup,5,0,0.0,0.0,0.4345,0.1165,0.1084,False,0,5,
+kimi-k2.5,random_dot_motion_v2,above_chance_low_coherence,3,0,0.0,0.0,0.5615,0.0385,0.1202,False,2,5,
+kimi-k2.5,random_dot_motion_v2,above_chance_overall,5,0,0.0,0.0,0.4345,-0.0062,0.1129,False,0,5,
+kimi-k2.5,random_dot_motion_v2,coherence_accuracy_psychometric,4,0,0.0,0.0,0.4899,-0.099,0.1463,False,1,5,
+kimi-k2.5,random_dot_motion_v2,coherence_rt_chronometric,2,0,0.0,0.0,0.6576,0.1356,0.2493,False,3,5,
+kimi-k2.5,repeated_games,above_chance_coordination_bos,5,1,0.2,0.0362,0.6245,0.06,0.1382,True,0,5,
+kimi-k2.5,repeated_games,cooperation_when_opp_cooperated,2,2,1.0,0.3424,1.0,0.5,0.0,False,3,5,
+kimi-k2.5,repeated_games,round_rt_speedup,5,1,0.2,0.0362,0.6245,-0.1055,0.2756,True,0,5,
+kimi-k2.5,repeated_games,tit_for_tat_reciprocity_pd,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+kimi-k2.5,serial_recall_v2,above_chance_recall,3,1,0.3333,0.0615,0.7923,0.075,0.1654,True,2,5,
+kimi-k2.5,serial_recall_v2,high_vs_low_sim_advantage,2,0,0.0,0.0,0.6576,-0.125,0.1768,False,3,5,
+kimi-k2.5,serial_recall_v2,similarity_aids_recall,2,0,0.0,0.0,0.6576,-0.0327,0.2096,False,3,5,
+kimi-k2.5,serial_recall_v2,similarity_rt_effect,2,0,0.0,0.0,0.6576,0.0364,0.0686,False,3,5,
+kimi-k2.5,tiny_alchemy,above_chance_discovery,2,1,0.5,0.0945,0.9055,0.323,0.0224,True,3,5,
+kimi-k2.5,tiny_alchemy,non_redundant_attempts,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+kimi-k2.5,visual_recognition,above_chance_accuracy,4,0,0.0,0.0,0.4899,0.0122,0.0848,False,1,5,
+kimi-k2.5,visual_recognition,above_chance_discrimination,4,0,0.0,0.0,0.4899,0.0792,0.1181,False,1,5,
+kimi-k2.5,visual_recognition,low_false_alarm_rate,3,2,0.6667,0.2077,0.9385,-0.1667,0.5774,True,2,5,
+qwen3-vl-235b-instruct,effort_foraging,above_chance_mvt_match,3,0,0.0,0.0,0.5615,-0.3338,0.2435,False,0,3,
+qwen3-vl-235b-instruct,effort_foraging,above_chance_total_reward,3,0,0.0,0.0,0.5615,-0.1964,0.1933,False,0,3,
+qwen3-vl-235b-instruct,effort_foraging,harvest_rt_speedup,3,1,0.3333,0.0615,0.7923,-0.0593,0.2793,True,0,3,
+qwen3-vl-235b-instruct,effort_foraging,travel_cost_residence_effect,0,0,,,,,,False,3,3,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,grid_bandit,above_chance_reward,5,3,0.6,0.2307,0.8824,-0.001,0.3042,True,0,5,
+qwen3-vl-235b-instruct,grid_bandit,kraken_avoidance_in_risky,5,4,0.8,0.3755,0.9638,-0.118,0.3502,True,0,5,
+qwen3-vl-235b-instruct,grid_bandit,value_directed_exploitation,5,3,0.6,0.2307,0.8824,-0.1177,0.212,True,0,5,
+qwen3-vl-235b-instruct,grid_bandit,within_block_learning,5,0,0.0,0.0,0.4345,0.0856,0.0579,False,0,5,
+qwen3-vl-235b-instruct,grid_bandit,within_block_rt_speedup,5,1,0.2,0.0362,0.6245,-0.0226,0.0968,True,0,5,
+qwen3-vl-235b-instruct,marbles_risk,above_chance_ev_optimal,3,0,0.0,0.0,0.5615,-0.1127,0.0489,False,2,5,
+qwen3-vl-235b-instruct,marbles_risk,ev_difference_rt_effect,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,marbles_risk,ev_sensitivity,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,marbles_risk,magnitude_effect_high_payoff,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,moral_machine,age_preference_save_young,0,0,,,,,,False,3,3,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,moral_machine,intervention_aversion,0,0,,,,,,False,3,3,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,moral_machine,legality_preference_save_lawful,0,0,,,,,,False,3,3,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,moral_machine,species_preference_save_human,0,0,,,,,,False,3,3,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,moral_machine,utilitarian_preference,0,0,,,,,,False,3,3,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,phishing_detection_v2,above_chance_discrimination,3,3,1.0,0.4385,1.0,0.4641,0.2715,False,0,3,
+qwen3-vl-235b-instruct,phishing_detection_v2,above_chance_overall,3,2,0.6667,0.2077,0.9385,0.2508,0.1101,True,0,3,
+qwen3-vl-235b-instruct,phishing_detection_v2,learning_effect,0,0,,,,,,False,3,3,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,phishing_detection_v2,practice_rt_speedup,3,0,0.0,0.0,0.5615,0.1857,0.1982,False,0,3,
+qwen3-vl-235b-instruct,random_dot_motion_v2,above_chance_low_coherence,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,random_dot_motion_v2,above_chance_overall,4,0,0.0,0.0,0.4899,-0.131,0.0714,False,1,5,
+qwen3-vl-235b-instruct,random_dot_motion_v2,coherence_accuracy_psychometric,1,0,0.0,0.0,0.7935,0.1892,0.0,False,4,5,
+qwen3-vl-235b-instruct,random_dot_motion_v2,coherence_rt_chronometric,0,0,,,,,,False,5,5,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,repeated_games,above_chance_coordination_bos,2,0,0.0,0.0,0.6576,0.0333,0.0,False,2,4,
+qwen3-vl-235b-instruct,repeated_games,cooperation_when_opp_cooperated,0,0,,,,,,False,4,4,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,repeated_games,round_rt_speedup,2,0,0.0,0.0,0.6576,-0.3038,0.1108,False,2,4,
+qwen3-vl-235b-instruct,repeated_games,tit_for_tat_reciprocity_pd,0,0,,,,,,False,4,4,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,serial_recall_v2,above_chance_recall,1,1,1.0,0.2065,1.0,0.575,0.0,False,3,4,
+qwen3-vl-235b-instruct,serial_recall_v2,high_vs_low_sim_advantage,1,0,0.0,0.0,0.7935,0.25,0.0,False,3,4,
+qwen3-vl-235b-instruct,serial_recall_v2,similarity_aids_recall,1,0,0.0,0.0,0.7935,0.2309,0.0,False,3,4,
+qwen3-vl-235b-instruct,serial_recall_v2,similarity_rt_effect,1,0,0.0,0.0,0.7935,-0.1455,0.0,False,3,4,
+qwen3-vl-235b-instruct,tiny_alchemy,above_chance_discovery,1,0,0.0,0.0,0.7935,-0.1816,0.0,False,2,3,
+qwen3-vl-235b-instruct,tiny_alchemy,non_redundant_attempts,1,1,1.0,0.2065,1.0,0.15,0.0,False,2,3,
+qwen3-vl-235b-instruct,visual_recognition,above_chance_accuracy,0,0,,,,,,False,3,3,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,visual_recognition,above_chance_discrimination,0,0,,,,,,False,3,3,untestable in every session — no pass rate is defined
+qwen3-vl-235b-instruct,visual_recognition,low_false_alarm_rate,0,0,,,,,,False,3,3,untestable in every session — no pass rate is defined

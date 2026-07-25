@@ -208,7 +208,7 @@ async def lifespan(app: FastAPI):
         await engine.dispose()
 
 
-APP_VERSION = "1.1.1"
+APP_VERSION = "1.2.0"
 app = FastAPI(title="CogArena", version=APP_VERSION, lifespan=lifespan)
 
 app.add_middleware(

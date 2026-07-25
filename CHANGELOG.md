@@ -2,6 +2,48 @@
 
 Versions are git tags; the Croissant `code-archive` URL pins to the most recent.
 
+## v1.2.0 — 2026-07-25
+
+Rebuttal revision for NeurIPS 2026. Full record with per-change measured effects
+in [`results/REBUTTAL_CHANGES.md`](results/REBUTTAL_CHANGES.md).
+
+Design: 4 models x 10 tasks x **5 repeats** = 200 sessions, replacing the single
+session per cell reported at v1.1.1. Scored coverage 45/60 (75%) -> 188/200 (94%).
+
+Instrumentation fixes — agents were penalised for harness behaviour:
+- `harness/eval.py`: archive every task the run attempted, not only those that
+  scored. Recovered 1,905 discarded trials; 13 of the 15 cells v1.1.1 reports as
+  failures hold scorable data, 3 of them at full L1 completion.
+- `static/skill.md`: drop the instruction to POST to `/api/evaluate`, which
+  browser-driving agents cannot issue (140 `405`s across the archive).
+- `agents/browser_use_agent.py`: archive screenshots for LLM runs and record the
+  resolved observation mode instead of asserting `"screenshot"`.
+
+Scoring fixes — all re-score archived data, no agent re-runs:
+- `scoring/level3_behavioral.py`: exclude untestable signatures from L3 rather
+  than scoring them 0.0. **Changes what L3 means**; pre- and post-change numbers
+  are not comparable, including the random floor.
+- `scoring/analysis_templates/proportion_test.py`: exact binomial, and flag
+  signatures no behaviour could pass at the given n.
+- `tasks/repeated_games/`: `tit_for_tat_reciprocity_pd` becomes a Fisher exact
+  conditional contrast; the Pearson version was undefined against a tit-for-tat
+  opponent and returned nan in every session.
+- `tasks/grid_bandit/`: `prop_high_value_clicks` declared an unread `compute` key
+  and measured truthiness, returning 1.0 for every agent. L2 0.447 -> 0.334.
+- Reaction time moves from L2 absolute comparison to six L3 relational
+  signatures. L2 0.345 -> 0.380, L3 0.392 -> 0.376.
+
+Headline finding:
+- **The v1.1.1 rank reversal does not survive repeats.** `gemini-3-flash-preview`
+  is rank 1 under both averaging conventions with bootstrap P(rank 1) = 1.00
+  (61.88 vs `kimi-k2.5` 45.24). Section 5's kimi-first ordering was an artifact of
+  one session per cell plus selective coverage.
+- Mean L3 0.251 -> 0.376, driven by 270 of 736 signature observations (37%) that
+  are untestable and were previously scored as behavioural failures.
+- Agents pass RT-relational signatures 11/97 times (11%); 0 of 7 canonical RT
+  relations reproduce above chance, with within-session RT variability in the
+  human range.
+
 ## v1.1.1 — 2026-05-05
 
 Pilot coverage expansion. No spec changes from v1.1.0.

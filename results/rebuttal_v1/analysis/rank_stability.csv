@@ -1,0 +1,9 @@
+convention,model_id,point_estimate,p_rank1,p_rank2,p_rank3,p_rank4
+failed_cells_as_0,gemini-3-flash-preview,61.88,1.0,0.0,0.0,0.0
+failed_cells_as_0,gpt-5.4-nano,36.42,0.0,0.0005,0.999,0.0005
+failed_cells_as_0,kimi-k2.5,45.24,0.0,0.9995,0.0005,0.0
+failed_cells_as_0,qwen3-vl-235b-instruct,19.09,0.0,0.0,0.0005,0.9995
+ok_cells_only,gemini-3-flash-preview,61.88,1.0,0.0,0.0,0.0
+ok_cells_only,gpt-5.4-nano,36.42,0.0,0.0,0.999,0.001
+ok_cells_only,kimi-k2.5,45.24,0.0,1.0,0.0,0.0
+ok_cells_only,qwen3-vl-235b-instruct,25.12,0.0,0.0,0.001,0.999
