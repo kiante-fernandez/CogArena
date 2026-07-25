@@ -1,36 +1,76 @@
 {
-    "task_id": "phishing_detection_v2",
-    "signatures": [
-        {
-            "name": "above_chance_discrimination",
-            "description": "Hit rate (correctly flagging phishing) is significantly higher than false-alarm rate (flagging legitimate as phishing). The headline signature of phishing detection ability.",
-            "test": "paired_proportion_test",
-            "group_a": {"filter": {"timed_out": false, "is_phishing": true}, "field": "responded_phishing"},
-            "group_b": {"filter": {"timed_out": false, "is_phishing": false}, "field": "responded_phishing"},
-            "threshold_p": 0.05,
-            "expected_direction": "a > b",
-            "weight": 2.0
+  "task_id": "phishing_detection_v2",
+  "signatures": [
+    {
+      "name": "above_chance_discrimination",
+      "description": "Hit rate (correctly flagging phishing) is significantly higher than false-alarm rate (flagging legitimate as phishing). The headline signature of phishing detection ability.",
+      "test": "paired_proportion_test",
+      "group_a": {
+        "filter": {
+          "timed_out": false,
+          "is_phishing": true
         },
-        {
-            "name": "learning_effect",
-            "description": "Accuracy on the 10 post-training trials is significantly higher than on the 10 pre-training trials. Singh et al.'s primary finding: outcome feedback during the training block improves classification on the held-out post-training set.",
-            "test": "paired_proportion_test",
-            "group_a": {"filter": {"timed_out": false, "phase": "post"}, "field": "correct"},
-            "group_b": {"filter": {"timed_out": false, "phase": "pre"}, "field": "correct"},
-            "threshold_p": 0.05,
-            "expected_direction": "a > b",
-            "weight": 1.5
+        "field": "responded_phishing"
+      },
+      "group_b": {
+        "filter": {
+          "timed_out": false,
+          "is_phishing": false
         },
-        {
-            "name": "above_chance_overall",
-            "description": "Overall accuracy across all 60 trials is significantly above 0.5 (chance).",
-            "test": "proportion_test",
-            "field": "correct",
-            "filter": {"timed_out": false},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "above_chance",
-            "weight": 1.0
-        }
-    ]
+        "field": "responded_phishing"
+      },
+      "threshold_p": 0.05,
+      "expected_direction": "a > b",
+      "weight": 2.0
+    },
+    {
+      "name": "learning_effect",
+      "description": "Accuracy on the 10 post-training trials is significantly higher than on the 10 pre-training trials. Singh et al.'s primary finding: outcome feedback during the training block improves classification on the held-out post-training set.",
+      "test": "paired_proportion_test",
+      "group_a": {
+        "filter": {
+          "timed_out": false,
+          "phase": "post"
+        },
+        "field": "correct"
+      },
+      "group_b": {
+        "filter": {
+          "timed_out": false,
+          "phase": "pre"
+        },
+        "field": "correct"
+      },
+      "threshold_p": 0.05,
+      "expected_direction": "a > b",
+      "weight": 1.5
+    },
+    {
+      "name": "above_chance_overall",
+      "description": "Overall accuracy across all 60 trials is significantly above 0.5 (chance).",
+      "test": "proportion_test",
+      "field": "correct",
+      "filter": {
+        "timed_out": false
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "above_chance",
+      "weight": 1.0
+    },
+    {
+      "name": "practice_rt_speedup",
+      "description": "Response time falls across trials within a phase as the classification task becomes familiar.",
+      "test": "correlation_test",
+      "method": "spearman",
+      "field_x": "trial_in_phase",
+      "field_y": "rt",
+      "filter": {
+        "timed_out": false
+      },
+      "threshold_p": 0.05,
+      "expected_direction": "negative",
+      "weight": 1.0
+    }
+  ]
 }

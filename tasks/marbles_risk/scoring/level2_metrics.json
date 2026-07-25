@@ -1,24 +1,17 @@
 {
-    "task_id": "marbles_risk",
-    "metrics": [
-        {
-            "name": "prop_chose_higher_ev",
-            "description": "On trials where one option has a clearly higher expected value, proportion of trials where the agent picked the higher-EV option. Random ~0.50; humans typically 0.70-0.80. (The previous prop_chose_risky metric, with baseline 0.45, was dropped in the v1.1 audit because random play (~0.50) was within one SD of its baseline and the metric could not discriminate random from risk-averse human play.)",
-            "type": "proportion_correct",
-            "field": "chose_higher_ev",
-            "filter": {"timed_out": false, "has_clear_better": true},
-            "human_mean": 0.78,
-            "human_sd": 0.12
-        },
-        {
-            "name": "mean_correct_rt",
-            "description": "Mean RT on EV-correct trials (ms). Ciranka et al. report median RT around 2200ms for adolescent samples in this paradigm.",
-            "type": "mean",
-            "field": "rt",
-            "filter": {"timed_out": false, "chose_higher_ev": true},
-            "human_mean": 2200,
-            "human_sd": 700,
-            "direction": "lower_is_better"
-        }
-    ]
+  "task_id": "marbles_risk",
+  "metrics": [
+    {
+      "name": "prop_chose_higher_ev",
+      "description": "On trials where one option has a clearly higher expected value, proportion of trials where the agent picked the higher-EV option. Random ~0.50; humans typically 0.70-0.80. (The previous prop_chose_risky metric, with baseline 0.45, was dropped in the v1.1 audit because random play (~0.50) was within one SD of its baseline and the metric could not discriminate random from risk-averse human play.)",
+      "type": "proportion_correct",
+      "field": "chose_higher_ev",
+      "filter": {
+        "timed_out": false,
+        "has_clear_better": true
+      },
+      "human_mean": 0.78,
+      "human_sd": 0.12
+    }
+  ]
 }

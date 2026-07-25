@@ -1,51 +1,52 @@
 {
-    "task_id": "random_dot_motion_v2",
-    "metrics": [
-        {
-            "name": "overall_accuracy",
-            "description": "Proportion of correct responses across all coherence levels (timed_out trials excluded). Roitman & Shadlen 2002 monkey psychometric averages around 0.80 across this coherence range; Pinet et al. 2024 jsPsych validation reports 0.79 for adult human subjects.",
-            "type": "proportion_correct",
-            "field": "correct",
-            "filter": {"timed_out": false},
-            "human_mean": 0.79,
-            "human_sd": 0.07
-        },
-        {
-            "name": "accuracy_low_coherence",
-            "description": "Accuracy at low coherence (5%-10%). Near chance for monkeys (Roitman & Shadlen 2002 Fig 2); ~0.60 for adult humans (Pinet et al. 2024).",
-            "type": "proportion_correct",
-            "field": "correct",
-            "filter": {"timed_out": false, "condition": "low"},
-            "human_mean": 0.60,
-            "human_sd": 0.10
-        },
-        {
-            "name": "accuracy_medium_coherence",
-            "description": "Accuracy at 20% coherence. Roitman & Shadlen 2002 monkey psychometric ~0.80; human adult ~0.85.",
-            "type": "proportion_correct",
-            "field": "correct",
-            "filter": {"timed_out": false, "condition": "medium"},
-            "human_mean": 0.85,
-            "human_sd": 0.08
-        },
-        {
-            "name": "accuracy_high_coherence",
-            "description": "Accuracy at high coherence (40%-80%). Near-ceiling in both monkeys and humans (~0.95-1.00).",
-            "type": "proportion_correct",
-            "field": "correct",
-            "filter": {"timed_out": false, "condition": "high"},
-            "human_mean": 0.97,
-            "human_sd": 0.04
-        },
-        {
-            "name": "mean_correct_rt",
-            "description": "Mean RT on correct trials (ms). Pinet et al. 2024 report ~750 ms across coherences for human adults.",
-            "type": "mean",
-            "field": "rt",
-            "filter": {"timed_out": false, "correct": true},
-            "human_mean": 750,
-            "human_sd": 150,
-            "direction": "lower_is_better"
-        }
-    ]
+  "task_id": "random_dot_motion_v2",
+  "metrics": [
+    {
+      "name": "overall_accuracy",
+      "description": "Proportion of correct responses across all coherence levels (timed_out trials excluded). Roitman & Shadlen 2002 monkey psychometric averages around 0.80 across this coherence range; Pinet et al. 2024 jsPsych validation reports 0.79 for adult human subjects.",
+      "type": "proportion_correct",
+      "field": "correct",
+      "filter": {
+        "timed_out": false
+      },
+      "human_mean": 0.79,
+      "human_sd": 0.07
+    },
+    {
+      "name": "accuracy_low_coherence",
+      "description": "Accuracy at low coherence (5%-10%). Near chance for monkeys (Roitman & Shadlen 2002 Fig 2); ~0.60 for adult humans (Pinet et al. 2024).",
+      "type": "proportion_correct",
+      "field": "correct",
+      "filter": {
+        "timed_out": false,
+        "condition": "low"
+      },
+      "human_mean": 0.6,
+      "human_sd": 0.1
+    },
+    {
+      "name": "accuracy_medium_coherence",
+      "description": "Accuracy at 20% coherence. Roitman & Shadlen 2002 monkey psychometric ~0.80; human adult ~0.85.",
+      "type": "proportion_correct",
+      "field": "correct",
+      "filter": {
+        "timed_out": false,
+        "condition": "medium"
+      },
+      "human_mean": 0.85,
+      "human_sd": 0.08
+    },
+    {
+      "name": "accuracy_high_coherence",
+      "description": "Accuracy at high coherence (40%-80%). Near-ceiling in both monkeys and humans (~0.95-1.00).",
+      "type": "proportion_correct",
+      "field": "correct",
+      "filter": {
+        "timed_out": false,
+        "condition": "high"
+      },
+      "human_mean": 0.97,
+      "human_sd": 0.04
+    }
+  ]
 }

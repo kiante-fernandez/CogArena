@@ -1,38 +1,57 @@
 {
-    "task_id": "effort_foraging",
-    "signatures": [
-        {
-            "name": "travel_cost_residence_effect",
-            "description": "Bustamante MVT prediction: residence time (number of harvests before leaving) increases with travel cost. Tested via positive correlation between travel_cost_seconds and harvests_stayed_in_patch on LEAVE trials only.",
-            "test": "correlation_test",
-            "field_x": "travel_cost_seconds",
-            "field_y": "harvests_stayed_in_patch",
-            "filter": {"timed_out": false, "action": "leave"},
-            "threshold_p": 0.05,
-            "expected_direction": "positive",
-            "weight": 2.0
-        },
-        {
-            "name": "above_chance_mvt_match",
-            "description": "Per-trial choices match the MVT-optimal prediction (stay if current reward exceeds the running block average per decision) above chance.",
-            "test": "proportion_test",
-            "field": "mvt_optimal_match",
-            "filter": {"timed_out": false},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "above_chance",
-            "weight": 1.5
-        },
-        {
-            "name": "above_chance_total_reward",
-            "description": "Reward per decision is above the random-policy baseline. Each decision yields >=1 apple if STAY and 0 if LEAVE; random play with prop_stay~0.5 averages ~25 per decision (current_reward * 0.5). Operationalised as proportion of decisions with harvest_reward > 25.",
-            "test": "proportion_test",
-            "field": "harvest_reward_above_chance",
-            "filter": {"timed_out": false},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "above_chance",
-            "weight": 1.0
-        }
-    ]
+  "task_id": "effort_foraging",
+  "signatures": [
+    {
+      "name": "travel_cost_residence_effect",
+      "description": "Bustamante MVT prediction: residence time (number of harvests before leaving) increases with travel cost. Tested via positive correlation between travel_cost_seconds and harvests_stayed_in_patch on LEAVE trials only.",
+      "test": "correlation_test",
+      "field_x": "travel_cost_seconds",
+      "field_y": "harvests_stayed_in_patch",
+      "filter": {
+        "timed_out": false,
+        "action": "leave"
+      },
+      "threshold_p": 0.05,
+      "expected_direction": "positive",
+      "weight": 2.0
+    },
+    {
+      "name": "above_chance_mvt_match",
+      "description": "Per-trial choices match the MVT-optimal prediction (stay if current reward exceeds the running block average per decision) above chance.",
+      "test": "proportion_test",
+      "field": "mvt_optimal_match",
+      "filter": {
+        "timed_out": false
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "above_chance",
+      "weight": 1.5
+    },
+    {
+      "name": "above_chance_total_reward",
+      "description": "Reward per decision is above the random-policy baseline. Each decision yields >=1 apple if STAY and 0 if LEAVE; random play with prop_stay~0.5 averages ~25 per decision (current_reward * 0.5). Operationalised as proportion of decisions with harvest_reward > 25.",
+      "test": "proportion_test",
+      "field": "harvest_reward_above_chance",
+      "filter": {
+        "timed_out": false
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "above_chance",
+      "weight": 1.0
+    },
+    {
+      "name": "harvest_rt_speedup",
+      "description": "Response time falls across successive harvests within a patch as the stay/leave decision becomes routine.",
+      "test": "correlation_test",
+      "method": "spearman",
+      "field_x": "harvest_in_patch",
+      "field_y": "rt",
+      "filter": {},
+      "threshold_p": 0.05,
+      "expected_direction": "negative",
+      "weight": 1.0
+    }
+  ]
 }

@@ -1,49 +1,72 @@
 {
-    "task_id": "grid_bandit",
-    "signatures": [
-        {
-            "name": "kraken_avoidance_in_risky",
-            "description": "In risky blocks, agents click tiles whose underlying value is above the Kraken threshold more often than chance (~50% on a uniform grid).",
-            "test": "proportion_test",
-            "field": "kraken_caught",
-            "filter": {"timed_out": false, "block_condition": "risky"},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "below_chance",
-            "weight": 1.5
-        },
-        {
-            "name": "value_directed_exploitation",
-            "description": "Higher previous-click reward predicts smaller spatial distance to the next click (negative correlation): agents stay near rewarding tiles.",
-            "test": "correlation_test",
-            "field_x": "previous_z",
-            "field_y": "distance_from_last",
-            "filter": {"timed_out": false},
-            "threshold_p": 0.05,
-            "expected_direction": "negative",
-            "weight": 1.5
-        },
-        {
-            "name": "above_chance_reward",
-            "description": "Mean observed reward exceeds the chance baseline of 50 (the grid mean), via the proportion of clicks with z>50.",
-            "test": "proportion_test",
-            "field": "z_above_50",
-            "filter": {"timed_out": false},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "above_chance",
-            "weight": 1.0
-        },
-        {
-            "name": "within_block_learning",
-            "description": "Within a block, observed reward (z) increases with click position: the agent learns where to fish as the block progresses.",
-            "test": "correlation_test",
-            "field_x": "click_in_block",
-            "field_y": "z",
-            "filter": {"timed_out": false},
-            "threshold_p": 0.05,
-            "expected_direction": "positive",
-            "weight": 1.0
-        }
-    ]
+  "task_id": "grid_bandit",
+  "signatures": [
+    {
+      "name": "kraken_avoidance_in_risky",
+      "description": "In risky blocks, agents click tiles whose underlying value is above the Kraken threshold more often than chance (~50% on a uniform grid).",
+      "test": "proportion_test",
+      "field": "kraken_caught",
+      "filter": {
+        "timed_out": false,
+        "block_condition": "risky"
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "below_chance",
+      "weight": 1.5
+    },
+    {
+      "name": "value_directed_exploitation",
+      "description": "Higher previous-click reward predicts smaller spatial distance to the next click (negative correlation): agents stay near rewarding tiles.",
+      "test": "correlation_test",
+      "field_x": "previous_z",
+      "field_y": "distance_from_last",
+      "filter": {
+        "timed_out": false
+      },
+      "threshold_p": 0.05,
+      "expected_direction": "negative",
+      "weight": 1.5
+    },
+    {
+      "name": "above_chance_reward",
+      "description": "Mean observed reward exceeds the chance baseline of 50 (the grid mean), via the proportion of clicks with z>50.",
+      "test": "proportion_test",
+      "field": "z_above_50",
+      "filter": {
+        "timed_out": false
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "above_chance",
+      "weight": 1.0
+    },
+    {
+      "name": "within_block_learning",
+      "description": "Within a block, observed reward (z) increases with click position: the agent learns where to fish as the block progresses.",
+      "test": "correlation_test",
+      "field_x": "click_in_block",
+      "field_y": "z",
+      "filter": {
+        "timed_out": false
+      },
+      "threshold_p": 0.05,
+      "expected_direction": "positive",
+      "weight": 1.0
+    },
+    {
+      "name": "within_block_rt_speedup",
+      "description": "Response time falls across clicks within a block as the agent settles into the environment. Practice-related speedup is one of the most reliable effects in behavioural science.",
+      "test": "correlation_test",
+      "method": "spearman",
+      "field_x": "click_in_block",
+      "field_y": "rt",
+      "filter": {
+        "trial_part": "click"
+      },
+      "threshold_p": 0.05,
+      "expected_direction": "negative",
+      "weight": 1.0
+    }
+  ]
 }

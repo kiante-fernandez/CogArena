@@ -1,43 +1,44 @@
 {
-    "task_id": "visual_recognition",
-    "metrics": [
-        {
-            "name": "overall_accuracy",
-            "description": "Proportion of test trials with correct old/new judgment (hits + correct rejections / total). Brady et al. (2008) report 0.87 overall accuracy for adult humans on the abstract-stimulus version of the paradigm.",
-            "type": "proportion_correct",
-            "field": "correct",
-            "filter": {"trial_part": "test", "timed_out": false},
-            "human_mean": 0.87,
-            "human_sd": 0.07
-        },
-        {
-            "name": "hit_rate",
-            "description": "Proportion of OLD test items judged as OLD (true positives). Brady et al. report ~0.92 for adult humans.",
-            "type": "proportion_correct",
-            "field": "responded_old",
-            "filter": {"trial_part": "test", "timed_out": false, "is_old": true},
-            "human_mean": 0.92,
-            "human_sd": 0.06
-        },
-        {
-            "name": "false_alarm_rate",
-            "description": "Proportion of NEW test items incorrectly judged as OLD (false positives). Brady et al. report ~0.08 for adult humans.",
-            "type": "proportion_correct",
-            "field": "responded_old",
-            "filter": {"trial_part": "test", "timed_out": false, "is_old": false},
-            "human_mean": 0.08,
-            "human_sd": 0.06,
-            "direction": "lower_is_better"
-        },
-        {
-            "name": "mean_correct_rt",
-            "description": "Mean RT on correct test trials (ms).",
-            "type": "mean",
-            "field": "rt",
-            "filter": {"trial_part": "test", "timed_out": false, "correct": true},
-            "human_mean": 1100,
-            "human_sd": 350,
-            "direction": "lower_is_better"
-        }
-    ]
+  "task_id": "visual_recognition",
+  "metrics": [
+    {
+      "name": "overall_accuracy",
+      "description": "Proportion of test trials with correct old/new judgment (hits + correct rejections / total). Brady et al. (2008) report 0.87 overall accuracy for adult humans on the abstract-stimulus version of the paradigm.",
+      "type": "proportion_correct",
+      "field": "correct",
+      "filter": {
+        "trial_part": "test",
+        "timed_out": false
+      },
+      "human_mean": 0.87,
+      "human_sd": 0.07
+    },
+    {
+      "name": "hit_rate",
+      "description": "Proportion of OLD test items judged as OLD (true positives). Brady et al. report ~0.92 for adult humans.",
+      "type": "proportion_correct",
+      "field": "responded_old",
+      "filter": {
+        "trial_part": "test",
+        "timed_out": false,
+        "is_old": true
+      },
+      "human_mean": 0.92,
+      "human_sd": 0.06
+    },
+    {
+      "name": "false_alarm_rate",
+      "description": "Proportion of NEW test items incorrectly judged as OLD (false positives). Brady et al. report ~0.08 for adult humans.",
+      "type": "proportion_correct",
+      "field": "responded_old",
+      "filter": {
+        "trial_part": "test",
+        "timed_out": false,
+        "is_old": false
+      },
+      "human_mean": 0.08,
+      "human_sd": 0.06,
+      "direction": "lower_is_better"
+    }
+  ]
 }

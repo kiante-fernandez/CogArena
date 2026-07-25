@@ -27,7 +27,18 @@ def run_correlation_test(trial_data: list[dict], spec: dict) -> dict:
         }
 
     x_vals, y_vals = zip(*pairs)
-    r, p_two = stats.pearsonr(x_vals, y_vals)
+    # Spearman for anything heavy-tailed. Reaction times here are dominated by
+    # LLM inference latency and carry occasional multi-second provider stalls,
+    # which a Pearson coefficient chases; rank correlation asks the question the
+    # signature actually poses — does the ordering hold — and is unaffected by
+    # the constant offset between agent and human timescales.
+    method = spec.get("method", "pearson")
+    if method == "spearman":
+        r, p_two = stats.spearmanr(x_vals, y_vals)
+    elif method == "pearson":
+        r, p_two = stats.pearsonr(x_vals, y_vals)
+    else:
+        raise ValueError(f"Unknown correlation method: {method!r}")
 
     expected = spec.get("expected_direction", "positive")
     if expected == "positive":
@@ -41,5 +52,6 @@ def run_correlation_test(trial_data: list[dict], spec: dict) -> dict:
         "direction_correct": direction_correct,
         "p_value": float(p_value),
         "effect_size": float(r),
-        "detail": f"r={r:.3f}, p={p_value:.4f}, n={len(pairs)}",
+        "testable": True,
+        "detail": f"{method} r={r:.3f}, p={p_value:.4f}, n={len(pairs)}",
     }

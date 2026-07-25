@@ -43,6 +43,20 @@
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
       "weight": 1.0
+    },
+    {
+      "name": "round_rt_speedup",
+      "description": "Response time falls across rounds as the game structure becomes familiar.",
+      "test": "correlation_test",
+      "method": "spearman",
+      "field_x": "round",
+      "field_y": "rt",
+      "filter": {
+        "timed_out": false
+      },
+      "threshold_p": 0.05,
+      "expected_direction": "negative",
+      "weight": 1.0
     }
   ]
 }
