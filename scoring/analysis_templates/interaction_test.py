@@ -54,6 +54,7 @@ def run_interaction_test(trial_data: list[dict], spec: dict) -> dict:
             "p_value": 1.0,
             "effect_size": 0.0,
             "detail": f"Insufficient data in cells (min={min_cell})",
+            "testable": False,
         }
 
     means = {k: np.mean(v) for k, v in cells.items()}

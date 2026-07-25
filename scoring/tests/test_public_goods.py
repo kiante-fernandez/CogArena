@@ -22,13 +22,17 @@ def test_conditional_cooperation(human_like_public_goods_data, public_goods_sign
 def test_declining_contributions(human_like_public_goods_data, public_goods_signatures):
     result = score_behavioral(human_like_public_goods_data, public_goods_signatures)
     sig = next(s for s in result["signatures"] if s["name"] == "declining_contributions")
-    assert sig["score"] >= 0.0  # Pipeline runs; significance depends on 10-trial sample
+    # Untestable signatures now score None and are excluded from the weighted
+    # mean, so a smoke test must allow either outcome.
+    assert sig["score"] is None or 0.0 <= sig["score"] <= 1.0
 
 
 def test_group_sensitivity(human_like_public_goods_data, public_goods_signatures):
     result = score_behavioral(human_like_public_goods_data, public_goods_signatures)
     sig = next(s for s in result["signatures"] if s["name"] == "group_sensitivity")
-    assert sig["score"] >= 0.0  # Pipeline runs without error
+    # Untestable signatures now score None and are excluded from the weighted
+    # mean, so a smoke test must allow either outcome.
+    assert sig["score"] is None or 0.0 <= sig["score"] <= 1.0
 
 
 def test_random_public_goods_pipeline(random_public_goods_data, public_goods_config, public_goods_metrics, public_goods_signatures):

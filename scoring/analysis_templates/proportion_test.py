@@ -18,6 +18,7 @@ def run_proportion_test(trial_data: list[dict], spec: dict) -> dict:
             "p_value": 1.0,
             "effect_size": 0.0,
             "detail": f"Insufficient data: n={len(values)}",
+            "testable": False,
         }
 
     n = len(values)

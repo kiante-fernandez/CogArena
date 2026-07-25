@@ -28,8 +28,9 @@ def test_above_chance_reward(human_like_two_step_data, two_step_signatures):
 def test_model_based_index(human_like_two_step_data, two_step_signatures):
     result = score_behavioral(human_like_two_step_data, two_step_signatures)
     sig = next(s for s in result["signatures"] if s["name"] == "model_based_index")
-    # Interaction test may not always reach significance -- check pipeline runs
-    assert sig["score"] >= 0.0
+    # Untestable signatures now score None and are excluded from the weighted
+    # mean, so a smoke test must allow either outcome.
+    assert sig["score"] is None or 0.0 <= sig["score"] <= 1.0
 
 
 def test_random_two_step_low_score(random_two_step_data, two_step_signatures):

@@ -28,7 +28,16 @@ def test_overall_score_higher_for_human_like(human_like_stroop_data, random_stro
 
 
 def test_empty_data_handled(stroop_signatures):
+    """Empty data means nothing was measured, not that every signature failed.
+
+    The overall score stays 0.0 so the composite arithmetic is unaffected, but
+    every signature must be marked untestable and n_testable must be 0 — that
+    is the field a caller uses to tell an unmeasured cell from a floor score.
+    """
     result = score_behavioral([], stroop_signatures)
     assert result["score"] == 0.0
+    assert result["n_testable"] == 0
+    assert result["coverage"] == 0.0
     for sig in result["signatures"]:
-        assert sig["score"] == 0.0
+        assert sig["testable"] is False
+        assert sig["score"] is None

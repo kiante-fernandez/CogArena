@@ -27,6 +27,7 @@ def run_sequential_regression(trial_data: list[dict], spec: dict) -> dict:
             "p_value": 1.0,
             "effect_size": 0.0,
             "detail": f"Insufficient sequential pairs: {len(predictors)}",
+            "testable": False,
         }
 
     slope, intercept, r_value, p_value, std_err = stats.linregress(predictors, outcomes)

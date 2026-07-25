@@ -24,6 +24,7 @@ def run_paired_ttest(trial_data: list[dict], spec: dict) -> dict:
             "p_value": 1.0,
             "effect_size": 0.0,
             "detail": f"Insufficient data: group_a={len(values_a)}, group_b={len(values_b)}",
+            "testable": False,
         }
 
     mean_a = np.mean(values_a)
@@ -73,6 +74,7 @@ def run_paired_proportion_test(trial_data: list[dict], spec: dict) -> dict:
             "p_value": 1.0,
             "effect_size": 0.0,
             "detail": f"Insufficient data: group_a={len(values_a)}, group_b={len(values_b)}",
+            "testable": False,
         }
 
     prop_a = sum(1 for v in values_a if v) / len(values_a)

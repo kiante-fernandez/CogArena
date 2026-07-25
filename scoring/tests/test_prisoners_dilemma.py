@@ -28,8 +28,9 @@ def test_tit_for_tat(human_like_prisoners_dilemma_data, prisoners_dilemma_signat
 def test_forgiveness(human_like_prisoners_dilemma_data, prisoners_dilemma_signatures):
     result = score_behavioral(human_like_prisoners_dilemma_data, prisoners_dilemma_signatures)
     sig = next(s for s in result["signatures"] if s["name"] == "forgiveness")
-    # Forgiveness may not always reach significance -- check pipeline runs
-    assert sig["score"] >= 0.0
+    # Untestable signatures now score None and are excluded from the weighted
+    # mean, so a smoke test must allow either outcome.
+    assert sig["score"] is None or 0.0 <= sig["score"] <= 1.0
 
 
 def test_random_prisoners_low_score(random_prisoners_dilemma_data, prisoners_dilemma_signatures):

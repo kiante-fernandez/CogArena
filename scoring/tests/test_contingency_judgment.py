@@ -16,15 +16,22 @@ def test_human_like_contingency_l2(human_like_contingency_data, contingency_metr
 def test_delta_p_sensitivity(human_like_contingency_data, contingency_signatures):
     result = score_behavioral(human_like_contingency_data, contingency_signatures)
     sig = next(s for s in result["signatures"] if s["name"] == "delta_p_sensitivity")
-    # With only 4 rating trials, correlation_test requires n>=10 and returns insufficient data
-    assert sig["score"] >= 0.0  # Pipeline runs without error
+    # Only 4 rating trials, but correlation_test requires n>=10. The spec is
+    # untestable by construction, so it must be EXCLUDED from L3 rather than
+    # scored 0.0 -- zeroing it would assert the agent lacks a signature we
+    # never measured.
+    assert sig["testable"] is False
+    assert sig["untestable_reason"] == "insufficient_data"
+    assert sig["score"] is None
 
 
 def test_cause_discrimination(human_like_contingency_data, contingency_signatures):
     result = score_behavioral(human_like_contingency_data, contingency_signatures)
     sig = next(s for s in result["signatures"] if s["name"] == "cause_discrimination")
-    # With 1 trial per block, paired_proportion_test returns insufficient data
-    assert sig["score"] >= 0.0  # Pipeline runs without error
+    # 1 trial per block, below paired_proportion_test's minimum: untestable,
+    # therefore excluded rather than zeroed.
+    assert sig["testable"] is False
+    assert sig["score"] is None
 
 
 def test_random_contingency_low_score(random_contingency_data, contingency_signatures):
