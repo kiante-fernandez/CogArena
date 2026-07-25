@@ -41,13 +41,21 @@ logger = logging.getLogger("build_results")
 
 RUN_FIELDS = [
     "sweep", "run_index", "repeat_index", "model_id", "task_id",
-    "rc", "wall_time", "scored", "l1_complete",
+    "rc", "wall_time", "scored", "l1_complete", "l3_measurable",
     "composite", "l1", "l2", "l3",
+    "l3_n_testable", "l3_n_untestable", "l3_coverage",
     "n_trials", "observation_mode", "git_sha", "session_id",
 ]
+
+# A cell whose L3 rests on no testable signature carries no behavioural
+# information, but still contributes 0 to any average computed over it. Rather
+# than silently dropping such cells, they are marked so the exclusion rule is
+# explicit and reportable.
+MIN_L3_COVERAGE = 0.5
 SIG_FIELDS = [
     "sweep", "repeat_index", "model_id", "task_id",
-    "signature", "score", "passed", "p_value", "effect_size", "direction_correct",
+    "signature", "testable", "untestable_reason", "score", "passed",
+    "p_value", "effect_size", "direction_correct",
 ]
 
 
@@ -100,11 +108,15 @@ def _float(x: Any) -> float | None:
         return None
 
 
-def collect(sweep_dir: Path) -> tuple[list[dict], list[dict]]:
+def collect(sweep_dir: Path, max_repeat: int | None = None) -> tuple[list[dict], list[dict]]:
     runs: list[dict] = []
     sigs: list[dict] = []
+    skipped = 0
     for row in _aggregate_rows(sweep_dir):
         repeat_index = int(row["repeat_index"])
+        if max_repeat is not None and repeat_index > max_repeat:
+            skipped += 1
+            continue
         model_id, task_id = row["model_id"], row["task_id"]
         artifacts = _run_dir(sweep_dir, repeat_index, model_id, task_id) / "artifacts"
 
@@ -118,6 +130,15 @@ def collect(sweep_dir: Path) -> tuple[list[dict], list[dict]]:
 
         l1 = _float(row.get("l1")) if row.get("l1") else (
             entry.get("l1_completion") if entry else None)
+
+        l3_detail = ((entry.get("details") or {}).get("l3") or {}) if entry else {}
+        n_testable = l3_detail.get("n_testable")
+        coverage = l3_detail.get("coverage")
+        # Older scorecards predate these fields; absence is unknown, not zero.
+        measurable = None
+        if n_testable is not None and coverage is not None:
+            measurable = bool(n_testable > 0 and coverage >= MIN_L3_COVERAGE)
+
         runs.append({
             "sweep": sweep_dir.name,
             "run_index": row.get("run_index"),
@@ -131,6 +152,10 @@ def collect(sweep_dir: Path) -> tuple[list[dict], list[dict]]:
             # the analysis separate "no signature" from "harness/agent broke".
             "scored": entry is not None,
             "l1_complete": (l1 is not None and l1 >= 1.0),
+            "l3_measurable": measurable,
+            "l3_n_testable": n_testable,
+            "l3_n_untestable": l3_detail.get("n_untestable"),
+            "l3_coverage": round(coverage, 4) if coverage is not None else None,
             "composite": row.get("composite") or (entry.get("composite") if entry else None),
             "l1": row.get("l1") or (entry.get("l1_completion") if entry else None),
             "l2": row.get("l2") or (entry.get("l2_accuracy") if entry else None),
@@ -146,12 +171,18 @@ def collect(sweep_dir: Path) -> tuple[list[dict], list[dict]]:
             continue
         for s in ((entry.get("details") or {}).get("l3") or {}).get("signatures") or []:
             score_val = _float(s.get("score"))
+            testable = s.get("testable", True)
             sigs.append({
                 "sweep": sweep_dir.name,
                 "repeat_index": repeat_index,
                 "model_id": model_id,
                 "task_id": task_id,
                 "signature": s.get("name"),
+                # Untestable signatures must not land in a pass-rate denominator:
+                # counting "could not be tested" as "did not pass" is the same
+                # conflation the scorer was fixed to avoid.
+                "testable": testable,
+                "untestable_reason": s.get("untestable_reason"),
                 "score": score_val,
                 # A signature "passes" only on a full 1.0 (correct direction AND
                 # significant). The 0.5 partial credit is deliberately not a pass.
@@ -160,6 +191,8 @@ def collect(sweep_dir: Path) -> tuple[list[dict], list[dict]]:
                 "effect_size": s.get("effect_size"),
                 "direction_correct": s.get("direction_correct"),
             })
+    if skipped:
+        logger.info("%s: skipped %d runs above --max-repeat", sweep_dir.name, skipped)
     return runs, sigs
 
 
@@ -179,6 +212,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="Sweep directory. Repeatable to merge several arms.")
     ap.add_argument("--out", default="results/rebuttal_v1",
                     help="Output directory for runs.csv and signatures.csv.")
+    ap.add_argument("--max-repeat", type=int, default=None,
+                    help="Drop repeats above this index. Use to exclude waves lost to an "
+                         "infrastructure failure, which would otherwise read as agent failures.")
     ap.add_argument("--verbose", "-v", action="store_true")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
@@ -191,7 +227,7 @@ def main(argv: list[str] | None = None) -> int:
         if not d.is_dir():
             logger.error("not a directory: %s", d)
             return 2
-        r, g = collect(d)
+        r, g = collect(d, args.max_repeat)
         all_runs += r
         all_sigs += g
 

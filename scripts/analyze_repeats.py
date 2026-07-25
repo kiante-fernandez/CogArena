@@ -112,7 +112,25 @@ def signature_pass_rates(sigs: list[dict]) -> list[dict]:
         groups[(s["model_id"], s["task_id"], s["signature"])].append(s)
 
     out = []
-    for (model, task, sig), ss in sorted(groups.items()):
+    for (model, task, sig), all_ss in sorted(groups.items()):
+        # Only sessions where the signature could actually be tested belong in
+        # the denominator. A signature that was untestable in every session has
+        # no pass rate at all, and reporting 0/N for it would assert a failure
+        # that was never measured.
+        n_attempted = len(all_ss)
+        ss = [s for s in all_ss if s.get("testable") is None or _bool(s.get("testable"))]
+        n_untestable = n_attempted - len(ss)
+        if not ss:
+            out.append({
+                "model_id": model, "task_id": task, "signature": sig,
+                "n": 0, "k_passed": 0, "pass_rate": None,
+                "wilson_lo": None, "wilson_hi": None,
+                "effect_size_mean": None, "effect_size_sd": None,
+                "unstable": False,
+                "n_untestable": n_untestable, "n_attempted": n_attempted,
+                "note": "untestable in every session — no pass rate is defined",
+            })
+            continue
         n = len(ss)
         k = sum(1 for s in ss if _bool(s["passed"]))
         lo, hi = wilson(k, n)
@@ -127,6 +145,9 @@ def signature_pass_rates(sigs: list[dict]) -> list[dict]:
             # A signature that never fires and one that fires sometimes are very
             # different claims; flag the unstable ones explicitly.
             "unstable": 0 < k < n,
+            "n_untestable": n_untestable,
+            "n_attempted": n_attempted,
+            "note": "",
         })
     return out
 
