@@ -1,0 +1,57 @@
+# Rebuttal study: repeated sessions per cell for the NeurIPS 2026 response.
+#
+# WHY THIS EXISTS
+# The submitted paper reports one session per (model, task) cell ("60 scored
+# cells", main.tex:208). The AC's first request and all three reviewers ask for
+# run-to-run variability. This suite supplies it: per-cell mean/SD, per-signature
+# pass rates (k/n), and a direct answer to how often a per-cell L3 of zero flips
+# across re-runs.
+#
+# PANEL — 4 of the paper's 6 models
+# Dropped for this stage, both deliberately:
+#   * grok-4.1-fast  — DELISTED from OpenRouter after the pilot. Only a
+#     substitute (grok-4.20) can run, and a substitute cannot validate the
+#     stability of a published cell, which is the whole point here. It is also
+#     the most expensive model in the panel ($8.42 per 10-task repeat, ~5x the
+#     cheapest), so it buys the least per dollar.
+#   * qwen3-vl-30b-instruct — lowest-scoring row; breadth is already covered by
+#     qwen3-vl-235b at the same family and a higher capability tier.
+# Consequence to state plainly in the rebuttal: two of the six published rows
+# remain n=1. Do not let a reviewer discover that unaided.
+#
+# COST — calibrated against measured OpenRouter spend on 2026-07-24
+#   grok-4.20   marbles_risk  43 steps  $0.4570  ($0.01063/step, partial run)
+#   gemini-3-fl marbles_risk 147 steps  $1.0702  ($0.00728/step, completed run)
+# A COMPLETED 10-task pass is ~1,243 agent steps; runs that fail terminate early
+# and cost far less, so cost RISES as completion improves. At 10 repeats expect
+# ~$152 (mixed completion) to ~$189 (everything completes) against ~$205
+# available, which leaves headroom for the retry pass over failed cells.
+#
+# 4 models x 10 tasks x 10 repeats = 400 runs, ~17h at --max-parallel 6
+# (screenshot capture adds a small per-step cost; see agents/browser_use_agent.py).
+
+suite_name: rebuttal_v1
+default_scaffold: browser-use
+
+tasks:
+  - random_dot_motion_v2
+  - grid_bandit
+  - marbles_risk
+  - repeated_games
+  - serial_recall_v2
+  - visual_recognition
+  - effort_foraging
+  - tiny_alchemy
+  - moral_machine
+  - phishing_detection_v2
+
+models:
+  - id: kimi-k2.5                 # rank 1 on OK-cells-only averaging
+  - id: gemini-3-flash-preview    # rank 1 on failed-cells-as-0; the reversal these repeats resolve
+  - id: gpt-5.4-nano
+  - id: qwen3-vl-235b-instruct
+
+repeats: 10               # independent sessions per (model, task) cell
+n_trials_override: null   # null = each task uses its native n_trials
+task_timeout_seconds: 1800
+no_deadline: true         # extend per-task response deadlines for agent latency

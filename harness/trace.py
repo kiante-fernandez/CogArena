@@ -12,12 +12,15 @@ The on-disk format is two JSONL files:
 * ``actions.jsonl`` — one line per low-level browser action emitted:
   ``{step, ts, task_id, action_kind, target, key, ok, error}``
 
-Plus optional ``screenshots/<task_id>/<step:06d>.png`` files. Capturing
-screenshots is async (Playwright); the writer accepts an already-encoded PNG
-or skips on failure rather than blocking the agent loop.
+Plus optional ``screenshots/<task_id>/<step:06d>.<ext>`` files. Two paths exist:
+``capture_screenshot`` takes a fresh Playwright shot (async), while
+``save_screenshot_b64`` persists the already-encoded frame the scaffold handed
+to the model. The extension follows the actual bytes (Browser-Use 0.9.5 emits
+JPEG). Both skip on failure rather than blocking the agent loop.
 """
 from __future__ import annotations
 
+import base64
 import json
 import logging
 import time
@@ -130,4 +133,45 @@ class TraceWriter:
             return rel
         except Exception as e:
             logger.debug("Screenshot capture failed: %s", e)
+            return None
+
+    def save_screenshot_b64(self, b64_image: str | None, task_id: str) -> str | None:
+        """Persist an already-encoded screenshot and return its relative path.
+
+        Unlike ``capture_screenshot``, this takes the frame the scaffold already
+        handed to the model, so the archive records what the model actually saw
+        rather than a re-capture taken at a slightly different moment. Callers
+        run inside synchronous step callbacks, hence no Playwright round-trip.
+
+        The extension is chosen from the decoded bytes rather than assumed:
+        Browser-Use 0.9.5 hands over JPEG, but that is an implementation detail
+        of the scaffold and has changed before.
+
+        Call this *before* ``log_interaction`` so the step numbering lines up.
+        Best-effort: returns None on any failure rather than killing the loop.
+        """
+        if not self.capture_screenshots or not b64_image:
+            return None
+        try:
+            # Tolerate a data: URI wrapper as well as a bare base64 payload.
+            if b64_image.startswith("data:"):
+                b64_image = b64_image.split(",", 1)[-1]
+            raw = base64.b64decode(b64_image)
+            if raw[:8] == b"\x89PNG\r\n\x1a\n":
+                ext = "png"
+            elif raw[:3] == b"\xff\xd8\xff":
+                ext = "jpg"
+            elif raw[:4] == b"RIFF" and raw[8:12] == b"WEBP":
+                ext = "webp"
+            else:
+                logger.debug("Unrecognized screenshot format; skipping")
+                return None
+
+            sub = self.trace_dir / "screenshots" / task_id
+            sub.mkdir(parents=True, exist_ok=True)
+            rel = f"screenshots/{task_id}/step_{self._step + 1:06d}.{ext}"
+            (self.trace_dir / rel).write_bytes(raw)
+            return rel
+        except Exception as e:
+            logger.debug("Screenshot persist failed: %s", e)
             return None

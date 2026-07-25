@@ -56,10 +56,12 @@ def _maybe_inline(rec: dict[str, Any], session_dir: Path, inline: bool) -> dict[
     img_path = session_dir / rel
     if not img_path.exists():
         return rec
+    mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+            "webp": "image/webp"}.get(img_path.suffix.lstrip(".").lower(), "image/png")
     try:
         with open(img_path, "rb") as f:
             b64 = base64.b64encode(f.read()).decode("ascii")
-        rec = {**rec, "screenshot_data_url": f"data:image/png;base64,{b64}"}
+        rec = {**rec, "screenshot_data_url": f"data:{mime};base64,{b64}"}
     except OSError as e:
         logger.warning("Could not inline %s: %s", img_path, e)
     return rec

@@ -23,6 +23,7 @@ Usage:
     python -m agents.browser_use_agent --base-url http://localhost:8000 --model o3
 """
 import asyncio
+import json
 import logging
 import os
 import time
@@ -114,6 +115,9 @@ async def run_task_with_browser_use(
 
     llm = _make_llm(model_name)
     use_vision = _model_supports_vision(model_name)
+    # Recorded per step so the archive states what the model was actually given,
+    # rather than asserting a modality the run may not have used.
+    observation_mode = "screenshot" if use_vision else "dom"
 
     task_description = (
         f"Navigate to {task_url} and complete the experiment you find there.\n\n"
@@ -159,13 +163,32 @@ async def run_task_with_browser_use(
                                 "(this resets jsPsych state and loses trial data)", url)
                         seen_task_urls.add(url)
 
+                # Persist the exact frame the scaffold showed the model. In
+                # vision mode Browser-Use hands us a base64 PNG on the state
+                # summary; in DOM mode there is none, and the absence is itself
+                # the record of what the model had to work with.
+                shot = None
+                if getattr(trace_writer, "capture_screenshots", False):
+                    b64 = getattr(browser_state, "screenshot", None)
+                    if b64 is None and hasattr(browser_state, "get_screenshot"):
+                        b64 = browser_state.get_screenshot()
+                    shot = trace_writer.save_screenshot_b64(b64, task_id)
+
+                try:
+                    response_chars = len(json.dumps(
+                        agent_output.model_dump(exclude_none=True), default=str))
+                except Exception:
+                    response_chars = None
+
                 trace_writer.log_interaction(
                     task_id=task_id,
                     state="browser_use_renav" if renav else "browser_use_step",
                     action_proposed=actions if len(actions) != 1 else actions[0],
                     action_valid=not renav,
                     validity_reason="agent re-navigated to a task URL it already visited" if renav else None,
-                    extra={"step": n_steps, **extra},
+                    screenshot_path=shot,
+                    response_chars=response_chars,
+                    extra={"step": n_steps, "observation_mode": observation_mode, **extra},
                 )
                 for a in actions:
                     trace_writer.log_action(
@@ -268,7 +291,7 @@ async def _run_all_tasks_inner(
             "agent_name": agent_name,
             "scaffold": "browser-use",
             "model_name": model_name,
-            "observation_mode": "screenshot",
+            "observation_mode": "screenshot" if _model_supports_vision(model_name) else "dom",
         })
         resp.raise_for_status()
         session = resp.json()
@@ -284,7 +307,7 @@ async def _run_all_tasks_inner(
     trace_writer = None
     if trace_dir:
         from harness.trace import TraceWriter
-        trace_writer = TraceWriter(Path(trace_dir), capture_screenshots=False)
+        trace_writer = TraceWriter(Path(trace_dir), capture_screenshots=True)
     if tasks_filter:
         tasks = [t for t in tasks if t["task_id"] in tasks_filter]
     if skip_tasks:

@@ -84,3 +84,10 @@ models:
     api: openai/gpt-5.4-nano
     scaffold: browser-use
     notes: "OpenAI cheap model (paper used GPT-5.2 which is too expensive). $0.20/M in, $1.25/M out."
+
+  - id: grok-4.20
+    api: x-ai/grok-4.20
+    scaffold: browser-use
+    notes: >-
+      Stands in for grok-4.1-fast, which was delisted from OpenRouter after the
+      v1 pilot. $1.25/M in, $2.50/M out (doubles above a 200k-token prompt).
