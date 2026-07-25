@@ -12,7 +12,8 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "positive",
-      "weight": 2.0
+      "weight": 2.0,
+      "construct_type": "capacity"
     },
     {
       "name": "coherence_rt_chronometric",
@@ -27,7 +28,8 @@
       "threshold_p": 0.05,
       "expected_direction": "negative",
       "weight": 1.5,
-      "method": "spearman"
+      "method": "spearman",
+      "construct_type": "capacity"
     },
     {
       "name": "above_chance_low_coherence",
@@ -41,7 +43,8 @@
       "chance_level": 0.5,
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
-      "weight": 0.5
+      "weight": 0.5,
+      "construct_type": "capacity"
     },
     {
       "name": "above_chance_overall",
@@ -54,7 +57,8 @@
       "chance_level": 0.5,
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "capacity"
     }
   ]
 }

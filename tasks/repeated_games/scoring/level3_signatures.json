@@ -13,7 +13,9 @@
       "expected_direction": "positive",
       "weight": 1.5,
       "field": "player_cooperate",
-      "condition_field": "prev_opp_coop_pd"
+      "condition_field": "prev_opp_coop_pd",
+      "construct_type": "bias",
+      "bias_rationale": "Against a fixed tit-for-tat opponent in a finite-horizon PD, defection is the subgame-perfect equilibrium. Reciprocity is a human social preference, so an agent that defects throughout is playing the game-theoretic solution and is scored down for it."
     },
     {
       "name": "above_chance_coordination_bos",
@@ -27,7 +29,8 @@
       "chance_level": 0.5,
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
-      "weight": 1.5
+      "weight": 1.5,
+      "construct_type": "capacity"
     },
     {
       "name": "cooperation_when_opp_cooperated",
@@ -42,7 +45,9 @@
       "chance_level": 0.5,
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "bias",
+      "bias_rationale": "Same finite-horizon argument: conditional cooperation is a social preference, not a capacity."
     },
     {
       "name": "round_rt_speedup",
@@ -56,7 +61,8 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "negative",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "capacity"
     }
   ]
 }

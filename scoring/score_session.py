@@ -26,6 +26,27 @@ def _augment_derived_fields(trial_data: list[dict], task_id: str) -> list[dict]:
             pair = (min(a, b), max(a, b))  # unordered
             trial["is_unique_pair"] = pair not in seen_pairs
             seen_pairs.add(pair)
+
+    elif task_id == "serial_recall_v2":
+        # Band the study position so serial-position effects can be expressed
+        # with the equality-only filters the signature specs support.
+        # Quartiles rather than fixed indices so an --n-trials override still
+        # produces sensible bands.
+        positions = [t["study_position"] for t in trial_data
+                     if t.get("study_position") is not None]
+        if positions:
+            hi = max(positions)
+            first_q, last_q = hi / 4.0, hi * 3 / 4.0
+            for trial in trial_data:
+                p = trial.get("study_position")
+                if p is None:
+                    trial["serial_position_band"] = None
+                elif p <= first_q:
+                    trial["serial_position_band"] = "primacy"
+                elif p > last_q:
+                    trial["serial_position_band"] = "terminal"
+                else:
+                    trial["serial_position_band"] = "middle"
     return trial_data
 
 

@@ -1,60 +1,85 @@
 {
-    "task_id": "moral_machine",
-    "signatures": [
-        {
-            "name": "utilitarian_preference",
-            "description": "When numbers differ, agents prefer to save the larger group. Awad et al. 2018 (Nature) global aggregate.",
-            "test": "proportion_test",
-            "field": "chose_utilitarian",
-            "filter": {"timed_out": false, "dimension": "number"},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "above_chance",
-            "weight": 1.5
-        },
-        {
-            "name": "age_preference_save_young",
-            "description": "Agents prefer to save the young over the elderly. Awad et al. 2018 global aggregate.",
-            "test": "proportion_test",
-            "field": "chose_young",
-            "filter": {"timed_out": false, "dimension": "age"},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "above_chance",
-            "weight": 1.0
-        },
-        {
-            "name": "species_preference_save_human",
-            "description": "Agents prefer to save humans over pets. The largest single-factor effect in the Moral Machine global data.",
-            "test": "proportion_test",
-            "field": "chose_human",
-            "filter": {"timed_out": false, "dimension": "species"},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "above_chance",
-            "weight": 1.5
-        },
-        {
-            "name": "legality_preference_save_lawful",
-            "description": "When legality differs, agents prefer to save the lawful pedestrians (kill the jaywalkers). Awad et al. 2018 global aggregate ~0.61 — mild but reliable.",
-            "test": "proportion_test",
-            "field": "chose_legal",
-            "filter": {"timed_out": false, "dimension": "legality"},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "above_chance",
-            "weight": 1.0
-        },
-        {
-            "name": "intervention_aversion",
-            "description": "When the choice is whether the car should swerve (intervene) or stay on course, agents prefer the car to stay its course. Awad et al. 2018 global aggregate ~0.46 — humans show a mild aversion to intervention. Tested as a below-chance proportion of intervention choices.",
-            "test": "proportion_test",
-            "field": "chose_intervention",
-            "filter": {"timed_out": false, "dimension": "intervention"},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "below_chance",
-            "weight": 0.5
-        }
-    ]
+  "task_id": "moral_machine",
+  "signatures": [
+    {
+      "name": "utilitarian_preference",
+      "description": "When numbers differ, agents prefer to save the larger group. Awad et al. 2018 (Nature) global aggregate.",
+      "test": "proportion_test",
+      "field": "chose_utilitarian",
+      "filter": {
+        "timed_out": false,
+        "dimension": "number"
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "above_chance",
+      "weight": 1.5,
+      "construct_type": "bias",
+      "bias_rationale": "A moral preference whose normative status is contested, not a capacity."
+    },
+    {
+      "name": "age_preference_save_young",
+      "description": "Agents prefer to save the young over the elderly. Awad et al. 2018 global aggregate.",
+      "test": "proportion_test",
+      "field": "chose_young",
+      "filter": {
+        "timed_out": false,
+        "dimension": "age"
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "above_chance",
+      "weight": 1.0,
+      "construct_type": "bias",
+      "bias_rationale": "Age-based triage is a human preference with no agreed normative standing."
+    },
+    {
+      "name": "species_preference_save_human",
+      "description": "Agents prefer to save humans over pets. The largest single-factor effect in the Moral Machine global data.",
+      "test": "proportion_test",
+      "field": "chose_human",
+      "filter": {
+        "timed_out": false,
+        "dimension": "species"
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "above_chance",
+      "weight": 1.5,
+      "construct_type": "bias",
+      "bias_rationale": "A human-centric preference, not a capacity."
+    },
+    {
+      "name": "legality_preference_save_lawful",
+      "description": "When legality differs, agents prefer to save the lawful pedestrians (kill the jaywalkers). Awad et al. 2018 global aggregate ~0.61 \u2014 mild but reliable.",
+      "test": "proportion_test",
+      "field": "chose_legal",
+      "filter": {
+        "timed_out": false,
+        "dimension": "legality"
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "above_chance",
+      "weight": 1.0,
+      "construct_type": "bias",
+      "bias_rationale": "Punishing jaywalking with death is a preference, not a capacity."
+    },
+    {
+      "name": "intervention_aversion",
+      "description": "When the choice is whether the car should swerve (intervene) or stay on course, agents prefer the car to stay its course. Awad et al. 2018 global aggregate ~0.46 \u2014 humans show a mild aversion to intervention. Tested as a below-chance proportion of intervention choices.",
+      "test": "proportion_test",
+      "field": "chose_intervention",
+      "filter": {
+        "timed_out": false,
+        "dimension": "intervention"
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "below_chance",
+      "weight": 0.5,
+      "construct_type": "bias",
+      "bias_rationale": "Omission bias: humans prefer the harm they did not cause. An agent indifferent between action and inaction is arguably more consistent, and is scored down for it."
+    }
+  ]
 }

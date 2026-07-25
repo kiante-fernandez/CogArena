@@ -12,7 +12,8 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "positive",
-      "weight": 2.0
+      "weight": 2.0,
+      "construct_type": "capacity"
     },
     {
       "name": "above_chance_ev_optimal",
@@ -26,7 +27,8 @@
       "chance_level": 0.5,
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
-      "weight": 1.5
+      "weight": 1.5,
+      "construct_type": "capacity"
     },
     {
       "name": "magnitude_effect_high_payoff",
@@ -39,7 +41,9 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "positive",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "bias",
+      "bias_rationale": "Payoff magnitude shifting risk preference is a documented human departure from expected-value maximisation. An agent whose choices are magnitude-invariant is closer to EV-rational, not worse."
     },
     {
       "name": "ev_difference_rt_effect",
@@ -54,7 +58,8 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "negative",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "capacity"
     }
   ]
 }

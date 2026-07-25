@@ -1,37 +1,61 @@
 {
-    "task_id": "visual_recognition",
-    "signatures": [
-        {
-            "name": "above_chance_discrimination",
-            "description": "Hit rate is significantly higher than false-alarm rate (paired comparison). The headline signature of recognition memory: agents say 'old' more often to actually-old items than to new items.",
-            "test": "paired_proportion_test",
-            "group_a": {"filter": {"trial_part": "test", "timed_out": false, "is_old": true}, "field": "responded_old"},
-            "group_b": {"filter": {"trial_part": "test", "timed_out": false, "is_old": false}, "field": "responded_old"},
-            "threshold_p": 0.05,
-            "expected_direction": "a > b",
-            "weight": 2.0
+  "task_id": "visual_recognition",
+  "signatures": [
+    {
+      "name": "above_chance_discrimination",
+      "description": "Hit rate is significantly higher than false-alarm rate (paired comparison). The headline signature of recognition memory: agents say 'old' more often to actually-old items than to new items.",
+      "test": "paired_proportion_test",
+      "group_a": {
+        "filter": {
+          "trial_part": "test",
+          "timed_out": false,
+          "is_old": true
         },
-        {
-            "name": "above_chance_accuracy",
-            "description": "Overall accuracy is significantly above 0.5 (chance) on the test trials.",
-            "test": "proportion_test",
-            "field": "correct",
-            "filter": {"trial_part": "test", "timed_out": false},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "above_chance",
-            "weight": 1.5
+        "field": "responded_old"
+      },
+      "group_b": {
+        "filter": {
+          "trial_part": "test",
+          "timed_out": false,
+          "is_old": false
         },
-        {
-            "name": "low_false_alarm_rate",
-            "description": "False-alarm rate (saying OLD to truly NEW items) is significantly below 0.5 — the agent is not just saying OLD to everything.",
-            "test": "proportion_test",
-            "field": "responded_old",
-            "filter": {"trial_part": "test", "timed_out": false, "is_old": false},
-            "chance_level": 0.5,
-            "threshold_p": 0.05,
-            "expected_direction": "below_chance",
-            "weight": 0.5
-        }
-    ]
+        "field": "responded_old"
+      },
+      "threshold_p": 0.05,
+      "expected_direction": "a > b",
+      "weight": 2.0,
+      "construct_type": "capacity"
+    },
+    {
+      "name": "above_chance_accuracy",
+      "description": "Overall accuracy is significantly above 0.5 (chance) on the test trials.",
+      "test": "proportion_test",
+      "field": "correct",
+      "filter": {
+        "trial_part": "test",
+        "timed_out": false
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "above_chance",
+      "weight": 1.5,
+      "construct_type": "capacity"
+    },
+    {
+      "name": "low_false_alarm_rate",
+      "description": "False-alarm rate (saying OLD to truly NEW items) is significantly below 0.5 \u2014 the agent is not just saying OLD to everything.",
+      "test": "proportion_test",
+      "field": "responded_old",
+      "filter": {
+        "trial_part": "test",
+        "timed_out": false,
+        "is_old": false
+      },
+      "chance_level": 0.5,
+      "threshold_p": 0.05,
+      "expected_direction": "below_chance",
+      "weight": 0.5,
+      "construct_type": "capacity"
+    }
+  ]
 }

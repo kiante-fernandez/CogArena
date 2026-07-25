@@ -13,7 +13,8 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "positive",
-      "weight": 2.0
+      "weight": 2.0,
+      "construct_type": "capacity"
     },
     {
       "name": "above_chance_mvt_match",
@@ -26,7 +27,8 @@
       "chance_level": 0.5,
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
-      "weight": 1.5
+      "weight": 1.5,
+      "construct_type": "capacity"
     },
     {
       "name": "above_chance_total_reward",
@@ -39,7 +41,8 @@
       "chance_level": 0.5,
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "capacity"
     },
     {
       "name": "harvest_rt_speedup",
@@ -51,7 +54,8 @@
       "filter": {},
       "threshold_p": 0.05,
       "expected_direction": "negative",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "capacity"
     }
   ]
 }

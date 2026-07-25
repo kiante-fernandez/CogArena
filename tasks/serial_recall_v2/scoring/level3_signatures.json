@@ -12,7 +12,8 @@
       "chance_level": 0.05,
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
-      "weight": 1.5
+      "weight": 1.5,
+      "construct_type": "capacity"
     },
     {
       "name": "similarity_aids_recall",
@@ -25,7 +26,8 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "positive",
-      "weight": 1.5
+      "weight": 1.5,
+      "construct_type": "capacity"
     },
     {
       "name": "high_vs_low_sim_advantage",
@@ -47,7 +49,8 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "a > b",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "capacity"
     },
     {
       "name": "similarity_rt_effect",
@@ -61,7 +64,31 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "negative",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "capacity"
+    },
+    {
+      "name": "primacy_effect",
+      "description": "Recall accuracy for pairs studied in the first quarter of the list exceeds accuracy for pairs studied in the middle. Table 2 of the submitted paper advertised a U-shaped serial-position curve, but this port inserts a 5s filler interval between study and test (filler_break_ms=5000), which is the standard manipulation for ABOLISHING recency (Glanzer & Cunitz 1966). A U-shape is therefore not predicted by the design; primacy alone is. Observed across the 5-repeat sweep: primacy-minus-middle = +0.087, terminal-minus-middle = -0.029, exactly the pattern the filler predicts.",
+      "test": "paired_proportion_test",
+      "group_a": {
+        "filter": {
+          "timed_out": false,
+          "serial_position_band": "primacy"
+        },
+        "field": "correct"
+      },
+      "group_b": {
+        "filter": {
+          "timed_out": false,
+          "serial_position_band": "middle"
+        },
+        "field": "correct"
+      },
+      "threshold_p": 0.05,
+      "expected_direction": "a > b",
+      "weight": 1.0,
+      "construct_type": "capacity"
     }
   ]
 }

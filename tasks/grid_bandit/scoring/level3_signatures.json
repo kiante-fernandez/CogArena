@@ -13,7 +13,8 @@
       "chance_level": 0.5,
       "threshold_p": 0.05,
       "expected_direction": "below_chance",
-      "weight": 1.5
+      "weight": 1.5,
+      "construct_type": "capacity"
     },
     {
       "name": "value_directed_exploitation",
@@ -26,7 +27,8 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "negative",
-      "weight": 1.5
+      "weight": 1.5,
+      "construct_type": "capacity"
     },
     {
       "name": "above_chance_reward",
@@ -39,7 +41,8 @@
       "chance_level": 0.5,
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "capacity"
     },
     {
       "name": "within_block_learning",
@@ -52,7 +55,8 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "positive",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "capacity"
     },
     {
       "name": "within_block_rt_speedup",
@@ -66,7 +70,8 @@
       },
       "threshold_p": 0.05,
       "expected_direction": "negative",
-      "weight": 1.0
+      "weight": 1.0,
+      "construct_type": "capacity"
     }
   ]
 }
