@@ -22,6 +22,36 @@ from scipy import stats
 MIN_N = 2
 
 
+def _effective_n(values: list) -> tuple[int, float]:
+    """Sample size adjusted for serial dependence, and the lag-1 autocorrelation.
+
+    Trials within a session are not independent, but the test treats them as if
+    they were, which inflates the effective sample size and makes the nominal
+    significance threshold anti-conservative. Measured on the archived sweep,
+    the median lag-1 autocorrelation is near zero but the tail is severe:
+    effort_foraging's above_chance_total_reward runs at rho = +0.83, so the test
+    believed it had roughly eleven times more independent observations than it
+    did.
+
+    Uses the standard first-order correction n_eff = n(1-rho)/(1+rho), clamped to
+    at most n. Negative autocorrelation (alternating responses, which several
+    agents show) would otherwise *increase* n_eff and hand the test extra power;
+    declining that keeps the adjustment one-directional and conservative.
+    """
+    n = len(values)
+    if n < 6:
+        return n, 0.0
+    x = [1.0 if v else 0.0 for v in values]
+    mean = sum(x) / n
+    denom = sum((v - mean) ** 2 for v in x)
+    if denom == 0:
+        return n, 0.0
+    rho = sum((x[i] - mean) * (x[i + 1] - mean) for i in range(n - 1)) / denom
+    rho = max(-0.99, min(0.99, rho))
+    n_eff = n * (1 - rho) / (1 + rho)
+    return max(MIN_N, min(n, int(round(n_eff)))), rho
+
+
 def _best_attainable_p(n: int, p_chance: float, expected: str) -> float:
     """Smallest p-value achievable at this n, i.e. every trial in the predicted
     direction. If this exceeds threshold_p the signature cannot be passed."""
@@ -54,33 +84,45 @@ def run_proportion_test(trial_data: list[dict], spec: dict) -> dict:
     expected = spec.get("expected_direction", "above_chance")
     threshold = spec.get("threshold_p", 0.05)
 
-    best = _best_attainable_p(n, p_chance, expected)
+    # Serial dependence is assessed before the power check, so "underpowered by
+    # construction" is judged against the sample size the test really has.
+    n_eff, rho = _effective_n(values)
+
+    best = _best_attainable_p(n_eff, p_chance, expected)
     if best > threshold:
         return {
             "direction_correct": False,
             "p_value": 1.0,
             "effect_size": 0.0,
             "testable": False,
-            "detail": (f"Underpowered by construction: n={n}, chance={p_chance:.3f}, "
-                       f"best attainable p={best:.4f} > threshold_p={threshold}. "
-                       f"No behaviour could pass this signature."),
+            "detail": (f"Underpowered: n={n}, n_eff={n_eff} (lag-1 rho={rho:+.2f}), "
+                       f"chance={p_chance:.3f}, best attainable p={best:.4f} > "
+                       f"threshold_p={threshold}. No behaviour could pass at this "
+                       f"effective sample size."),
         }
 
     successes = sum(1 for v in values if v)
     p_obs = successes / n
+    # Rescale to the effective sample size; the rate is estimated from all
+    # trials, but the test is run at the number of independent observations.
+    successes_eff = int(round(p_obs * n_eff))
 
     if expected == "above_chance":
         direction_correct = bool(p_obs > p_chance)
-        p_value = stats.binomtest(successes, n, p_chance, alternative="greater").pvalue
+        p_value = stats.binomtest(successes_eff, n_eff, p_chance, alternative="greater").pvalue
     else:
         direction_correct = bool(p_obs < p_chance)
-        p_value = stats.binomtest(successes, n, p_chance, alternative="less").pvalue
+        p_value = stats.binomtest(successes_eff, n_eff, p_chance, alternative="less").pvalue
 
     return {
         "direction_correct": direction_correct,
         "p_value": float(p_value),
         "effect_size": float(p_obs - p_chance),
         "testable": True,
+        "n": n,
+        "n_effective": n_eff,
+        "lag1_autocorrelation": float(rho),
         "detail": (f"p_obs={p_obs:.3f} ({successes}/{n}), p_chance={p_chance:.3f}, "
-                   f"exact binomial p={p_value:.4f}"),
+                   f"exact binomial on n_eff={n_eff} (lag-1 rho={rho:+.2f}) "
+                   f"p={p_value:.4f}"),
     }
