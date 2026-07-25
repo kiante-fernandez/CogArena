@@ -1,10 +1,30 @@
 {
-    "task_id": "serial_recall_v2",
-    "source": "literature_estimates",
-    "note": "Estimates derived from the Haridi & Schulz Memory Festival (memoryscaling) project conventions. The original study uses a longer list (~28 pairs per similarity level) and a typed-with-spacebar-gate response; v1 port uses 12 pairs across 4 similarity levels with a single typed-input recall step. Replace with on-platform empirical baselines in v2.",
-    "overall_accuracy": {"mean": 0.65, "sd": 0.18, "n": 50},
-    "accuracy_high_sim": {"mean": 0.78, "sd": 0.16, "n": 50},
-    "accuracy_low_sim": {"mean": 0.50, "sd": 0.20, "n": 50},
-    "mean_recall_rt": {"mean": 3500, "sd": 1200, "n": 50},
-    "timeout_rate": {"mean": 0.05, "sd": 0.08, "n": 50}
+  "task_id": "serial_recall_v2",
+  "source": "literature_estimates",
+  "note": "Estimates derived from the Haridi & Schulz Memory Festival (memoryscaling) project conventions. The original study uses a longer list (~28 pairs per similarity level) and a typed-with-spacebar-gate response; v1 port uses 16 pairs across 4 similarity levels (4 per level) with a single typed-input recall step, matching tasks/serial_recall_v2/task_config.json (n_study_pairs=16, pairs_per_similarity_level=4). Replace with on-platform empirical baselines in v2.",
+  "overall_accuracy": {
+    "mean": 0.65,
+    "sd": 0.18,
+    "n": 50
+  },
+  "accuracy_high_sim": {
+    "mean": 0.78,
+    "sd": 0.16,
+    "n": 50
+  },
+  "accuracy_low_sim": {
+    "mean": 0.5,
+    "sd": 0.2,
+    "n": 50
+  },
+  "mean_recall_rt": {
+    "mean": 3500,
+    "sd": 1200,
+    "n": 50
+  },
+  "timeout_rate": {
+    "mean": 0.05,
+    "sd": 0.08,
+    "n": 50
+  }
 }
