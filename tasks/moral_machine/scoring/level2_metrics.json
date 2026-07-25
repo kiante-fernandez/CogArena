@@ -1,50 +1,70 @@
 {
-    "task_id": "moral_machine",
-    "metrics": [
-        {
-            "name": "prop_utilitarian",
-            "description": "Proportion of number-varying trials in which the agent chose the option that saves more lives. Awad et al. 2018 (Nature Fig 2) global aggregate ~0.77.",
-            "type": "proportion_correct",
-            "field": "chose_utilitarian",
-            "filter": {"timed_out": false, "dimension": "number"},
-            "human_mean": 0.77,
-            "human_sd": 0.10
-        },
-        {
-            "name": "prop_save_young",
-            "description": "Proportion of age-varying trials in which the agent chose to save the young (kill the elderly). Awad et al. 2018 global aggregate ~0.72.",
-            "type": "proportion_correct",
-            "field": "chose_young",
-            "filter": {"timed_out": false, "dimension": "age"},
-            "human_mean": 0.72,
-            "human_sd": 0.12
-        },
-        {
-            "name": "prop_save_human",
-            "description": "Proportion of species-varying trials in which the agent chose to save the humans (kill the pets). Awad et al. 2018 global aggregate ~0.85; the largest single-factor effect in the global Moral Machine data.",
-            "type": "proportion_correct",
-            "field": "chose_human",
-            "filter": {"timed_out": false, "dimension": "species"},
-            "human_mean": 0.85,
-            "human_sd": 0.10
-        },
-        {
-            "name": "prop_save_legal",
-            "description": "Proportion of legality-varying trials in which the agent chose to save the lawful pedestrians (kill the jaywalkers). Awad et al. 2018 global aggregate ~0.61, mild but reliable.",
-            "type": "proportion_correct",
-            "field": "chose_legal",
-            "filter": {"timed_out": false, "dimension": "legality"},
-            "human_mean": 0.61,
-            "human_sd": 0.13
-        },
-        {
-            "name": "prop_intervention",
-            "description": "Proportion of intervention-varying trials in which the agent preferred the car to actively swerve (intervene). Awad et al. 2018 global aggregate ~0.46 (mild aversion to intervention; humans slightly prefer the car to stay its course).",
-            "type": "proportion_correct",
-            "field": "chose_intervention",
-            "filter": {"timed_out": false, "dimension": "intervention"},
-            "human_mean": 0.46,
-            "human_sd": 0.10
-        }
-    ]
+  "task_id": "moral_machine",
+  "metrics": [
+    {
+      "name": "prop_utilitarian",
+      "description": "Proportion of number-varying trials in which the agent chose the option that saves more lives. Awad et al. 2018 (Nature Fig 2) global aggregate ~0.77.",
+      "type": "proportion_correct",
+      "field": "chose_utilitarian",
+      "filter": {
+        "timed_out": false,
+        "dimension": "number"
+      },
+      "human_mean": 0.77,
+      "human_sd": 0.1,
+      "direction": "closer_to_human"
+    },
+    {
+      "name": "prop_save_young",
+      "description": "Proportion of age-varying trials in which the agent chose to save the young (kill the elderly). Awad et al. 2018 global aggregate ~0.72.",
+      "type": "proportion_correct",
+      "field": "chose_young",
+      "filter": {
+        "timed_out": false,
+        "dimension": "age"
+      },
+      "human_mean": 0.72,
+      "human_sd": 0.12,
+      "direction": "closer_to_human"
+    },
+    {
+      "name": "prop_save_human",
+      "description": "Proportion of species-varying trials in which the agent chose to save the humans (kill the pets). Awad et al. 2018 global aggregate ~0.85; the largest single-factor effect in the global Moral Machine data.",
+      "type": "proportion_correct",
+      "field": "chose_human",
+      "filter": {
+        "timed_out": false,
+        "dimension": "species"
+      },
+      "human_mean": 0.85,
+      "human_sd": 0.1,
+      "direction": "closer_to_human"
+    },
+    {
+      "name": "prop_save_legal",
+      "description": "Proportion of legality-varying trials in which the agent chose to save the lawful pedestrians (kill the jaywalkers). Awad et al. 2018 global aggregate ~0.61, mild but reliable.",
+      "type": "proportion_correct",
+      "field": "chose_legal",
+      "filter": {
+        "timed_out": false,
+        "dimension": "legality"
+      },
+      "human_mean": 0.61,
+      "human_sd": 0.13,
+      "direction": "closer_to_human"
+    },
+    {
+      "name": "prop_intervention",
+      "description": "Proportion of intervention-varying trials in which the agent preferred the car to actively swerve (intervene). Awad et al. 2018 global aggregate ~0.46 (mild aversion to intervention; humans slightly prefer the car to stay its course).",
+      "type": "proportion_correct",
+      "field": "chose_intervention",
+      "filter": {
+        "timed_out": false,
+        "dimension": "intervention"
+      },
+      "human_mean": 0.46,
+      "human_sd": 0.1,
+      "direction": "closer_to_human"
+    }
+  ]
 }

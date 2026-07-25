@@ -27,6 +27,14 @@ def _augment_derived_fields(trial_data: list[dict], task_id: str) -> list[dict]:
             trial["is_unique_pair"] = pair not in seen_pairs
             seen_pairs.add(pair)
 
+    elif task_id == "effort_foraging":
+        # Boolean form of the travel-cost manipulation, so the stay-rate contrast
+        # can be expressed with the equality-only filters the specs support.
+        for trial in trial_data:
+            cond = trial.get("block_condition")
+            trial["is_high_travel_cost"] = (
+                None if cond is None else cond == "high_cost")
+
     elif task_id == "serial_recall_v2":
         # Band the study position so serial-position effects can be expressed
         # with the equality-only filters the signature specs support.

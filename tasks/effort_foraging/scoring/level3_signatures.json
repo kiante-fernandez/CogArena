@@ -3,18 +3,17 @@
   "signatures": [
     {
       "name": "travel_cost_residence_effect",
-      "description": "Bustamante MVT prediction: residence time (number of harvests before leaving) increases with travel cost. Tested via positive correlation between travel_cost_seconds and harvests_stayed_in_patch on LEAVE trials only.",
-      "test": "correlation_test",
-      "field_x": "travel_cost_seconds",
-      "field_y": "harvests_stayed_in_patch",
+      "description": "Marginal Value Theorem (Bustamante et al. 2023): a higher travel cost between patches should make the agent stay in the current patch longer. Tested as the stay-rate under high travel cost (8s) versus low (4s). Previously a Pearson correlation between travel_cost_seconds and harvests_stayed_in_patch on LEAVE trials only, which was untestable in 18/18 archived sessions: agents leave a patch just 32 times in 1,281 trials (2.5%), giving 0-7 paired observations per session against a minimum of 10. The over-staying is itself the divergence from MVT, and the stay-rate formulation measures it from every trial rather than only from the rare departures.",
+      "test": "conditional_proportion_contrast",
       "filter": {
-        "timed_out": false,
-        "action": "leave"
+        "timed_out": false
       },
       "threshold_p": 0.05,
       "expected_direction": "positive",
       "weight": 2.0,
-      "construct_type": "capacity"
+      "construct_type": "capacity",
+      "field": "is_stay",
+      "condition_field": "is_high_travel_cost"
     },
     {
       "name": "above_chance_mvt_match",

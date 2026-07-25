@@ -34,9 +34,26 @@ def score_accuracy(trial_data: list[dict], metrics_spec: dict) -> dict:
 
         if human_mean is not None and human_sd is not None and human_sd > 0:
             z = (raw_value - human_mean) / human_sd
-            if metric.get("direction") == "lower_is_better":
-                z = -z
-            normalized = float(min(1.0, max(0.0, stats.norm.cdf(z))))
+            direction = metric.get("direction")
+            if direction == "closer_to_human":
+                # Two-sided similarity: 1.0 when the agent matches the human mean,
+                # decaying as it departs in EITHER direction.
+                #
+                # The default normal-CDF mapping is monotonic, so "more" always
+                # scores higher. That is defensible for an accuracy metric, where
+                # exceeding humans is genuinely better, but it inverts the
+                # construct for a preference. moral_machine's prop_intervention
+                # has human_mean=0.46 (humans mildly AVOID intervening), so under
+                # the monotonic mapping an agent that always intervenes scored
+                # ~1.0 while a perfectly human-like agent scored 0.50 -- and the
+                # L3 signature intervention_aversion rewarded the opposite. The
+                # same task was pulling in two directions at once.
+                normalized = float(2.0 * (1.0 - stats.norm.cdf(abs(z))))
+            else:
+                if direction == "lower_is_better":
+                    z = -z
+                normalized = float(min(1.0, max(0.0, stats.norm.cdf(z))))
+            normalized = float(min(1.0, max(0.0, normalized)))
         else:
             normalized = float(min(1.0, max(0.0, raw_value)))
 
