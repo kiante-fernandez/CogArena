@@ -40,7 +40,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 logger = logging.getLogger("build_results")
 
 RUN_FIELDS = [
-    "sweep", "run_index", "repeat_index", "model_id", "task_id",
+    "sweep", "run_index", "repeat_index", "replicate_id", "model_id", "task_id",
     "rc", "wall_time", "scored", "l1_complete", "l3_measurable",
     "composite", "l1", "l2", "l3",
     "l3_n_testable", "l3_n_untestable", "l3_coverage",
@@ -174,6 +174,10 @@ def collect(sweep_dir: Path, max_repeat: int | None = None) -> tuple[list[dict],
             "sweep": sweep_dir.name,
             "run_index": row.get("run_index"),
             "repeat_index": repeat_index,
+            # Repeat indices restart at 0 in every sweep, so merging two batches
+            # would silently collapse their replicates. The replicate_id is the
+            # unit of independent replication and is what the bootstrap resamples.
+            "replicate_id": f"{sweep_dir.name}#{repeat_index}",
             "model_id": model_id,
             "task_id": task_id,
             "rc": row.get("rc"),

@@ -188,7 +188,11 @@ def rank_stability(runs: list[dict], n_boot: int = N_BOOTSTRAP) -> list[dict]:
     rng = random.Random(BOOTSTRAP_SEED)
     by_model_repeat: dict[str, dict[str, list[dict]]] = defaultdict(lambda: defaultdict(list))
     for r in runs:
-        by_model_repeat[r["model_id"]][r["repeat_index"]].append(r)
+        # replicate_id, not repeat_index: two merged sweeps both number their
+        # repeats from 0, and pooling them under the same key would treat
+        # distinct sessions as one replicate.
+        key = r.get("replicate_id") or r["repeat_index"]
+        by_model_repeat[r["model_id"]][key].append(r)
     models = sorted(by_model_repeat)
     if len(models) < 2:
         return []
