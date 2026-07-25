@@ -63,7 +63,27 @@ def _apply_filter(trials: list[dict], filter_spec: dict | None) -> list[dict]:
     ]
 
 
+# Keys a metric spec may carry. Anything else is rejected rather than ignored:
+# grid_bandit's prop_high_value_clicks declared `"compute":
+# "value_above_threshold:50"`, which no code ever read, so the metric silently
+# fell through to proportion_correct and measured the truthiness of its field.
+# Since `z` is a reward in the 9-91 range and never zero, that returned 1.0 for
+# every agent and awarded 0.994 where the spec intended 0.280. A directive that
+# is silently dropped is worse than one that fails.
+_KNOWN_METRIC_KEYS = {
+    "name", "type", "field", "human_mean", "human_sd", "filter",
+    "direction", "description", "hit_field", "fa_field", "threshold",
+}
+
+
 def _compute_metric(trials: list[dict], metric: dict) -> float:
+    unknown = set(metric) - _KNOWN_METRIC_KEYS
+    if unknown:
+        raise ValueError(
+            f"Unknown key(s) in metric spec {metric.get('name')!r}: {sorted(unknown)}. "
+            f"Unrecognised keys are rejected because a silently ignored directive "
+            f"produces a plausible-looking but wrong score.")
+
     metric_type = metric["type"]
 
     # d_prime uses hit_field/fa_field instead of field
@@ -94,6 +114,12 @@ def _compute_metric(trials: list[dict], metric: dict) -> float:
 
     if metric_type == "proportion_correct":
         return sum(1 for v in values if v) / len(values)
+    elif metric_type == "proportion_above_threshold":
+        # Proportion of trials whose value exceeds an explicit numeric threshold.
+        # Distinct from proportion_correct, which tests truthiness and is wrong
+        # for any numeric field that is rarely zero.
+        threshold = metric["threshold"]
+        return sum(1 for v in values if v > threshold) / len(values)
     elif metric_type == "mean":
         return float(np.mean(values))
     elif metric_type == "median":

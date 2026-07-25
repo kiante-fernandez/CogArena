@@ -32,3 +32,41 @@ def test_filter_by_condition(human_like_stroop_data, stroop_metrics):
 def test_empty_data_scores_zero(stroop_metrics):
     result = score_accuracy([], stroop_metrics)
     assert result["score"] == 0.0
+
+
+def test_proportion_above_threshold_uses_the_threshold():
+    """Regression: grid_bandit's prop_high_value_clicks.
+
+    proportion_correct tests truthiness, which is wrong for any numeric field
+    that is rarely zero -- it returned 1.0 for every agent on a reward field
+    ranging 9-91.
+    """
+    trials = [{"z": v} for v in (10, 40, 51, 60, 90)]
+    spec = {"metrics": [{"name": "m", "type": "proportion_above_threshold",
+                         "field": "z", "threshold": 50,
+                         "human_mean": 0.75, "human_sd": 0.1}]}
+    result = score_accuracy(trials, spec)
+    assert result["metrics"][0]["raw_value"] == 0.6
+
+
+def test_proportion_correct_would_have_been_wrong_here():
+    """The old behaviour, pinned so the difference is explicit."""
+    trials = [{"z": v} for v in (10, 40, 51, 60, 90)]
+    spec = {"metrics": [{"name": "m", "type": "proportion_correct",
+                         "field": "z", "human_mean": 0.75, "human_sd": 0.1}]}
+    result = score_accuracy(trials, spec)
+    assert result["metrics"][0]["raw_value"] == 1.0
+
+
+def test_unknown_metric_key_is_rejected_not_ignored():
+    """A silently dropped directive produces a plausible but wrong score.
+
+    This is exactly how 'compute: value_above_threshold:50' went unnoticed.
+    """
+    trials = [{"z": v} for v in (10, 60)]
+    spec = {"metrics": [{"name": "m", "type": "proportion_correct", "field": "z",
+                         "human_mean": 0.75, "human_sd": 0.1,
+                         "compute": "value_above_threshold:50"}]}
+    result = score_accuracy(trials, spec)
+    assert result["metrics"][0]["raw_value"] is None
+    assert "Unknown key" in result["metrics"][0]["error"]
