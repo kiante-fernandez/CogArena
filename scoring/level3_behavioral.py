@@ -27,6 +27,9 @@ from scoring.analysis_templates.sequential_regression import run_sequential_regr
 from scoring.analysis_templates.interaction_test import run_interaction_test
 from scoring.analysis_templates.proportion_test import run_proportion_test
 from scoring.analysis_templates.correlation_test import run_correlation_test
+from scoring.analysis_templates.conditional_proportion_contrast import (
+    run_conditional_proportion_contrast,
+)
 
 TEST_REGISTRY = {
     "paired_ttest_greater": run_paired_ttest,
@@ -35,6 +38,7 @@ TEST_REGISTRY = {
     "interaction_test": run_interaction_test,
     "proportion_test": run_proportion_test,
     "correlation_test": run_correlation_test,
+    "conditional_proportion_contrast": run_conditional_proportion_contrast,
 }
 
 
