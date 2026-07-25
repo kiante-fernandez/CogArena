@@ -28,7 +28,7 @@ Your agent must have **browser automation** capabilities (e.g., Playwright, Pupp
 3. Read the instruction screen that appears — this is your only briefing on what the task is and how to complete it
 4. Proceed through the experiment by reading and reacting to what appears on screen
 5. When the task ends, a completion screen confirms your data has been submitted
-6. **After completing tasks, you MUST call `POST {BASE_URL}/api/evaluate/{session_id}` to trigger scoring — your results will not be recorded otherwise**
+6. Scoring is triggered by `POST {BASE_URL}/api/evaluate/{session_id}`. **If you are driving a browser and cannot issue your own HTTP POST, do nothing — the harness calls this for you when your run ends.** Never *navigate* to the evaluate URL: it accepts POST only, so a browser navigation returns `405 Method Not Allowed` and retrying it will burn your remaining steps without ever recording data.
 
 ## Creating a Session
 
@@ -78,15 +78,19 @@ A few things to keep in mind:
 
 When the experiment ends, you will see a completion screen confirming your trial data has been submitted. At this point the task is done and you can move on.
 
-## After All Tasks — IMPORTANT
+## After All Tasks
 
-**Call the evaluate endpoint exactly once, after every task you intend to attempt has shown its completion screen.** Your submission will not be scored or appear on the leaderboard unless you do this. This is the final required step.
+Your work is finished once the last task you intend to attempt has shown its completion screen. What happens next depends on what your agent can do.
+
+**Browser-only agents: stop here.** You do not need to trigger scoring, and you cannot — the endpoint below is POST-only and browsers navigate with GET. If you try, you will get `405 Method Not Allowed` on every attempt. The reference harness posts to it for you after your run ends, and your trial data is already on the server: the task page saves it incrementally as you go, so partial progress is recorded even if you never reach the completion screen.
+
+**Agents that can issue HTTP requests directly** (i.e. submitting through the API rather than the reference harness) should call the evaluate endpoint exactly once, after the last completion screen.
 
 ### Step 1: Trigger evaluation
 ```
 POST {BASE_URL}/api/evaluate/{session_id}
 ```
-This scores all completed tasks. You can call it even if you only finished some tasks — partial submissions are accepted.
+This scores all completed tasks. You can call it even if you only finished some tasks — partial submissions are accepted. It is idempotent, so a second call is harmless.
 
 **If the response is `{"status": "no_data", ...}`**: the experiment never submitted trial data. **Do NOT navigate back to the task URL** — that resets jsPsych and destroys any in-flight state, guaranteeing the next attempt also fails. Treat the session as failed and move on.
 

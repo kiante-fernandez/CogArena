@@ -223,6 +223,27 @@ def fetch_trial_data(base_url: str, session_id: str) -> dict[str, Any] | None:
     return None
 
 
+def _attempted_task_ids(
+    base_url: str, session_id: str, tasks_filter: list[str] | None
+) -> list[str]:
+    """Task ids this run tried, whether or not they ended up scoreable.
+
+    Used so partial runs still get their raw data archived. Falls back to an
+    empty list on any error: archiving is best-effort and must never take down
+    a run that has otherwise finished.
+    """
+    if tasks_filter:
+        return list(tasks_filter)
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            r = client.get(f"{base_url}/api/sessions/{session_id}")
+            r.raise_for_status()
+            return [t["task_id"] for t in r.json().get("tasks", []) if "task_id" in t]
+    except (httpx.HTTPError, KeyError, ValueError, TypeError) as e:
+        logger.warning("Could not list attempted tasks for %s: %s", session_id, e)
+        return []
+
+
 def fetch_and_save_raw_trial_data(
     base_url: str, session_id: str, task_ids: list[str], out_dir: Path
 ) -> list[str]:
@@ -349,11 +370,25 @@ def run_eval(args) -> int:
             _print_scorecard(agent_name, results)
             # Archive raw jsPsych trial data per task so scoring is rerunnable
             # without replaying the agent (e.g. after scoring rule changes).
-            task_ids = [ts["task_id"] for ts in results.get("task_scores", [])]
+            #
+            # Archive every task the run ATTEMPTED, not just the ones that scored.
+            # Keying off task_scores silently discarded all partial runs: an agent
+            # that produced hundreds of trials but never reached a scoreable state
+            # left nothing behind, even though incremental_save.js had been PATCHing
+            # that data to the server throughout. Those cells then read as "the agent
+            # produced no behaviour" rather than "the agent produced incomplete
+            # behaviour" — a different and much stronger claim than the data supports.
+            scored_ids = [ts["task_id"] for ts in results.get("task_scores", [])]
+            attempted = _attempted_task_ids(args.base_url, session_id, args.tasks)
+            task_ids = sorted(set(scored_ids) | set(attempted))
             saved = fetch_and_save_raw_trial_data(args.base_url, session_id, task_ids, sdir)
             if saved:
+                unscored = sorted(set(saved) - set(scored_ids))
                 logger.info("Archived raw trial data for %d task(s) under %s/trial_data/",
                             len(saved), sdir)
+                if unscored:
+                    logger.info("  (%d of these are partial/unscored: %s)",
+                                len(unscored), ", ".join(unscored))
         else:
             logger.warning("No results JSON available for session %s", session_id)
 
