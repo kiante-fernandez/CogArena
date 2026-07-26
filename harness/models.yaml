@@ -91,3 +91,18 @@ models:
     notes: >-
       Stands in for grok-4.1-fast, which was delisted from OpenRouter after the
       v1 pilot. $1.25/M in, $2.50/M out (doubles above a 200k-token prompt).
+
+  - id: gpt-5.4
+    api: openai/gpt-5.4
+    scaffold: browser-use
+    notes: >-
+      Full-size sibling of gpt-5.4-nano, which is already in the panel. Same
+      generation, ~13x the input price, so nano-vs-full is a clean capability
+      contrast with no generational confound. $2.50/M in, $15/M out.
+
+  - id: gpt-5.6-sol
+    api: openai/gpt-5.6-sol
+    scaffold: browser-use
+    notes: >-
+      Newest OpenAI generation, top tier. Included to answer the reviewer point
+      that the panel has no flagship. $5/M in, $30/M out.

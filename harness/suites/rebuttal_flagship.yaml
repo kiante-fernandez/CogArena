@@ -5,24 +5,34 @@
 # attributed to a ceiling of current multimodal cognition rather than to a small,
 # inexpensive panel."
 #
-# gpt-5.2 is the flagship. Chosen over claude-opus-5 because OpenAI models have not
-# shown the action-shape quirk documented in CLAUDE.md, and a smoke test on two
-# response modalities confirmed it: rc=0 on both, L1=1.00 on repeated_games, 55 and
-# 30 trials archived, with only transient AgentOutput retries rather than the
-# first-gate validator death that produced zero scorecards for glm-4.6v and
-# ui-tars-1.5-7b.
+# Two models, because W9 has two halves and one model cannot answer both.
+#
+#   gpt-5.4      Full-size sibling of gpt-5.4-nano, which is ALREADY in the panel.
+#                Same generation, ~13x the input price ($2.50 vs $0.20/M). This is
+#                the clean test of whether the signature shortfall is an artifact
+#                of testing cheap models: no generational confound, only scale.
+#
+#   gpt-5.6-sol  Newest OpenAI generation, top tier. Answers the literal complaint
+#                that the panel contains no flagship.
+#
+# An earlier draft of this suite used gpt-5.2, which was simply wrong: it is a
+# mid-tier model from an OLDER generation than the gpt-5.4-nano already in the
+# panel, so it could support neither half of the argument.
+#
+# OpenAI models avoid the action-shape quirk documented in CLAUDE.md. Verified:
+# gpt-5.2 smoke-tested rc=0 on two response modalities with L1=1.00 on
+# repeated_games, and both models here accept image input and return clean JSON.
 #
 # Deliberately 2 repeats, not 10: a scouting arm to see whether the flagship
 # behaves differently at all before committing the rest of the budget. Extend by
 # re-running with --repeats if the first look justifies it.
 #
-# Bonus comparison this arm enables: gpt-5.4-nano is already in the main panel, so
-# nano vs 5.2 is a within-family contrast across a ~9x price gap. If L3 does not
-# improve across that gap, the signature shortfall is not an artifact of testing
-# cheap models — which answers W9 with an analysis rather than one more expensive
-# row in the table.
+# The nano-vs-full contrast is the point: gpt-5.4-nano sits in the main panel at
+# n=10. If L3 does not improve across a 13x price gap within one generation, the
+# signature shortfall is not an artifact of testing cheap models — which answers
+# W9 with an analysis rather than one more expensive row in the table.
 #
-# 1 model x 10 tasks x 2 repeats = 20 runs, ~$44-62.
+# 2 models x 10 tasks x 2 repeats = 40 runs, ~$162 ($51 gpt-5.4 + $111 gpt-5.6-sol).
 
 suite_name: rebuttal_flagship
 default_scaffold: browser-use
@@ -40,7 +50,8 @@ tasks:
   - phishing_detection_v2
 
 models:
-  - id: gpt-5.2
+  - id: gpt-5.4        # same generation as gpt-5.4-nano -> clean capability contrast
+  - id: gpt-5.6-sol    # newest generation, top tier -> answers "no flagship" directly
 
 repeats: 2
 n_trials_override: null
