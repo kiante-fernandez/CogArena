@@ -32,7 +32,15 @@
 # signature shortfall is not an artifact of testing cheap models — which answers
 # W9 with an analysis rather than one more expensive row in the table.
 #
-# 2 models x 10 tasks x 2 repeats = 40 runs, ~$162 ($51 gpt-5.4 + $111 gpt-5.6-sol).
+# 1 model x 10 tasks x 1 repeat = 10 runs, ~$55.
+#
+# Scoped down after a two-task scouting run. gpt-5.6-sol scored L3 0.636 on
+# effort_foraging and 1.000 on visual_recognition, beating the BEST single run of
+# any panel model across 38 runs each (0.500 and 0.562). The open question is no
+# longer whether a top tier differs -- it is whether that holds across all ten
+# tasks or only the two weakest, which were deliberately chosen and so invite
+# regression to the mean. One pass over the full task set answers that; gpt-5.4
+# is held back until the breadth is known.
 
 suite_name: rebuttal_flagship
 default_scaffold: browser-use
@@ -50,10 +58,9 @@ tasks:
   - phishing_detection_v2
 
 models:
-  - id: gpt-5.4        # same generation as gpt-5.4-nano -> clean capability contrast
-  - id: gpt-5.6-sol    # newest generation, top tier -> answers "no flagship" directly
+  - id: gpt-5.6-sol    # newest generation, top tier
 
-repeats: 2
+repeats: 1
 n_trials_override: null
 task_timeout_seconds: 1800
 no_deadline: true
