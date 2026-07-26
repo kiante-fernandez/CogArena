@@ -345,40 +345,53 @@ def run_eval(args) -> int:
 
         # Now hand off to the existing agent driver, but pass the pre-created
         # session_id and the trace_dir.
+        #
+        # The agent loop is allowed to fail without taking the archive with it.
+        # It raises on its own errors (e.g. RuntimeError("No task data found for
+        # evaluation")), and until now that propagated out of run_eval before the
+        # archiving step, discarding trial data that was already sitting on the
+        # server: 26 runs and 2,108 trials in one 200-run sweep. Whatever the
+        # agent managed to produce is evidence and must be saved either way.
+        agent_error: Exception | None = None
         no_deadline = not args.use_deadline
-        if scaffold == "random":
-            from agents.random_agent import run_all_tasks
-            asyncio.run(run_all_tasks(
-                base_url=args.base_url,
-                agent_name=agent_name,
-                no_deadline=no_deadline,
-                task_timeout=args.task_timeout,
-                tasks_filter=args.tasks,
-                n_trials=args.n_trials,
-                session_id=session_id,
-                trace_dir=str(sdir),
-            ))
-        elif scaffold == "browser-use":
-            try:
-                from agents.browser_use_agent import run_all_tasks
-            except ImportError:
-                logger.error("browser-use not installed. `pip install browser-use`.")
+        try:
+            if scaffold == "random":
+                from agents.random_agent import run_all_tasks
+                asyncio.run(run_all_tasks(
+                    base_url=args.base_url,
+                    agent_name=agent_name,
+                    no_deadline=no_deadline,
+                    task_timeout=args.task_timeout,
+                    tasks_filter=args.tasks,
+                    n_trials=args.n_trials,
+                    session_id=session_id,
+                    trace_dir=str(sdir),
+                ))
+            elif scaffold == "browser-use":
+                try:
+                    from agents.browser_use_agent import run_all_tasks
+                except ImportError:
+                    logger.error("browser-use not installed. `pip install browser-use`.")
+                    return 1
+                asyncio.run(run_all_tasks(
+                    base_url=args.base_url,
+                    agent_name=agent_name,
+                    model_name=model.api,
+                    no_deadline=no_deadline,
+                    task_timeout=args.task_timeout,
+                    tasks_filter=args.tasks,
+                    n_trials=args.n_trials,
+                    session_id=session_id,
+                    trace_dir=str(sdir),
+                    force_no_vision=getattr(args, "no_vision", False),
+                ))
+            else:
+                logger.error("Unknown scaffold: %s", scaffold)
                 return 1
-            asyncio.run(run_all_tasks(
-                base_url=args.base_url,
-                agent_name=agent_name,
-                model_name=model.api,
-                no_deadline=no_deadline,
-                task_timeout=args.task_timeout,
-                tasks_filter=args.tasks,
-                n_trials=args.n_trials,
-                session_id=session_id,
-                trace_dir=str(sdir),
-                force_no_vision=getattr(args, "no_vision", False),
-            ))
-        else:
-            logger.error("Unknown scaffold: %s", scaffold)
-            return 1
+        except Exception as e:  # noqa: BLE001 — archive first, then re-raise
+            agent_error = e
+            logger.error("Agent loop failed (%s: %s); archiving whatever reached "
+                         "the server before giving up", type(e).__name__, e)
 
         # Trigger evaluation (idempotent; agent loop usually triggers this too).
         with httpx.Client(timeout=120.0, base_url=args.base_url) as client:
@@ -422,6 +435,13 @@ def run_eval(args) -> int:
             out = sdir / "replay.html"
             build_replay_for_session(sdir, out, inline=args.replay_inline)
             print(f"Replay built at {out}")
+
+        if agent_error is not None:
+            # The archive is written, but the run still failed. Returning
+            # non-zero keeps the sweep's rc honest, so a rescued cell is not
+            # mistaken for a clean one.
+            logger.error("Run archived despite agent failure: %s", agent_error)
+            return 1
 
         return 0
 
