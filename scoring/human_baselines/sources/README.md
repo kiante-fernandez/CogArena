@@ -68,8 +68,28 @@ Source: OSF [osf.io/3hvt2](https://osf.io/3hvt2) →
 `Datasets/Moral Machine Effect Sizes/plotdatamain.rdata` · Figure 2a source
 data, n = 35.2M decisions
 
-The nine global AMCEs with standard errors. Supplies all five `prop_*` metrics
-via `p = (1 + ΔP) / 2`. Not raw trials — this is the published effect-size table.
+Two files: the original `.rdata` as downloaded, and
+`awad_2018_moral_machine_amce_fig2a.csv` extracted from it, which is what the
+derivation reads. The extraction is exact — the RData carries the `Label` factor
+codes `[9,8,4,7,6,5,3,2,1]` alongside the estimates, so each value is tied to its
+attribute by the file rather than by inferring an order:
+
+| attribute | ΔP | s.e. |
+|---|---|---|
+| Species | 0.582736 | 0.000947 |
+| No. Characters | 0.508132 | 0.000662 |
+| Age | 0.490328 | 0.000788 |
+| Law | 0.351348 | 0.000925 |
+| Social Status | 0.345112 | 0.001504 |
+| Fitness | 0.160909 | 0.000590 |
+| Gender | 0.116780 | 0.000667 |
+| Relation to AV | 0.096815 | 0.000653 |
+| Intervention | 0.060556 | 0.000355 |
+
+Cross-check: the Fig 2 caption states the Age effect as 0.49, against the file's
+0.490328. Supplies all five `prop_*` metrics via `p = (1 + ΔP) / 2`. Not raw
+trials — this is the published effect-size table, so the standard errors reflect
+n = 35.2M and are **not** usable as `human_sd` (between-person variation).
 
 ### `haridi_2025_serial_recall_exp1.csv` → `serial_recall_v2`
 **Haridi, S., Schulz, E. & Thalmann, M. (2025).** Context Size and Set Size

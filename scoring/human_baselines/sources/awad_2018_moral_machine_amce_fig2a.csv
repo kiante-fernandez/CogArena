@@ -1,0 +1,10 @@
+attribute,amce_delta_p,std_error,factor_code
+Species,0.582736,0.000947,1
+No. Characters,0.508132,0.000662,2
+Age,0.490328,0.000788,3
+Law,0.351348,0.000925,4
+Social Status,0.345112,0.001504,5
+Fitness,0.160909,0.000590,6
+Gender,0.116780,0.000667,7
+Relation to AV,0.096815,0.000653,8
+Intervention,0.060556,0.000355,9

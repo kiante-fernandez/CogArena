@@ -22,7 +22,6 @@ import csv
 import json
 import math
 import statistics as st
-import struct
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -115,30 +114,22 @@ def marbles_risk():
 
 
 def moral_machine():
-    """Parse the nine AMCEs out of the Figure 2a RData, then p = (1 + dP) / 2."""
-    import gzip
-    raw = gzip.decompress((SOURCES / "awad_2018_moral_machine_amce_fig2a.rdata").read_bytes())
-    est = None
-    i = 0
-    while i < len(raw) - 8:
-        if (struct.unpack(">I", raw[i:i + 4])[0] & 0xFF) == 14:          # REALSXP
-            n = struct.unpack(">I", raw[i + 4:i + 8])[0]
-            if n == 9 and i + 8 + 72 <= len(raw):
-                vals = list(struct.unpack(">9d", raw[i + 8:i + 80]))
-                if all(-2 < v < 2 for v in vals) and est is None:
-                    est = vals
-        i += 1
-    if est is None:
-        raise RuntimeError("could not parse AMCE vector from the RData")
-    # Factor levels are ordered descending by effect size; confirmed against the
-    # Fig 2 caption, which states the Age effect as 0.49.
-    by_attr = dict(zip(["Species", "No. Characters", "Age", "Law", "Social Status",
-                        "Fitness", "Gender", "Relation to AV", "Intervention"],
-                       sorted(est, reverse=True)))
+    """AMCEs from the Figure 2a table, converted with p = (1 + dP) / 2.
+
+    Reads the CSV extracted from the authors' plotdatamain.rdata. The extraction
+    is faithful because the RData carries the Label factor codes alongside the
+    estimates, so each value is tied to its attribute by the file itself rather
+    than by inferring an order; the codes [9,8,4,7,6,5,3,2,1] index the level
+    list Species / No. Characters / Age / Law / Social Status / Fitness / Gender
+    / Relation to AV / Intervention. As a cross-check the Fig 2 caption states
+    the Age effect as 0.49 against the file's 0.490328.
+    """
+    amce = {r["attribute"]: float(r["amce_delta_p"])
+            for r in _rows("awad_2018_moral_machine_amce_fig2a.csv")}
     m = {"prop_save_human": ("Species", +1), "prop_utilitarian": ("No. Characters", +1),
          "prop_save_young": ("Age", +1), "prop_save_legal": ("Law", +1),
          "prop_intervention": ("Intervention", -1)}   # reported preference is for INACTION
-    return {k: ((1 + s * by_attr[a]) / 2, None, None) for k, (a, s) in m.items()}
+    return {k: ((1 + s * amce[a]) / 2, None, None) for k, (a, s) in m.items()}
 
 
 def serial_recall_v2():
