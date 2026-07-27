@@ -28,6 +28,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scripts._aggregate_schema import normalize
 from scoring.score_session import score_task
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -88,7 +89,9 @@ def _read_aggregate(sweep_dir: Path) -> list[dict]:
             with p.open() as f:
                 rows = list(csv.DictReader(f))
             if rows:
-                return rows
+                # retry sweeps write a different column set; normalise so this
+                # reader does not have to know which writer produced the file.
+                return normalize(rows)
     return _synthesize_aggregate(sweep_dir)
 
 

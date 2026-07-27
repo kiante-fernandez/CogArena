@@ -20,13 +20,13 @@ kimi-k2.5,repeated_games,scored,10,1,9,0.9,0.6429,a single session would have re
 kimi-k2.5,serial_recall_v2,scored,10,4,6,0.6,0.4167,a single session would have reported one of these at random
 kimi-k2.5,tiny_alchemy,scored,10,5,5,0.5,1.0,a single session would have reported one of these at random
 kimi-k2.5,visual_recognition,scored,10,3,7,0.7,0.5,a single session would have reported one of these at random
-qwen3-vl-235b-instruct,effort_foraging,scored,8,6,2,0.25,0.4286,a single session would have reported one of these at random
+qwen3-vl-235b-instruct,effort_foraging,scored,10,7,3,0.3,0.4286,a single session would have reported one of these at random
 qwen3-vl-235b-instruct,marbles_risk,scored,10,7,3,0.3,0.5,a single session would have reported one of these at random
-qwen3-vl-235b-instruct,phishing_detection_v2,scored,8,1,7,0.875,0.875,a single session would have reported one of these at random
+qwen3-vl-235b-instruct,phishing_detection_v2,scored,10,1,9,0.9,0.875,a single session would have reported one of these at random
 qwen3-vl-235b-instruct,random_dot_motion_v2,scored,10,8,2,0.2,0.3333,a single session would have reported one of these at random
-qwen3-vl-235b-instruct,repeated_games,scored,9,6,3,0.3333,0.5,a single session would have reported one of these at random
-qwen3-vl-235b-instruct,serial_recall_v2,scored,9,5,4,0.4444,0.625,a single session would have reported one of these at random
-qwen3-vl-235b-instruct,tiny_alchemy,scored,8,3,5,0.625,1.0,a single session would have reported one of these at random
+qwen3-vl-235b-instruct,repeated_games,scored,10,6,4,0.4,0.5,a single session would have reported one of these at random
+qwen3-vl-235b-instruct,serial_recall_v2,scored,10,6,4,0.4,0.625,a single session would have reported one of these at random
+qwen3-vl-235b-instruct,tiny_alchemy,scored,10,3,7,0.7,1.0,a single session would have reported one of these at random
 gemini-3-flash-preview,effort_foraging,l3_measurable,10,2,8,0.8,0.2727,a single session would have reported one of these at random
 gemini-3-flash-preview,tiny_alchemy,l3_measurable,9,1,8,0.8889,0.6667,a single session would have reported one of these at random
 gemini-3-flash-preview,visual_recognition,l3_measurable,10,2,8,0.8,0.5625,a single session would have reported one of these at random
@@ -37,5 +37,5 @@ kimi-k2.5,effort_foraging,l3_measurable,10,2,8,0.8,0.4545,a single session would
 kimi-k2.5,marbles_risk,l3_measurable,8,1,7,0.875,0.9091,a single session would have reported one of these at random
 kimi-k2.5,random_dot_motion_v2,l3_measurable,9,1,8,0.8889,0.4,a single session would have reported one of these at random
 kimi-k2.5,visual_recognition,l3_measurable,9,2,7,0.7778,0.5,a single session would have reported one of these at random
-qwen3-vl-235b-instruct,effort_foraging,l3_measurable,2,1,1,0.5,0.4286,a single session would have reported one of these at random
-qwen3-vl-235b-instruct,phishing_detection_v2,l3_measurable,8,1,7,0.875,0.875,a single session would have reported one of these at random
+qwen3-vl-235b-instruct,effort_foraging,l3_measurable,4,2,2,0.5,0.4286,a single session would have reported one of these at random
+qwen3-vl-235b-instruct,phishing_detection_v2,l3_measurable,10,1,9,0.9,0.875,a single session would have reported one of these at random

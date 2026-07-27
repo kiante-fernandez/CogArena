@@ -36,7 +36,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scripts._aggregate_schema import normalize
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
 logger = logging.getLogger("build_results")
 
 RUN_FIELDS = [
@@ -45,6 +48,7 @@ RUN_FIELDS = [
     "composite", "l1", "l2", "l3",
     "l3_n_testable", "l3_n_untestable", "l3_n_errors", "l3_coverage",
     "n_trials", "observation_mode", "git_sha", "session_id",
+    "retried", "retry_of_rc",
 ]
 
 # A cell whose L3 rests on no testable signature carries no behavioural
@@ -80,7 +84,9 @@ def _aggregate_rows(sweep_dir: Path) -> list[dict[str, str]]:
             with open(path) as f:
                 rows = list(csv.DictReader(f))
             logger.info("%s: %d rows from %s", sweep_dir.name, len(rows), name)
-            return rows
+            # retry sweeps use a different column set (no run_index, retry_rc
+            # instead of rc); normalise rather than teach every reader about it.
+            return normalize(rows)
     logger.warning("%s: no aggregate CSV; sweep may still be running", sweep_dir.name)
     return []
 
@@ -247,6 +253,72 @@ def _write(path: Path, fields: list[str], rows: list[dict]) -> None:
     logger.info("wrote %s (%d rows)", path, len(rows))
 
 
+RETRY_SUFFIX = "_retry"
+
+
+def substitute_retries(runs: list[dict], sigs: list[dict]) -> tuple[list[dict], list[dict], int]:
+    """Fold a ``<parent>_retry`` sweep back into its parent's cells.
+
+    A retry sweep re-runs cells that produced nothing, into a separate directory
+    so both outcomes stay on disk. Merging the two naively yields two rows for
+    the same cell — one failed, one recovered — which double-counts it in every
+    attempt-based denominator (completion rate, n_attempts) and makes the design
+    read as 412 cells rather than 400.
+
+    Substitution is deliberately narrow: **only** a sweep whose name is
+    ``<parent>_retry`` folds into ``<parent>``, and only where the parent row is
+    unscored and the retry row is scored. It must never dedup across
+    independently launched sweeps — ``rebuttal_v1_launch`` and
+    ``rebuttal_v1_batch2`` both number their repeats from 0 and are distinct
+    replicates, which is exactly what ``replicate_id`` exists to keep apart.
+
+    The parent's ``replicate_id`` is retained so the bootstrap resamples the same
+    units as before; only the scorecard fields change. ``retry_of_rc`` records
+    the original failure so the substitution stays auditable.
+    """
+    def key(r):
+        return (str(r["repeat_index"]), r["model_id"], r["task_id"])
+
+    by_sweep_key = {(r["sweep"], key(r)): r for r in runs}
+    substituted = 0
+    drop_run_ids, drop_sig_sweeps = set(), set()
+
+    for r in runs:
+        sweep = r["sweep"]
+        if not sweep.endswith(RETRY_SUFFIX):
+            continue
+        parent_name = sweep[: -len(RETRY_SUFFIX)]
+        parent = by_sweep_key.get((parent_name, key(r)))
+        if parent is None:
+            continue  # retry of a cell outside the merged slice; leave it alone
+        if parent["scored"] or not r["scored"]:
+            continue  # nothing to gain, or the retry failed too
+        retry_of_rc = parent.get("rc")
+        for f in ("rc", "wall_time", "scored", "l1_complete", "l3_measurable",
+                  "composite", "l1", "l2", "l3", "l3_n_testable", "l3_n_untestable",
+                  "l3_n_errors", "l3_coverage", "n_trials", "observation_mode",
+                  "git_sha", "session_id"):
+            parent[f] = r[f]
+        parent["retry_of_rc"] = retry_of_rc
+        parent["retried"] = True
+        drop_run_ids.add(id(r))
+        drop_sig_sweeps.add((sweep, key(r)))
+        substituted += 1
+
+    runs_out = [r for r in runs if id(r) not in drop_run_ids]
+    # The retry's signature rows now describe the parent cell, so re-stamp them
+    # onto the parent sweep rather than dropping the detail.
+    sigs_out = []
+    for s in sigs:
+        k = (s["sweep"], (str(s["repeat_index"]), s["model_id"], s["task_id"]))
+        if k in drop_sig_sweeps:
+            s = dict(s, sweep=s["sweep"][: -len(RETRY_SUFFIX)])
+        sigs_out.append(s)
+    # Drop the parent's stale (empty) signature rows for substituted cells —
+    # a failed run has none, so there is nothing to remove in practice.
+    return runs_out, sigs_out, substituted
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -257,6 +329,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max-repeat", type=int, default=None,
                     help="Drop repeats above this index. Use to exclude waves lost to an "
                          "infrastructure failure, which would otherwise read as agent failures.")
+    ap.add_argument("--substitute-retries", action="store_true",
+                    help="Fold a <parent>_retry sweep into its parent's cells instead "
+                         "of adding rows. Without this a retried cell appears twice, "
+                         "once failed and once recovered.")
     ap.add_argument("--verbose", "-v", action="store_true")
     args = ap.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
@@ -277,6 +353,11 @@ def main(argv: list[str] | None = None) -> int:
         logger.error("no runs collected — has the sweep written an aggregate yet?")
         return 1
 
+    n_sub = 0
+    if args.substitute_retries:
+        all_runs, all_sigs, n_sub = substitute_retries(all_runs, all_sigs)
+        logger.info("substituted %d retried cell(s) into their parent sweep", n_sub)
+
     out = Path(args.out)
     _write(out / "runs.csv", RUN_FIELDS, all_runs)
     _write(out / "signatures.csv", SIG_FIELDS, all_sigs)
@@ -286,6 +367,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"\n{len(all_runs)} runs | {scored} scored ({scored/len(all_runs):.0%}) | "
           f"{complete} fully completed ({complete/len(all_runs):.0%}) | "
           f"{len(all_sigs)} signature observations")
+    if n_sub:
+        print(f"{n_sub} cell(s) are one-retry substitutions (original attempt produced "
+              f"no scorecard); report the retry policy alongside any score built on this.")
     return 0
 
 
