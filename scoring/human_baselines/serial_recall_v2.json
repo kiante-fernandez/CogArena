@@ -1,7 +1,7 @@
 {
   "task_id": "serial_recall_v2",
   "source": "literature_estimates",
-  "note": "Estimates derived from the Haridi & Schulz Memory Festival (memoryscaling) project conventions. The original study uses a longer list (~28 pairs per similarity level) and a typed-with-spacebar-gate response; v1 port uses 16 pairs across 4 similarity levels (4 per level) with a single typed-input recall step, matching tasks/serial_recall_v2/task_config.json (n_study_pairs=16, pairs_per_similarity_level=4). Replace with on-platform empirical baselines in v2.",
+  "note": "Estimates derived from the cued-recall paradigm of Haridi, S., Schulz, E. & Thalmann, M. (2025), 'Context Size and Set Size Effects: The Relevance of Specific Cues When Searching Long-Term Memory', Computational Brain & Behavior 9:1-33 (doi:10.1007/s42113-025-00255-7). The original study uses a longer list (~28 pairs per similarity level) and a typed-with-spacebar-gate response; v1 port uses 16 pairs across 4 similarity levels (4 per level) with a single typed-input recall step, matching tasks/serial_recall_v2/task_config.json (n_study_pairs=16, pairs_per_similarity_level=4). Replace with on-platform empirical baselines in v2.",
   "overall_accuracy": {
     "mean": 0.65,
     "sd": 0.18,

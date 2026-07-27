@@ -1,10 +1,30 @@
 {
-    "task_id": "grid_bandit",
-    "source": "literature_estimates",
-    "note": "Estimates derived from Witte, Wise, Huys & Schulz (2024) Study 1 master.csv aggregation conventions. The original paper does not report headline means in raw form; numbers below are reasonable expectations from the GP-bandit literature (Schulz et al. 2018, Wu et al. 2018, Schulz et al. 2020). Replace with on-platform empirical baselines in v2.",
-    "mean_reward_per_click": {"mean": 65, "sd": 8, "n": 60},
-    "mean_reward_safe": {"mean": 65, "sd": 9, "n": 60},
-    "mean_reward_risky": {"mean": 67, "sd": 8, "n": 60},
-    "prop_high_value_clicks": {"mean": 0.75, "sd": 0.10, "n": 60},
-    "kraken_caught_rate_risky": {"mean": 0.25, "sd": 0.12, "n": 60}
+  "task_id": "grid_bandit",
+  "source": "literature_estimates",
+  "note": "Estimates derived from Witte, K., Wise, T., Huys, Q. J. M. & Schulz, E. (2024), 'Exploring the Unexplored: Worry as a Catalyst for Exploratory Behavior in Anxiety and Depression', PsyArXiv doi:10.31234/osf.io/td8xh, Study 1 master.csv aggregation conventions. (Not to be confused with Witte, Thalmann & Schulz (2024), 'How should we measure exploration?', doi:10.31234/osf.io/tzuey, a different author set.) The original paper does not report headline means in raw form; numbers below are reasonable expectations from the GP-bandit literature (Schulz et al. 2018, Wu et al. 2018, Schulz et al. 2020). Replace with on-platform empirical baselines in v2.",
+  "mean_reward_per_click": {
+    "mean": 65,
+    "sd": 8,
+    "n": 60
+  },
+  "mean_reward_safe": {
+    "mean": 65,
+    "sd": 9,
+    "n": 60
+  },
+  "mean_reward_risky": {
+    "mean": 67,
+    "sd": 8,
+    "n": 60
+  },
+  "prop_high_value_clicks": {
+    "mean": 0.75,
+    "sd": 0.1,
+    "n": 60
+  },
+  "kraken_caught_rate_risky": {
+    "mean": 0.25,
+    "sd": 0.12,
+    "n": 60
+  }
 }
