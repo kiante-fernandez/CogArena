@@ -20,8 +20,8 @@
       "filter": {
         "timed_out": false
       },
-      "human_mean": 0.65,
-      "human_sd": 0.12
+      "human_mean": 0.871,
+      "human_sd": 0.075
     },
     {
       "name": "mean_residence_time_low",
@@ -33,8 +33,8 @@
         "block_condition": "low_cost",
         "action": "leave"
       },
-      "human_mean": 5.0,
-      "human_sd": 1.5
+      "human_mean": 4.5,
+      "human_sd": 2.3
     },
     {
       "name": "mean_residence_time_high",
@@ -46,8 +46,8 @@
         "block_condition": "high_cost",
         "action": "leave"
       },
-      "human_mean": 7.0,
-      "human_sd": 1.8
+      "human_mean": 6.3,
+      "human_sd": 3.1
     },
     {
       "name": "mvt_optimal_match_rate",

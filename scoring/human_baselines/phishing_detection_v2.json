@@ -1,30 +1,30 @@
 {
   "task_id": "phishing_detection_v2",
-  "source": "paper_derived",
-  "note": "Derived from Singh, Aggarwal, Rajivan & Gonzalez (2019), Proc. Human Factors and Ergonomics Society 63:454-458, N=296 MTurk workers across three training-frequency conditions (Low 25%, Medium 50%, High 75% phishing during training; n=98/99/99). This port presents phishing at 50% in every phase, so Singh's MEDIUM condition is the matching arm. Singh reports hit 0.59 -> 0.69 and false alarm 0.27 -> 0.34 from pre- to post-training in that condition. Singh's pre/post phases used a 20% phishing base rate while this port uses 50%, so accuracies are recomputed at the port's base rate: 0.5*hit + 0.5*(1-FA), giving pre 0.660 and post 0.675. overall_accuracy 0.668 is the mean of the two; the 40-trial training phase it also covers is not reported separately by Singh. hit_rate 0.640 and false_alarm_rate 0.305 are the pre/post means. SDs are estimated from the reported d' spread (Medium: 0.98 (0.96) pre, 1.02 (0.90) post), which is wide; Singh does not publish per-rate SDs. SUPERSEDES pre 0.62 / post 0.78 / hit 0.79 / FA 0.25. The old values implied a training gain of +0.16 in accuracy; Singh's Medium condition gains +0.015, because training raises the hit rate and the false-alarm rate together. In Singh's High condition overall accuracy FALLS (0.728 -> 0.590 at their base rate). The L3 signature learning_effect (expected a > b) should be read against that: the human effect on accuracy is small and condition-dependent, while the effect on hit rate alone is robust.",
+  "source": "empirical_from_published_data",
+  "note": "COMPUTED FROM THE AUTHORS' TRIAL-LEVEL DATA, not estimated. Source: Singh, K., Aggarwal, P., Rajivan, P. & Gonzalez, C. (2019), 'Training to Detect Phishing Emails: Effects of the Frequency of Experienced Phishing Emails', Proc. Human Factors and Ergonomics Society 63:453-457; data at github.com/DDM-Lab/PhishingTrainingTask, file Data/experiment1-outcomefeedback.csv (18,349 trials from n=296 MTurk participants, matching the paper's reported 296). Response coding verified against the data rather than assumed: user_action1 = 1 scores correct on phishing emails and incorrect on ham, so 1 is 'classified as phishing'. CONDITION MATCHED TO THIS PORT. Singh crosses three training base rates (25 / 50 / 75% phishing) with pre- and post-training phases fixed at 20%. This port presents phishing at 50% in EVERY phase, so the matching arm is 50_OutFeed (n=99), and within it the training phase, which is the only phase at 50%. From that phase: hit_rate 0.821 (sd 0.120), false_alarm_rate 0.266 (sd 0.143), overall_accuracy 0.778 (sd 0.099). pre_training_accuracy and post_training_accuracy come from phases 1 and 3, but those ran at a 20% base rate, so each participant's accuracy is recomputed at this port's 50% rate as 0.5*hit + 0.5*(1-FA) before averaging: pre 0.696 (sd 0.211), post 0.731 (sd 0.200). SUPERSEDES two earlier generations. The original 0.72 / 0.62 / 0.78 / 0.79 / 0.25 were 'mid-range estimates'. A subsequent pass read the paper's Figure 3 bars and derived 0.668 / 0.660 / 0.675 / 0.640 / 0.305 for the Medium condition; the raw data show that reading was low on hit rate by about 0.18, because Figure 3 plots the pre/post phases at 20% base rate rather than the 50% training phase this port matches. THE TRAINING EFFECT IS REAL BUT SMALL AND SIGN-DEPENDENT. Accuracy rises 0.696 to 0.731 (+0.035) in this condition because training raises the hit rate and the false-alarm rate together. The paper's High-frequency arm shows overall accuracy FALLING. The L3 signature learning_effect (expected a > b) should be read against that: the effect on hit rate is robust, the effect on accuracy is small and condition-dependent.",
   "overall_accuracy": {
-    "mean": 0.668,
-    "sd": 0.12,
+    "mean": 0.778,
+    "sd": 0.099,
     "n": 60
   },
   "pre_training_accuracy": {
-    "mean": 0.66,
-    "sd": 0.12,
+    "mean": 0.696,
+    "sd": 0.211,
     "n": 60
   },
   "post_training_accuracy": {
-    "mean": 0.675,
-    "sd": 0.12,
+    "mean": 0.731,
+    "sd": 0.2,
     "n": 60
   },
   "hit_rate": {
-    "mean": 0.64,
-    "sd": 0.15,
+    "mean": 0.821,
+    "sd": 0.12,
     "n": 60
   },
   "false_alarm_rate": {
-    "mean": 0.305,
-    "sd": 0.15,
+    "mean": 0.266,
+    "sd": 0.143,
     "n": 60
   }
 }

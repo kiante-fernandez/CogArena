@@ -1,20 +1,20 @@
 {
   "task_id": "serial_recall_v2",
-  "source": "paper_derived_approximate",
-  "note": "Derived from Haridi, S., Schulz, E. & Thalmann, M. (2025), 'Context Size and Set Size Effects: The Relevance of Specific Cues When Searching Long-Term Memory', Computational Brain & Behavior 9:1-33, doi:10.1007/s42113-025-00255-7, Experiment 1 (n=115 after preregistered exclusions, Prolific, age 18-45, mean 32.77). Participants learned 68 word pairs across four blocks at set sizes drawn from 2-32, with a letter-span distractor between learning and cued recall. overall_accuracy 0.780 is read from Fig. 4D and 4F, where mean accuracy sits in a 0.75-0.80 band across every set size. This SUPERSEDES 0.65, which was too low. The similarity split is DERIVED, not read: the paper reports a standardized log-odds coefficient of 0.36 (95% HDI [0.18, 0.55], BF10 > 100) for cue-target similarity on accuracy. Taking the five similarity bins as spanning [0,1] (SD ~0.289), the lowest to highest bin is 2.77 SDs, a log-odds shift of 0.997, which around an overall 0.78 gives 0.683 low and 0.854 high. SUPERSEDES 0.50 and 0.78: the direction was already right but the gap was overstated (0.28 vs the paper's ~0.17). TREAT THESE AS APPROXIMATE. Two steps are figure-reading and one is a distributional assumption about the similarity bins, so they are weaker evidence than the values computed from raw data for grid_bandit and repeated_games. DESIGN DIFFERENCES: the original uses 68 pairs per participant across four set sizes (2-32) and FIVE Word2Vec similarity bins; this port uses 16 pairs at a single set size across FOUR similarity levels, with a typed response. Accuracy is strongly set-size dependent in the original (beta = -0.26, BF10 = 4.67), so a port at a single set size is not strictly comparable. timeout_rate 0.05 remains an author estimate: the original gave 5 s to type and asked participants to enter '0' when they could not recall, so an omission there is a response rather than a timeout.",
+  "source": "empirical_from_published_data",
+  "note": "COMPUTED FROM THE AUTHORS' TRIAL-LEVEL DATA, not read off a figure. Source: Haridi, S., Schulz, E. & Thalmann, M. (2025), 'Context Size and Set Size Effects: The Relevance of Specific Cues When Searching Long-Term Memory', Computational Brain & Behavior 9:1-33, doi:10.1007/s42113-025-00255-7; data at github.com/susanneharidi/memoryscaling, file ExperimentDataAndAnalysis/Experiment1/ExperimentDataExp1W2VSim.csv (35,856 trials; 23,896 after the preregistered participant exclusion validID, n=116). Values are the mean across participants of each participant's own accuracy (correct_01), with SD across participants. SET SIZE IS MATCHED TO THIS PORT. Experiment 1 crosses 16 set sizes from 2 to 32; this port presents 16 word pairs, so the ListLength = 16 subset is used (n=29 participants, since set sizes were assigned four per participant in blocks). Accuracy is strongly set-size dependent, so matching it matters more than the larger pooled n. Similarity bins 1-2 are taken as low and 4-5 as high, against this port's four similarity levels. Pooled across all set sizes for reference: overall 0.923 (sd 0.057, n=116), low sim 0.905 (sd 0.078), high sim 0.943 (sd 0.052). Per bin, 1 through 5: 0.913, 0.899, 0.920, 0.937, 0.950 - monotonic above bin 2, which is the similarity effect the paper reports (standardized log-odds 0.36, 95% HDI [0.18, 0.55], BF10 > 100). SUPERSEDES two earlier generations of estimate. The original 0.65 / 0.78 / 0.50 were unsourced. A subsequent pass read 0.78 off Fig. 4D and derived 0.683 / 0.854 from the reported coefficient; the data show that figure reading was WRONG by about 0.12 - actual accuracy is around 0.90, not 0.78. This is the reason to prefer archives over figures wherever an archive exists. timeout_rate 0.05 remains an author estimate: the original gave 5 s to type and asked participants to enter '0' when they could not recall, so an omission there is a response rather than a timeout.",
   "overall_accuracy": {
-    "mean": 0.78,
-    "sd": 0.16,
+    "mean": 0.903,
+    "sd": 0.075,
     "n": 50
   },
   "accuracy_high_sim": {
-    "mean": 0.854,
-    "sd": 0.15,
+    "mean": 0.944,
+    "sd": 0.071,
     "n": 50
   },
   "accuracy_low_sim": {
-    "mean": 0.683,
-    "sd": 0.18,
+    "mean": 0.872,
+    "sd": 0.125,
     "n": 50
   },
   "mean_recall_rt": {
