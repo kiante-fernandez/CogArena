@@ -1,42 +1,57 @@
 {
-    "task_id": "serial_recall_v2",
-    "task_name": "Cued Paired-Associate Recall (Memory Festival)",
-    "domain": "memory_recall",
-    "version": "1.0.0",
-    "citation": "Haridi, S. & Schulz, E. (Memory festival paradigm) — paired-associate recall with semantic-similarity manipulation; Computational Principles of Intelligence Lab, MPI Tübingen.",
-    "psych201_reference": null,
-    "source": {
-        "url": "https://github.com/susanneharidi/memoryscaling/tree/main/online_experiment/Experiment1",
-        "commit": "main",
-        "license": "see upstream",
-        "note": "Adapted to jsPsych v8 from Haridi & Schulz's jsPsych-6 + jQuery + Bootstrap implementation. Word-pair sets are subsets of the original PairsMaxSim02/04/06/08 lists (the most-similar PairsMaxSim1 set is intentionally omitted as its high baseline accuracy compresses the within-subject similarity manipulation). The original task included questionnaires, a long arithmetic distractor block, and a separate spacebar-then-typed-response gate; the v1 port retains the paired-associate study + cued recall structure but uses a single text-input recall step (typed first three letters of the partner word, scored leniently)."
-    },
-    "description": "Study a list of word pairs at varying levels of semantic similarity, then recall the partner word for each cue. Recall accuracy is scored on the first three typed letters of the response. Tests cued paired-associate memory and the well-established semantic-similarity-aids-recall effect.",
-    "parameters": {
-        "n_trials": 16,
-        "n_study_pairs": 16,
-        "n_recall_trials": 16,
-        "study_pair_duration_ms": 3000,
-        "study_pair_isi_ms": 500,
-        "filler_break_ms": 5000,
-        "recall_cue_deadline_ms": 8000,
-        "similarity_levels": [0.2, 0.4, 0.6, 0.8],
-        "pairs_per_similarity_level": 4,
-        "response_type": "text_input",
-        "response_keys": [],
-        "response_match_chars": 3
-    },
-    "randomization": {
-        "seed_from_session": true,
-        "randomize_study_order": true,
-        "randomize_recall_order": true,
-        "sample_pairs_from_pool_per_session": true
-    },
-    "data_logging": {
-        "required_fields": [
-            "trial_index", "trial_part", "study_position", "cue_word",
-            "target_word", "similarity_level", "response", "response_truncated",
-            "target_truncated", "correct", "rt", "timed_out"
-        ]
-    }
+  "task_id": "serial_recall_v2",
+  "task_name": "Cued Paired-Associate Recall (Memory Festival)",
+  "domain": "memory_recall",
+  "version": "1.0.0",
+  "citation": "Haridi, S. & Schulz, E. (Memory festival paradigm) \u2014 paired-associate recall with semantic-similarity manipulation; Computational Principles of Intelligence Lab, MPI T\u00fcbingen.",
+  "psych201_reference": null,
+  "source": {
+    "url": "https://github.com/susanneharidi/memoryscaling/tree/main/online_experiment/Experiment1",
+    "commit": "main",
+    "license": "see upstream",
+    "note": "Adapted to jsPsych v8 from Haridi & Schulz's jsPsych-6 + jQuery + Bootstrap implementation. Word-pair sets are subsets of the original PairsMaxSim02/04/06/08 lists (the most-similar PairsMaxSim1 set is intentionally omitted as its high baseline accuracy compresses the within-subject similarity manipulation). The original task included questionnaires, a long arithmetic distractor block, and a separate spacebar-then-typed-response gate; the v1 port retains the paired-associate study + cued recall structure but uses a single text-input recall step (typed first three letters of the partner word, scored leniently)."
+  },
+  "description": "Study a list of word pairs at varying levels of semantic similarity, then recall the partner word for each cue. Recall accuracy is scored on the first three typed letters of the response. Tests cued paired-associate memory and the well-established semantic-similarity-aids-recall effect.",
+  "parameters": {
+    "n_trials": 16,
+    "n_study_pairs": 16,
+    "n_recall_trials": 16,
+    "study_pair_duration_ms": 3000,
+    "study_pair_isi_ms": 500,
+    "filler_break_ms": 5000,
+    "recall_cue_deadline_ms": 8000,
+    "similarity_levels": [
+      0.2,
+      0.4,
+      0.6,
+      0.8
+    ],
+    "pairs_per_similarity_level": 4,
+    "response_type": "text_input",
+    "response_keys": [],
+    "response_match_chars": 3
+  },
+  "randomization": {
+    "seed_from_session": true,
+    "randomize_study_order": true,
+    "randomize_recall_order": true,
+    "sample_pairs_from_pool_per_session": true
+  },
+  "data_logging": {
+    "required_fields": [
+      "trial_index",
+      "trial_part",
+      "study_position",
+      "cue_word",
+      "target_word",
+      "similarity_level",
+      "response",
+      "response_truncated",
+      "target_truncated",
+      "correct",
+      "rt",
+      "timed_out"
+    ]
+  },
+  "psych201_overlap": false
 }

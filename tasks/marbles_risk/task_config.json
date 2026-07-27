@@ -1,45 +1,80 @@
 {
-    "task_id": "marbles_risk",
-    "task_name": "Marbles (Risky Choice from Description)",
-    "domain": "risk_ambiguity",
-    "version": "1.0.0",
-    "citation": "Ciranka, Bahrami & van den Bos (2022) — Uncertainty drives social information use in risky choice across adolescence",
-    "psych201_reference": null,
-    "source": {
-        "url": "ssh://git@arc-git.mpib-berlin.mpg.de:22973/ciranka/developing_marbles.git",
-        "commit": "main",
-        "license": "MPI-internal (used with permission)",
-        "note": "Adapted to jsPsych v8 from Ciranka et al.'s jsPsych v6 implementation (Z_Experiment_Code/index.html plus Z_Experiment_Code/jspsych-6.0/CiriPlugins/*). v1 port keeps only the description-format risky-choice trials (condition 3 in the original); the original task additionally includes a sampling/experience condition and a social-advice condition that we defer to v2. Probability set, payoff set, and the two excluded payoff combinations match the source verbatim."
-    },
-    "description": "Forced choice between a SAFE option (5 points guaranteed) and a RISKY option (probability p of winning V points, otherwise 0). Six probability levels and three payoff levels are crossed factorially with two combinations excluded; remaining 16 unique trials are repeated 4 times each (64 total trials). Tests risk aversion, expected-value sensitivity, and the magnitude-by-probability interaction.",
-    "parameters": {
-        "n_trials": 64,
-        "n_repetitions": 4,
-        "safe_value": 5,
-        "probabilities": [0.125, 0.25, 0.375, 0.5, 0.675, 0.75],
-        "gamble_values": [8, 20, 50],
-        "excluded_combinations": [[0.25, 8], [0.75, 50]],
-        "response_keys": ["f", "j"],
-        "key_mapping_left": "f",
-        "key_mapping_right": "j",
-        "response_type": "keypress",
-        "response_deadline_ms": 8000,
-        "fixation_duration_ms": 500,
-        "feedback_duration_ms": 0,
-        "iti_min_ms": 400,
-        "iti_max_ms": 800
-    },
-    "randomization": {
-        "seed_from_session": true,
-        "randomize_trial_order": true,
-        "randomize_safe_position": true
-    },
-    "data_logging": {
-        "required_fields": [
-            "trial_index", "probability", "gamble_value", "safe_value",
-            "ev_risky", "ev_diff", "safe_position", "correct_key_higher_ev",
-            "has_clear_better", "near_neutral_ev",
-            "response", "chose_risky", "chose_higher_ev", "rt", "timed_out"
-        ]
-    }
+  "task_id": "marbles_risk",
+  "task_name": "Marbles (Risky Choice from Description)",
+  "domain": "risk_ambiguity",
+  "version": "1.0.0",
+  "citation": "Ciranka, Bahrami & van den Bos (2022) \u2014 Uncertainty drives social information use in risky choice across adolescence",
+  "psych201_reference": null,
+  "source": {
+    "url": "ssh://git@arc-git.mpib-berlin.mpg.de:22973/ciranka/developing_marbles.git",
+    "commit": "main",
+    "license": "MPI-internal (used with permission)",
+    "note": "Adapted to jsPsych v8 from Ciranka et al.'s jsPsych v6 implementation (Z_Experiment_Code/index.html plus Z_Experiment_Code/jspsych-6.0/CiriPlugins/*). v1 port keeps only the description-format risky-choice trials (condition 3 in the original); the original task additionally includes a sampling/experience condition and a social-advice condition that we defer to v2. Probability set, payoff set, and the two excluded payoff combinations match the source verbatim."
+  },
+  "description": "Forced choice between a SAFE option (5 points guaranteed) and a RISKY option (probability p of winning V points, otherwise 0). Six probability levels and three payoff levels are crossed factorially with two combinations excluded; remaining 16 unique trials are repeated 4 times each (64 total trials). Tests risk aversion, expected-value sensitivity, and the magnitude-by-probability interaction.",
+  "parameters": {
+    "n_trials": 64,
+    "n_repetitions": 4,
+    "safe_value": 5,
+    "probabilities": [
+      0.125,
+      0.25,
+      0.375,
+      0.5,
+      0.675,
+      0.75
+    ],
+    "gamble_values": [
+      8,
+      20,
+      50
+    ],
+    "excluded_combinations": [
+      [
+        0.25,
+        8
+      ],
+      [
+        0.75,
+        50
+      ]
+    ],
+    "response_keys": [
+      "f",
+      "j"
+    ],
+    "key_mapping_left": "f",
+    "key_mapping_right": "j",
+    "response_type": "keypress",
+    "response_deadline_ms": 8000,
+    "fixation_duration_ms": 500,
+    "feedback_duration_ms": 0,
+    "iti_min_ms": 400,
+    "iti_max_ms": 800
+  },
+  "randomization": {
+    "seed_from_session": true,
+    "randomize_trial_order": true,
+    "randomize_safe_position": true
+  },
+  "data_logging": {
+    "required_fields": [
+      "trial_index",
+      "probability",
+      "gamble_value",
+      "safe_value",
+      "ev_risky",
+      "ev_diff",
+      "safe_position",
+      "correct_key_higher_ev",
+      "has_clear_better",
+      "near_neutral_ev",
+      "response",
+      "chose_risky",
+      "chose_higher_ev",
+      "rt",
+      "timed_out"
+    ]
+  },
+  "psych201_overlap": false
 }
