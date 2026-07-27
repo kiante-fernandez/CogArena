@@ -246,6 +246,40 @@ def effort_foraging():
             "_observed_residence_high": _agg({p: d["high"] for p, d in per.items() if d["high"]}, 5)}
 
 
+def tiny_alchemy():
+    """Success, novelty and pair-uniqueness from the Tiny Alchemy experiment.
+
+    Note this is Tiny Alchemy, not the paper's headline Little Alchemy 2
+    dataset: it is the variant this port is named after and modelled on.
+    Definitions mirror the port's own — novelty is a success producing an
+    element the participant had not produced before, and pair uniqueness uses
+    the unordered pair, matching score_session's is_unique_pair augmentation.
+    """
+    import ast
+    succ, nov, uniq = defaultdict(list), defaultdict(list), defaultdict(list)
+    seen_res, seen_pair = defaultdict(set), defaultdict(set)
+    for r in _rows("brandle_2023_tiny_alchemy_human.csv"):
+        pid = r["id"]
+        s = r["success"] == "1"
+        succ[pid].append(1.0 if s else 0.0)
+        pair = (min(r["first"], r["second"]), max(r["first"], r["second"]))
+        uniq[pid].append(0.0 if pair in seen_pair[pid] else 1.0)
+        seen_pair[pid].add(pair)
+        new = False
+        if s and r["results"] not in ("-1", ""):
+            try:
+                res = ast.literal_eval(r["results"])
+            except (ValueError, SyntaxError):
+                res = []
+            for e in (res if isinstance(res, list) else [res]):
+                if e not in seen_res[pid]:
+                    new = True
+                    seen_res[pid].add(e)
+        nov[pid].append(1.0 if new else 0.0)
+    return {"success_rate": _agg(succ, 10), "novelty_rate": _agg(nov, 10),
+            "unique_pair_rate": _agg(uniq, 10)}
+
+
 DERIVATIONS = {
     "grid_bandit": grid_bandit,
     "repeated_games": repeated_games,
@@ -255,6 +289,7 @@ DERIVATIONS = {
     "phishing_detection_v2": phishing_detection_v2,
     "random_dot_motion_v2": random_dot_motion_v2,
     "effort_foraging": effort_foraging,
+    "tiny_alchemy": tiny_alchemy,
 }
 
 

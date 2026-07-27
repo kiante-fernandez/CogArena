@@ -1,9 +1,9 @@
 # Human baseline source data
 
-The participant-level datasets that eight of the ten v1 L2 baselines are
+The participant-level datasets that nine of the ten v1 L2 baselines are
 computed from. Each file is the original authors' released data, renamed to
-`author_year_task` so the folder is navigable; nothing has been altered except
-one column-subset noted below.
+`author_year_task` so the folder is navigable; only the columns each derivation
+reads are kept, so two files are documented subsets rather than raw downloads.
 
 Re-derive every number with:
 
@@ -159,6 +159,29 @@ Supplies `prop_stay_overall` directly. Residence times are *calibrated* rather
 than transferred, because their travel duration is fixed at 8.33 s in both
 conditions while our port varies travel time 4 s vs 8 s — see the task note.
 
+### `brandle_2023_tiny_alchemy_human.csv` → `tiny_alchemy`
+**Brändle, F., Stocks, L. J., Tenenbaum, J. B., Gershman, S. J. & Schulz, E.
+(2023).** Empowerment contributes to exploration behaviour in a creative video
+game. *Nature Human Behaviour* 7:1481–1489.
+doi:[10.1038/s41562-023-01661-2](https://doi.org/10.1038/s41562-023-01661-2)
+
+Source: the authors' additional-data archive →
+`empowermentexploration/resources/playerdata/data/tinyalchemyHumanData.csv` ·
+48,963 trials, n=97, median 439 trials per participant
+
+**This is the Tiny Alchemy variant, not the paper's headline Little Alchemy 2
+dataset** — Tiny Alchemy is the smaller game this port is named after and
+modelled on (540 elements, 4 base). Using the Little Alchemy 2 figures would
+have been the wrong game, and did produce a novelty rate ~40% too high before
+this file was available.
+
+Supplies `success_rate`, `novelty_rate`, `unique_pair_rate`, each computed with
+this port's own definitions (novelty = a success producing an element that
+participant had not produced before; pair uniqueness on the unordered pair,
+matching `score_session`'s `is_unique_pair`).
+
+The full archive is ~21 GB; only this 1.2 MB file is used and only it is kept.
+
 ---
 
 ## Tasks with no usable public archive
@@ -171,14 +194,6 @@ detection, and the rest use words, faces, paintings or scenes. Since lure
 similarity sets old/new difficulty and our lures come from the studied items'
 own 768-combination feature space, none is a better basis than converting
 Brady's exemplar-condition 2AFC accuracy through the standard d′ identity.
-
-**`tiny_alchemy`** — Brändle, F., Stocks, L. J., Tenenbaum, J. B., Gershman,
-S. J. & Schulz, E. (2023), *Nature Human Behaviour* 7:1481–1489,
-doi:10.1038/s41562-023-01661-2. The 29,493-player dataset is held outside the
-repo and shared on request; the repository's only behavioural file is a
-15-participant rating study. `novelty_rate` is derived from Figure 1c
-(mean 158.06 trials, mean final inventory 50.91 from 4 starting elements);
-`success_rate` and `unique_pair_rate` remain author estimates.
 
 ---
 

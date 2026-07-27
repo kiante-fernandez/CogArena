@@ -9,11 +9,12 @@ re-download the archives and re-derive every value.
     python -m scripts.baseline_sources --fetch     # download to data/baseline_sources/
     python -m scripts.baseline_sources --verify    # check hashes of what is on disk
 
-The files total ~211 MB and live under ``data/``, which is gitignored: they are
-third-party archives with their own licences and do not belong in this repo.
-Only this manifest and the derivation in ``scripts/derive_baselines.py`` are
-version-controlled, which is what makes the numbers checkable without
-redistributing anyone's data.
+The files live in ``scoring/human_baselines/sources/`` (~44 MB) with a README
+giving each one's citation and licence. Only the columns each derivation reads
+are kept: the Bustamante original is 204 MB across 69 columns and is stored as a
+28 MB 10-column subset, and the Brandle archive is 21 GB of which one 1.2 MB
+file is used. Everything else is discardable — this manifest records where to
+re-fetch it.
 """
 from __future__ import annotations
 
@@ -23,12 +24,12 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_DIR = REPO_ROOT / "data" / "baseline_sources"
+SOURCE_DIR = REPO_ROOT / "scoring" / "human_baselines" / "sources"
 
 # task -> (local filename, download URL, sha256, citation, what it supplies)
 SOURCES: dict[str, dict] = {
     "grid_bandit": {
-        "file": "witte_grid_bandit_master.csv",
+        "file": "witte_2024_grid_bandit_study1.csv",
         "url": "https://raw.githubusercontent.com/KristinWitte/worried_exploration/main/Study1/data/master.csv",
         "sha256": "ab2ea3cfb390a0c3",
         "citation": "Witte, K., Wise, T., Huys, Q. J. M. & Schulz, E. (2024), 'Exploring the "
@@ -38,7 +39,7 @@ SOURCES: dict[str, dict] = {
                     "prop_high_value_clicks, kraken_caught_rate_risky",
     },
     "repeated_games": {
-        "file": "akata_repgames.csv",
+        "file": "akata_2025_repeated_games_human.csv",
         "url": "https://raw.githubusercontent.com/eliaka/repeatedgames/main/human_experiment/analysis/repgames.csv",
         "sha256": "f3c3d46a2e34f85f",
         "citation": "Akata, E. et al. (2025), 'Playing repeated games with large language "
@@ -47,7 +48,7 @@ SOURCES: dict[str, dict] = {
         "supplies": "coop_rate_pd, mean_payoff_pd, coordination_rate_bos, mean_payoff_bos",
     },
     "marbles_risk": {
-        "file": "ciranka_TidyMarbleNew.csv",
+        "file": "ciranka_2025_marbles_trials.csv",
         "url": "https://zenodo.org/api/records/16738297/files/DevelopingMarbles_zenodo.zip/content"
                "  (extract A_raw_data/TidyMarbleNew.csv)",
         "sha256": "6e586682af4096a4",
@@ -57,17 +58,18 @@ SOURCES: dict[str, dict] = {
         "supplies": "prop_chose_higher_ev",
     },
     "moral_machine": {
-        "file": "awad_plotdatamain.rdata",
+        "file": "awad_2018_moral_machine_amce_fig2a.csv",
         "url": "https://osf.io/download/u58en/",
-        "sha256": "fab359b7ffecca18",
+        "sha256": "0fa4747572676c52",
         "citation": "Awad, E. et al. (2018), Nature 563:59-64, doi:10.1038/s41586-018-0637-6; "
                     "OSF osf.io/3hvt2, Datasets/Moral Machine Effect Sizes/plotdatamain.rdata",
+        "derived": True,
         "scale": "Figure 2a source data, n = 35.2M decisions",
         "supplies": "prop_utilitarian, prop_save_young, prop_save_human, prop_save_legal, "
                     "prop_intervention",
     },
     "serial_recall_v2": {
-        "file": "haridi_exp1_w2vsim.csv",
+        "file": "haridi_2025_serial_recall_exp1.csv",
         "url": "https://raw.githubusercontent.com/susanneharidi/memoryscaling/main/"
                "ExperimentDataAndAnalysis/Experiment1/ExperimentDataExp1W2VSim.csv",
         "sha256": "3bd1c3fb58988bcc",
@@ -77,7 +79,7 @@ SOURCES: dict[str, dict] = {
         "supplies": "overall_accuracy, accuracy_low_sim, accuracy_high_sim",
     },
     "phishing_detection_v2": {
-        "file": "singh_experiment1_outcomefeedback.csv",
+        "file": "singh_2019_phishing_exp1_outcomefeedback.csv",
         "url": "https://raw.githubusercontent.com/DDM-Lab/PhishingTrainingTask/main/"
                "Data/experiment1-outcomefeedback.csv",
         "sha256": "b5069dd2d4dc0d36",
@@ -88,7 +90,7 @@ SOURCES: dict[str, dict] = {
                     "hit_rate, false_alarm_rate",
     },
     "random_dot_motion_v2": {
-        "file": "desender_2021_cognit.csv",
+        "file": "desender_2021_random_dot_motion.csv",
         "url": "https://osf.io/download/3t98v/",
         "sha256": "67977a1e027f6e8d",
         "citation": "Desender, K., Donner, T. H. & Verguts, T. (2021), Cognition 207:104522, "
@@ -99,16 +101,27 @@ SOURCES: dict[str, dict] = {
                     "accuracy_high_coherence",
     },
     "effort_foraging": {
-        "file": "bustamante_choiceData_exp1.csv",
+        "file": "bustamante_2023_effort_foraging_exp1_slim.csv",
         "url": "https://osf.io/download/prf8h/",
-        "sha256": "af712b5ef8a30b03",
+        "sha256": "fc28ee13ec0bc82e",
         "citation": "Bustamante, L. A. et al. (2023), PNAS 120(50):e2221510120; data at "
                     "osf.io/a4r2e, data/experiment_1/choiceData_experiment_1.csv. Design "
                     "ancestor: Constantino, S. M. & Daw, N. D. (2015), Cogn Affect Behav "
                     "Neurosci 15(4):837-853",
+        "derived": True,
         "scale": "350,608 decisions, n=537",
         "supplies": "prop_stay_overall (direct); mean_residence_time_low/high (calibrated "
                     "to this port's MVT optimum, see the baseline note)",
+    },
+    "tiny_alchemy": {
+        "file": "brandle_2023_tiny_alchemy_human.csv",
+        "url": "authors' additional-data archive, empowermentexploration/resources/playerdata/"
+               "data/tinyalchemyHumanData.csv  (shared on request; see the sources README)",
+        "sha256": "3b43ed7f4ba2b7ad",
+        "citation": "Brandle, F., Stocks, L. J., Tenenbaum, J. B., Gershman, S. J. & Schulz, E. "
+                    "(2023), Nature Human Behaviour 7:1481-1489, doi:10.1038/s41562-023-01661-2",
+        "scale": "48,963 trials, n=97 (the Tiny Alchemy variant, not Little Alchemy 2)",
+        "supplies": "success_rate, novelty_rate, unique_pair_rate",
     },
 }
 
@@ -118,9 +131,6 @@ NO_ARCHIVE = {
                           "in the Confidence Database were checked; none is old/new "
                           "recognition with lures drawn from the studied items' own feature "
                           "space, which is what sets this port's difficulty.",
-    "tiny_alchemy": "Brandle et al. (2023) store the 29,493-player dataset outside the repo "
-                    "and share it on request. The repo's only behavioural file is a "
-                    "15-participant rating study.",
 }
 
 
@@ -159,6 +169,13 @@ def fetch() -> int:
         p = SOURCE_DIR / s["file"]
         if p.exists() and _sha256_prefix(p) == s["sha256"]:
             print(f"  have    {task}")
+            continue
+        if s.get("derived"):
+            # Not a raw download: extracted from the source (Awad) or a documented
+            # column subset (Bustamante). Re-creating it needs the original file
+            # and the step described in the sources README, not a fetch.
+            print(f"  DERIVED {task}: rebuild from the original, see the sources README")
+            failed += 1
             continue
         url = s["url"].split("  ")[0]
         if url.endswith("/content"):

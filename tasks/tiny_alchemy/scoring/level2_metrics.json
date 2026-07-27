@@ -7,8 +7,8 @@
       "type": "proportion_correct",
       "field": "is_success",
       "filter": {},
-      "human_mean": 0.4,
-      "human_sd": 0.15
+      "human_mean": 0.252,
+      "human_sd": 0.159
     },
     {
       "name": "novelty_rate",
@@ -16,8 +16,8 @@
       "type": "proportion_correct",
       "field": "is_novel_discovery",
       "filter": {},
-      "human_mean": 0.297,
-      "human_sd": 0.12
+      "human_mean": 0.212,
+      "human_sd": 0.151
     },
     {
       "name": "unique_pair_rate",
@@ -25,8 +25,8 @@
       "type": "proportion_correct",
       "field": "is_unique_pair",
       "filter": {},
-      "human_mean": 0.95,
-      "human_sd": 0.05
+      "human_mean": 0.931,
+      "human_sd": 0.043
     }
   ]
 }

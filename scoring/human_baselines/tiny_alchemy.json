@@ -1,7 +1,7 @@
 {
   "task_id": "tiny_alchemy",
-  "source": "paper_derived_partial",
-  "note": "Derived from Brandle, Stocks, Tenenbaum, Gershman & Schulz (2023), Nature Human Behaviour 7:1481-1489. The published dataset is 'Little Alchemy 2': 29,493 online players, 4,691,033 attempted combinations, 720 reachable elements from 4 starting elements. Figure 1c reports mean 158.06 trials (s.d. 695.38) and mean final inventory 50.91 elements (s.d. 76.42) per player. novelty_rate is therefore (50.91 - 4) / 158.06 = 0.297, SUPERSEDING the previous 0.35. CAVEATS a reviewer should be told: (1) 'Tiny Alchemy' is a separate validation experiment in the authors' repository (additionalexperiments/), not the headline study, so this port's name matches the variant while its baseline comes from the main dataset; (2) the reported distributions are extremely skewed (s.d. 695 on a mean of 158 trials; 563 players exceeded 1,000 trials), so a z-score against a single SD is a poor summary and the sd here is NOT derived from the paper; (3) success_rate 0.40 and unique_pair_rate 0.95 remain author estimates - the paper reports neither a per-player success rate nor a repeat-attempt rate.",
+  "source": "empirical_from_published_data",
+  "note": "COMPUTED FROM THE AUTHORS' TRIAL-LEVEL DATA FOR THE TINY ALCHEMY EXPERIMENT ITSELF, not from the Little Alchemy 2 dataset and not from a figure. Source: Brandle, F., Stocks, L. J., Tenenbaum, J. B., Gershman, S. J. & Schulz, E. (2023), 'Empowerment contributes to exploration behaviour in a creative video game', Nature Human Behaviour 7:1481-1489, doi:10.1038/s41562-023-01661-2; file empowermentexploration/resources/playerdata/data/tinyalchemyHumanData.csv from the authors' additional-data archive (48,963 trials, n=97, median 439 trials per participant). THIS IS THE RIGHT DATASET FOR THIS PORT. The paper's headline analysis is Little Alchemy 2 (29,493 players, 720 elements); Tiny Alchemy is a separate, smaller variant run by the same authors, and it is the one this port is named after and modelled on (540 elements, 4 base elements). Using the Little Alchemy 2 figures would have been the wrong game. All three metrics are computed with this port's own definitions: success_rate from the success flag; novelty_rate as a success whose result the participant had not produced before; unique_pair_rate as an unordered (first, second) pair not previously attempted by that participant, matching scoring/score_session.py's is_unique_pair augmentation. Values are the mean across participants of each participant's own rate, with SD across participants. SUPERSEDES every earlier value, and the corrections are large. success_rate 0.40 -> 0.252 and unique_pair_rate 0.95 -> 0.931 were author estimates. novelty_rate 0.35 -> 0.297 -> 0.212: the 0.297 came from Little Alchemy 2's Figure 1c ((50.91 - 4) / 158.06), which is a different game with a much larger element tree, so it overstated the discovery rate for this one by about 40%. Note the players in this dataset take far more trials than this port allows (median 439 against this port's 80-trial, 200-combination cap), so an agent here samples a much earlier part of the discovery curve. Success and novelty both decline as the reachable tree is exhausted, which means these baselines are, if anything, conservative for a short session.",
   "n_attempts": {
     "mean": 100,
     "sd": 30,
@@ -13,13 +13,17 @@
     "n": 80
   },
   "success_rate": {
-    "mean": 0.4,
-    "sd": 0.15,
+    "mean": 0.252,
+    "sd": 0.159,
     "n": 80
   },
   "novelty_rate": {
-    "mean": 0.297,
-    "sd": 0.12,
+    "mean": 0.212,
+    "sd": 0.151,
     "n": 80
+  },
+  "unique_pair_rate": {
+    "mean": 0.931,
+    "sd": 0.043
   }
 }
