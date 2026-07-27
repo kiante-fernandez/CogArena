@@ -292,7 +292,15 @@ async def handle_stimulus(page: Page, task_id: str):
 async def run_task(page: Page, task_url: str, task_id: str, timeout: float = 600.0, trace_writer=None):
     """Run a single task to completion."""
     logger.info("Starting task: %s", task_id)
-    await page.goto(task_url, wait_until="networkidle")
+    # "load", not "networkidle". networkidle waits for a 500ms gap in network
+    # activity, which a CogArena task may never produce: incremental_save.js
+    # PATCHes trial data on a timer and several tasks animate continuously. In
+    # the v1.1 chance-floor sweep this killed 15 of 100 runs outright with a
+    # playwright TimeoutError before a single trial was recorded — the sole
+    # cause of every unscored floor cell. "load" waits for the document and its
+    # resources, which is what the experiment actually needs, and
+    # wait_for_jspsych_content below already gates on the experiment being live.
+    await page.goto(task_url, wait_until="load")
     await wait_for_jspsych_content(page)
 
     start = time.time()

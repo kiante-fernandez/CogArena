@@ -106,3 +106,14 @@ models:
     notes: >-
       Newest OpenAI generation, top tier. Included to answer the reviewer point
       that the panel has no flagship. $5/M in, $30/M out.
+
+  - id: claude-sonnet-5
+    api: anthropic/claude-sonnet-5
+    scaffold: browser-use
+    notes: >-
+      Cross-provider frontier check against gpt-5.6-sol. $2/M in, $10/M out, so
+      roughly a third of sol for the same workload. NOTE: CLAUDE.md records that
+      Claude models via OpenRouter have emitted {"key": "Space"} instead of the
+      {"send_keys": {...}} shape Browser-Use validates, which is how glm-4.6v and
+      ui-tars-1.5-7b returned zero scorecards. Smoke-test keyboard tasks before
+      committing to a full arm.
