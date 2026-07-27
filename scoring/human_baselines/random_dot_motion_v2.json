@@ -1,7 +1,7 @@
 {
   "task_id": "random_dot_motion_v2",
-  "source": "literature_estimates",
-  "note": "Baselines drawn from Roitman & Shadlen (2002, J. Neurosci.) for the per-coherence psychometric/chronometric shape. The human-adult absolute levels were previously attributed to 'Pinet et al. (2024)', a reference neither author nor a literature search could locate; that attribution is WITHDRAWN. The accuracy values below are author estimates anchored to the Roitman & Shadlen psychometric shape, not extracted from any human study. Roitman & Shadlen (2002) is a two-macaque study with LIP recordings, so it constrains the SHAPE across coherence only, never the human absolute level. Replace with on-platform empirical baselines in v2.",
+  "source": "author_estimate_no_human_source",
+  "note": "NO HUMAN SOURCE. Roitman, J. D. & Shadlen, M. N. (2002), J. Neurosci. 22(21):9475-9490, recorded TWO MACAQUES making saccadic responses with LIP single-unit recordings. It constrains the SHAPE of the psychometric and chronometric functions across motion coherence, which is what the L3 signatures test, and nothing about human absolute accuracy. The raw data and code are public (shadlenlab.columbia.edu/resources/RoitmanDataCode.html), so the shape claim is independently checkable. The human absolute levels were previously attributed to 'Pinet et al. (2024)'. Neither the authors nor a literature search could locate that reference and the attribution is WITHDRAWN. overall_accuracy 0.79 and the per-coherence values 0.60 / 0.85 / 0.97 are author estimates anchored to the Roitman & Shadlen shape. They are not extracted from any human study and must not be described as literature values. Replacing them properly requires either a human RDK study reporting accuracy at coherence levels matching this port's, or on-platform human data.",
   "overall_accuracy": {
     "mean": 0.79,
     "sd": 0.07,

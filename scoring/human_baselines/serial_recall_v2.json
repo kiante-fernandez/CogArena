@@ -1,20 +1,20 @@
 {
   "task_id": "serial_recall_v2",
-  "source": "literature_estimates",
-  "note": "Estimates derived from the cued-recall paradigm of Haridi, S., Schulz, E. & Thalmann, M. (2025), 'Context Size and Set Size Effects: The Relevance of Specific Cues When Searching Long-Term Memory', Computational Brain & Behavior 9:1-33 (doi:10.1007/s42113-025-00255-7). The original study uses a longer list (~28 pairs per similarity level) and a typed-with-spacebar-gate response; v1 port uses 16 pairs across 4 similarity levels (4 per level) with a single typed-input recall step, matching tasks/serial_recall_v2/task_config.json (n_study_pairs=16, pairs_per_similarity_level=4). Replace with on-platform empirical baselines in v2.",
+  "source": "paper_derived_approximate",
+  "note": "Derived from Haridi, S., Schulz, E. & Thalmann, M. (2025), 'Context Size and Set Size Effects: The Relevance of Specific Cues When Searching Long-Term Memory', Computational Brain & Behavior 9:1-33, doi:10.1007/s42113-025-00255-7, Experiment 1 (n=115 after preregistered exclusions, Prolific, age 18-45, mean 32.77). Participants learned 68 word pairs across four blocks at set sizes drawn from 2-32, with a letter-span distractor between learning and cued recall. overall_accuracy 0.780 is read from Fig. 4D and 4F, where mean accuracy sits in a 0.75-0.80 band across every set size. This SUPERSEDES 0.65, which was too low. The similarity split is DERIVED, not read: the paper reports a standardized log-odds coefficient of 0.36 (95% HDI [0.18, 0.55], BF10 > 100) for cue-target similarity on accuracy. Taking the five similarity bins as spanning [0,1] (SD ~0.289), the lowest to highest bin is 2.77 SDs, a log-odds shift of 0.997, which around an overall 0.78 gives 0.683 low and 0.854 high. SUPERSEDES 0.50 and 0.78: the direction was already right but the gap was overstated (0.28 vs the paper's ~0.17). TREAT THESE AS APPROXIMATE. Two steps are figure-reading and one is a distributional assumption about the similarity bins, so they are weaker evidence than the values computed from raw data for grid_bandit and repeated_games. DESIGN DIFFERENCES: the original uses 68 pairs per participant across four set sizes (2-32) and FIVE Word2Vec similarity bins; this port uses 16 pairs at a single set size across FOUR similarity levels, with a typed response. Accuracy is strongly set-size dependent in the original (beta = -0.26, BF10 = 4.67), so a port at a single set size is not strictly comparable. timeout_rate 0.05 remains an author estimate: the original gave 5 s to type and asked participants to enter '0' when they could not recall, so an omission there is a response rather than a timeout.",
   "overall_accuracy": {
-    "mean": 0.65,
-    "sd": 0.18,
-    "n": 50
-  },
-  "accuracy_high_sim": {
     "mean": 0.78,
     "sd": 0.16,
     "n": 50
   },
+  "accuracy_high_sim": {
+    "mean": 0.854,
+    "sd": 0.15,
+    "n": 50
+  },
   "accuracy_low_sim": {
-    "mean": 0.5,
-    "sd": 0.2,
+    "mean": 0.683,
+    "sd": 0.18,
     "n": 50
   },
   "mean_recall_rt": {

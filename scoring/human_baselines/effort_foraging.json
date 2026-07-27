@@ -1,10 +1,30 @@
 {
-    "task_id": "effort_foraging",
-    "source": "literature_estimates",
-    "note": "Estimates derived from Bustamante et al. (2023) PNAS Experiment 1 conventions. The original task uses a fixed-time round (not a fixed n-decision round) and a richer reward distribution. Replace with on-platform empirical baselines in v2.",
-    "total_reward": {"mean": 32, "sd": 10, "n": 50},
-    "prop_stay_overall": {"mean": 0.65, "sd": 0.12, "n": 50},
-    "mean_residence_time_low": {"mean": 2.5, "sd": 0.8, "n": 50},
-    "mean_residence_time_high": {"mean": 4.5, "sd": 1.0, "n": 50},
-    "mvt_optimal_match_rate": {"mean": 0.7, "sd": 0.10, "n": 50}
+  "task_id": "effort_foraging",
+  "source": "author_estimate_design_mismatch",
+  "note": "NO VALUE HERE IS EXTRACTED FROM THE CITED PAPER. Bustamante et al. (2023), 'Effort foraging task reveals positive correlation between individual differences in the cost of cognitive and physical effort', PNAS 120(50):e2221510120, reports ONE primary dependent variable: the exit threshold in apples, and the change in it between high and low effort conditions (Experiment 1, N=537 analysed of 678: beta_cognitive = -0.236 apples, beta_physical = -0.379, both p<0.001; split-half reliability r = 0.85 and 0.82). It reports no residence times, no total reward, and no MVT-optimal match rate, so total_reward, prop_stay_overall, mean_residence_time_low/high and mvt_optimal_match_rate are all author estimates. DESIGN ANCESTRY IS ALSO MISATTRIBUTED. Bustamante manipulated travel COST BY EFFORT (Multi-Source Interference Task or rapid key-pressing) at a FIXED travel time. This port manipulates travel TIME (4 s vs 8 s) at no effort, which is the Constantino & Daw patch-foraging paradigm that Bustamante adapted; Bustamante cites it for exactly that manipulation ('when the travel time between patches was increased, participants' exit thresholds decreased'). Constantino & Daw is the correct design citation for this port. WHAT THE PAPER DOES SUPPORT is the DIRECTION encoded in the L3 signatures: participants 'opted to stay longer in a patch, tolerating diminishing returns, in the high travel effort conditions to avoid the increased cost of travel'. mean_residence_time_high (4.5) > mean_residence_time_low (2.5) is therefore the right ordering, and that ordering is what L3 tests. Only the absolute levels are unsourced.",
+  "total_reward": {
+    "mean": 32,
+    "sd": 10,
+    "n": 50
+  },
+  "prop_stay_overall": {
+    "mean": 0.65,
+    "sd": 0.12,
+    "n": 50
+  },
+  "mean_residence_time_low": {
+    "mean": 2.5,
+    "sd": 0.8,
+    "n": 50
+  },
+  "mean_residence_time_high": {
+    "mean": 4.5,
+    "sd": 1.0,
+    "n": 50
+  },
+  "mvt_optimal_match_rate": {
+    "mean": 0.7,
+    "sd": 0.1,
+    "n": 50
+  }
 }
