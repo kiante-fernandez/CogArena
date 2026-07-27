@@ -10,8 +10,8 @@
         "timed_out": false,
         "has_clear_better": true
       },
-      "human_mean": 0.78,
-      "human_sd": 0.12
+      "human_mean": 0.728,
+      "human_sd": 0.127
     }
   ]
 }
