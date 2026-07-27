@@ -1,51 +1,65 @@
 {
-    "task_id": "phishing_detection_v2",
-    "metrics": [
-        {
-            "name": "overall_accuracy",
-            "description": "Proportion of correct judgments across all 60 trials. Singh et al. (2019) report 0.65-0.78 across base-rate conditions for adult MTurk participants.",
-            "type": "proportion_correct",
-            "field": "correct",
-            "filter": {"timed_out": false},
-            "human_mean": 0.72,
-            "human_sd": 0.10
-        },
-        {
-            "name": "pre_training_accuracy",
-            "description": "Accuracy on the 10 pre-training trials (no feedback yet). Singh et al. report ~0.62 for adult humans.",
-            "type": "proportion_correct",
-            "field": "correct",
-            "filter": {"timed_out": false, "phase": "pre"},
-            "human_mean": 0.62,
-            "human_sd": 0.12
-        },
-        {
-            "name": "post_training_accuracy",
-            "description": "Accuracy on the 10 post-training trials (after 40 training trials with feedback). Singh et al. report ~0.78 for adult humans.",
-            "type": "proportion_correct",
-            "field": "correct",
-            "filter": {"timed_out": false, "phase": "post"},
-            "human_mean": 0.78,
-            "human_sd": 0.11
-        },
-        {
-            "name": "hit_rate",
-            "description": "Proportion of phishing emails correctly classified as phishing. Singh et al. report 0.74-0.85 for adult humans.",
-            "type": "proportion_correct",
-            "field": "responded_phishing",
-            "filter": {"timed_out": false, "is_phishing": true},
-            "human_mean": 0.79,
-            "human_sd": 0.10
-        },
-        {
-            "name": "false_alarm_rate",
-            "description": "Proportion of legitimate emails incorrectly flagged as phishing. Singh et al. report 0.20-0.30 for adult humans.",
-            "type": "proportion_correct",
-            "field": "responded_phishing",
-            "filter": {"timed_out": false, "is_phishing": false},
-            "human_mean": 0.25,
-            "human_sd": 0.10,
-            "direction": "lower_is_better"
-        }
-    ]
+  "task_id": "phishing_detection_v2",
+  "metrics": [
+    {
+      "name": "overall_accuracy",
+      "description": "Proportion of correct judgments across all 60 trials. Singh et al. (2019) report 0.65-0.78 across base-rate conditions for adult MTurk participants.",
+      "type": "proportion_correct",
+      "field": "correct",
+      "filter": {
+        "timed_out": false
+      },
+      "human_mean": 0.668,
+      "human_sd": 0.12
+    },
+    {
+      "name": "pre_training_accuracy",
+      "description": "Accuracy on the 10 pre-training trials (no feedback yet). Singh et al. report ~0.62 for adult humans.",
+      "type": "proportion_correct",
+      "field": "correct",
+      "filter": {
+        "timed_out": false,
+        "phase": "pre"
+      },
+      "human_mean": 0.66,
+      "human_sd": 0.12
+    },
+    {
+      "name": "post_training_accuracy",
+      "description": "Accuracy on the 10 post-training trials (after 40 training trials with feedback). Singh et al. report ~0.78 for adult humans.",
+      "type": "proportion_correct",
+      "field": "correct",
+      "filter": {
+        "timed_out": false,
+        "phase": "post"
+      },
+      "human_mean": 0.675,
+      "human_sd": 0.12
+    },
+    {
+      "name": "hit_rate",
+      "description": "Proportion of phishing emails correctly classified as phishing. Singh et al. report 0.74-0.85 for adult humans.",
+      "type": "proportion_correct",
+      "field": "responded_phishing",
+      "filter": {
+        "timed_out": false,
+        "is_phishing": true
+      },
+      "human_mean": 0.64,
+      "human_sd": 0.15
+    },
+    {
+      "name": "false_alarm_rate",
+      "description": "Proportion of legitimate emails incorrectly flagged as phishing. Singh et al. report 0.20-0.30 for adult humans.",
+      "type": "proportion_correct",
+      "field": "responded_phishing",
+      "filter": {
+        "timed_out": false,
+        "is_phishing": false
+      },
+      "human_mean": 0.305,
+      "human_sd": 0.15,
+      "direction": "lower_is_better"
+    }
+  ]
 }

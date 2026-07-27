@@ -1,32 +1,32 @@
 {
-    "task_id": "tiny_alchemy",
-    "metrics": [
-        {
-            "name": "success_rate",
-            "description": "Proportion of attempts that yielded a recipe (whether or not the result was already in the inventory). The game tree has ~600 valid recipes from a search space of ~145k pairs; uniform-random pair selection from the full space succeeds at <1%, but with the inventory growing during play a random-combiner empirically reaches ~0.65-0.70 success. Humans (Brändle et al. 2023) hit 0.40-0.50 — *less* than random in raw success terms, because they also explore unfamiliar pairs. Use this metric in conjunction with novelty_rate and unique_pair_rate.",
-            "type": "proportion_correct",
-            "field": "is_success",
-            "filter": {},
-            "human_mean": 0.40,
-            "human_sd": 0.15
-        },
-        {
-            "name": "novelty_rate",
-            "description": "Proportion of attempts that yielded a novel discovery (a new element added to the inventory). Adults achieve 30-40% novelty rate.",
-            "type": "proportion_correct",
-            "field": "is_novel_discovery",
-            "filter": {},
-            "human_mean": 0.35,
-            "human_sd": 0.12
-        },
-        {
-            "name": "unique_pair_rate",
-            "description": "Proportion of attempts whose ordered (a_idx, b_idx) pair has not been tried earlier in the session ('is_unique_pair' is computed by the scorer; pairs are unordered so (a,b) and (b,a) collapse). Humans avoid retrying — Brändle et al. report that adults rarely repeat combinations, with unique-pair rates near 0.95+. A random combiner with growing inventory still repeats pairs as its inventory shrinks vs the explored set.",
-            "type": "proportion_correct",
-            "field": "is_unique_pair",
-            "filter": {},
-            "human_mean": 0.95,
-            "human_sd": 0.05
-        }
-    ]
+  "task_id": "tiny_alchemy",
+  "metrics": [
+    {
+      "name": "success_rate",
+      "description": "Proportion of attempts that yielded a recipe (whether or not the result was already in the inventory). The game tree has ~600 valid recipes from a search space of ~145k pairs; uniform-random pair selection from the full space succeeds at <1%, but with the inventory growing during play a random-combiner empirically reaches ~0.65-0.70 success. Humans (Br\u00e4ndle et al. 2023) hit 0.40-0.50 \u2014 *less* than random in raw success terms, because they also explore unfamiliar pairs. Use this metric in conjunction with novelty_rate and unique_pair_rate.",
+      "type": "proportion_correct",
+      "field": "is_success",
+      "filter": {},
+      "human_mean": 0.4,
+      "human_sd": 0.15
+    },
+    {
+      "name": "novelty_rate",
+      "description": "Proportion of attempts that yielded a novel discovery (a new element added to the inventory). Adults achieve 30-40% novelty rate.",
+      "type": "proportion_correct",
+      "field": "is_novel_discovery",
+      "filter": {},
+      "human_mean": 0.297,
+      "human_sd": 0.12
+    },
+    {
+      "name": "unique_pair_rate",
+      "description": "Proportion of attempts whose ordered (a_idx, b_idx) pair has not been tried earlier in the session ('is_unique_pair' is computed by the scorer; pairs are unordered so (a,b) and (b,a) collapse). Humans avoid retrying \u2014 Br\u00e4ndle et al. report that adults rarely repeat combinations, with unique-pair rates near 0.95+. A random combiner with growing inventory still repeats pairs as its inventory shrinks vs the explored set.",
+      "type": "proportion_correct",
+      "field": "is_unique_pair",
+      "filter": {},
+      "human_mean": 0.95,
+      "human_sd": 0.05
+    }
+  ]
 }

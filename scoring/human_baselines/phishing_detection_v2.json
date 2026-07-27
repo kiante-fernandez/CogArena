@@ -1,10 +1,30 @@
 {
-    "task_id": "phishing_detection_v2",
-    "source": "literature_estimates",
-    "note": "Baselines aggregated from Singh, Aggarwal, Rajivan & Gonzalez (2019) MTurk participant pool. The published study tested adult MTurk workers across three feedback conditions (outcome / incentive / detail) and three phishing base rates (25/50/75%). v1 numbers below are mid-range estimates from the outcome-feedback / 50% base-rate cell, which most closely matches our v1 design. Replace with on-platform empirical baselines in v2.",
-    "overall_accuracy": {"mean": 0.72, "sd": 0.10, "n": 60},
-    "pre_training_accuracy": {"mean": 0.62, "sd": 0.12, "n": 60},
-    "post_training_accuracy": {"mean": 0.78, "sd": 0.11, "n": 60},
-    "hit_rate": {"mean": 0.79, "sd": 0.10, "n": 60},
-    "false_alarm_rate": {"mean": 0.25, "sd": 0.10, "n": 60}
+  "task_id": "phishing_detection_v2",
+  "source": "paper_derived",
+  "note": "Derived from Singh, Aggarwal, Rajivan & Gonzalez (2019), Proc. Human Factors and Ergonomics Society 63:454-458, N=296 MTurk workers across three training-frequency conditions (Low 25%, Medium 50%, High 75% phishing during training; n=98/99/99). This port presents phishing at 50% in every phase, so Singh's MEDIUM condition is the matching arm. Singh reports hit 0.59 -> 0.69 and false alarm 0.27 -> 0.34 from pre- to post-training in that condition. Singh's pre/post phases used a 20% phishing base rate while this port uses 50%, so accuracies are recomputed at the port's base rate: 0.5*hit + 0.5*(1-FA), giving pre 0.660 and post 0.675. overall_accuracy 0.668 is the mean of the two; the 40-trial training phase it also covers is not reported separately by Singh. hit_rate 0.640 and false_alarm_rate 0.305 are the pre/post means. SDs are estimated from the reported d' spread (Medium: 0.98 (0.96) pre, 1.02 (0.90) post), which is wide; Singh does not publish per-rate SDs. SUPERSEDES pre 0.62 / post 0.78 / hit 0.79 / FA 0.25. The old values implied a training gain of +0.16 in accuracy; Singh's Medium condition gains +0.015, because training raises the hit rate and the false-alarm rate together. In Singh's High condition overall accuracy FALLS (0.728 -> 0.590 at their base rate). The L3 signature learning_effect (expected a > b) should be read against that: the human effect on accuracy is small and condition-dependent, while the effect on hit rate alone is robust.",
+  "overall_accuracy": {
+    "mean": 0.668,
+    "sd": 0.12,
+    "n": 60
+  },
+  "pre_training_accuracy": {
+    "mean": 0.66,
+    "sd": 0.12,
+    "n": 60
+  },
+  "post_training_accuracy": {
+    "mean": 0.675,
+    "sd": 0.12,
+    "n": 60
+  },
+  "hit_rate": {
+    "mean": 0.64,
+    "sd": 0.15,
+    "n": 60
+  },
+  "false_alarm_rate": {
+    "mean": 0.305,
+    "sd": 0.15,
+    "n": 60
+  }
 }

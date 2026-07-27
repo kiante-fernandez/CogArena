@@ -1,9 +1,25 @@
 {
-    "task_id": "tiny_alchemy",
-    "source": "literature_estimates",
-    "note": "Estimates derived from Brändle, Stocks, Tenenbaum, Gershman & Schulz (2023) Nature Human Behaviour aggregate statistics. The published paper reports session-level distributions for adult human participants playing Tiny Alchemy: median ~100 attempts, ~30 unique discoveries, success rate ~0.4. Replace with on-platform empirical baselines in v2.",
-    "n_attempts": {"mean": 100, "sd": 30, "n": 80},
-    "n_novel_discoveries": {"mean": 35, "sd": 15, "n": 80},
-    "success_rate": {"mean": 0.40, "sd": 0.15, "n": 80},
-    "novelty_rate": {"mean": 0.35, "sd": 0.12, "n": 80}
+  "task_id": "tiny_alchemy",
+  "source": "paper_derived_partial",
+  "note": "Derived from Brandle, Stocks, Tenenbaum, Gershman & Schulz (2023), Nature Human Behaviour 7:1481-1489. The published dataset is 'Little Alchemy 2': 29,493 online players, 4,691,033 attempted combinations, 720 reachable elements from 4 starting elements. Figure 1c reports mean 158.06 trials (s.d. 695.38) and mean final inventory 50.91 elements (s.d. 76.42) per player. novelty_rate is therefore (50.91 - 4) / 158.06 = 0.297, SUPERSEDING the previous 0.35. CAVEATS a reviewer should be told: (1) 'Tiny Alchemy' is a separate validation experiment in the authors' repository (additionalexperiments/), not the headline study, so this port's name matches the variant while its baseline comes from the main dataset; (2) the reported distributions are extremely skewed (s.d. 695 on a mean of 158 trials; 563 players exceeded 1,000 trials), so a z-score against a single SD is a poor summary and the sd here is NOT derived from the paper; (3) success_rate 0.40 and unique_pair_rate 0.95 remain author estimates - the paper reports neither a per-player success rate nor a repeat-attempt rate.",
+  "n_attempts": {
+    "mean": 100,
+    "sd": 30,
+    "n": 80
+  },
+  "n_novel_discoveries": {
+    "mean": 35,
+    "sd": 15,
+    "n": 80
+  },
+  "success_rate": {
+    "mean": 0.4,
+    "sd": 0.15,
+    "n": 80
+  },
+  "novelty_rate": {
+    "mean": 0.297,
+    "sd": 0.12,
+    "n": 80
+  }
 }

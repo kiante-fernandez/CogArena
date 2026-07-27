@@ -1,10 +1,30 @@
 {
-    "task_id": "moral_machine",
-    "source": "literature_estimates",
-    "note": "Estimates derived from Awad, Dsouza, Kim, Schulz, Henrich, Shariff, Bonnefon & Rahwan (2018), 'The Moral Machine experiment', Nature 563:59-64, Fig 2 (global preference effect sizes, n=39,610,809 decisions across 233 countries). Reported here as proportions in [0,1] rather than the centered effect sizes in the paper's Fig 2. Replace with on-platform empirical baselines in v2.",
-    "prop_utilitarian": {"mean": 0.77, "sd": 0.10, "n": 100},
-    "prop_save_young": {"mean": 0.72, "sd": 0.12, "n": 100},
-    "prop_save_human": {"mean": 0.85, "sd": 0.10, "n": 100},
-    "prop_save_legal": {"mean": 0.61, "sd": 0.13, "n": 100},
-    "prop_intervention": {"mean": 0.46, "sd": 0.10, "n": 100}
+  "task_id": "moral_machine",
+  "source": "paper_derived",
+  "note": "Derived from Awad, Dsouza, Kim, Schulz, Henrich, Shariff, Bonnefon & Rahwan (2018), 'The Moral Machine experiment', Nature 563:59-64, Figure 2a (n = 35.2 million decisions). The paper reports AMCEs as dP, defined in the Fig 2 caption as 'the difference between the probability of sparing characters possessing the attribute on the right, and the probability of sparing characters possessing the attribute on the left'. Because each dilemma is binary the two probabilities sum to 1, so p = (1 + dP) / 2. That transform is confirmed by prop_intervention: dP for the preference for inaction is ~0.07, giving P(action) = 0.465 against the stored 0.46. prop_save_young is now 0.745, from the only dP the caption states numerically (0.49, s.e. 0.0008), SUPERSEDING 0.72. STILL UNVERIFIED: prop_save_human (0.85), prop_utilitarian (0.77) and prop_save_legal (0.61). Reading the Fig 2a bars suggests dP ~0.59, ~0.51 and ~0.34, implying 0.795, 0.755 and 0.67 - but bar-reading is not evidence and these need the Supplementary Information table of exact AMCEs. Note also that the caption reports the number-of-characters effect separately for 1 to 4 additional characters, with the two-additional-character effect matching the attribute mean, so prop_utilitarian depends on how many extra characters this port displays.",
+  "prop_utilitarian": {
+    "mean": 0.77,
+    "sd": 0.1,
+    "n": 100
+  },
+  "prop_save_young": {
+    "mean": 0.745,
+    "sd": 0.12,
+    "n": 100
+  },
+  "prop_save_human": {
+    "mean": 0.85,
+    "sd": 0.1,
+    "n": 100
+  },
+  "prop_save_legal": {
+    "mean": 0.61,
+    "sd": 0.13,
+    "n": 100
+  },
+  "prop_intervention": {
+    "mean": 0.46,
+    "sd": 0.1,
+    "n": 100
+  }
 }

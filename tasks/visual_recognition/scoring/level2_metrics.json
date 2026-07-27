@@ -10,8 +10,8 @@
         "trial_part": "test",
         "timed_out": false
       },
-      "human_mean": 0.87,
-      "human_sd": 0.07
+      "human_mean": 0.793,
+      "human_sd": 0.069
     },
     {
       "name": "hit_rate",
@@ -23,8 +23,8 @@
         "timed_out": false,
         "is_old": true
       },
-      "human_mean": 0.92,
-      "human_sd": 0.06
+      "human_mean": 0.793,
+      "human_sd": 0.069
     },
     {
       "name": "false_alarm_rate",
@@ -36,8 +36,8 @@
         "timed_out": false,
         "is_old": false
       },
-      "human_mean": 0.08,
-      "human_sd": 0.06,
+      "human_mean": 0.207,
+      "human_sd": 0.069,
       "direction": "lower_is_better"
     }
   ]
