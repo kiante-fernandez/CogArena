@@ -1,10 +1,30 @@
 {
-    "task_id": "repeated_games",
-    "source": "literature_estimates",
-    "note": "Estimates derived from Akata, Schulz, Coda-Forno et al. 2023 (arXiv:2305.16867) human-baseline aggregates and from Camerer 2003 (Behavioral Game Theory) for canonical PD/BoS rates against simple opponents. The original Akata repository ships an aggregated repgames.csv that could be used to refine these in v2.",
-    "coop_rate_pd": {"mean": 0.55, "sd": 0.20, "n": 60},
-    "coordination_rate_bos": {"mean": 0.60, "sd": 0.18, "n": 60},
-    "mean_payoff_pd": {"mean": 6.5, "sd": 1.5, "n": 60},
-    "mean_payoff_bos": {"mean": 5.5, "sd": 2.5, "n": 60},
-    "timeout_rate": {"mean": 0.02, "sd": 0.05, "n": 60}
+  "task_id": "repeated_games",
+  "source": "empirical_from_published_data",
+  "note": "COMPUTED FROM THE ORIGINAL AUTHORS' PARTICIPANT DATA, not estimated. Source: Akata, Schulz, Coda-Forno, Oh, Bethge & Schulz, 'Playing repeated games with large language models', Nature Human Behaviour (2025), doi:10.1038/s41562-025-02172-y (preprint arXiv:2305.16867); human data file github.com/eliaka/repeatedgames/blob/main/human_experiment/analysis/repgames.csv (3,900 rounds from n=195 Prolific participants, 10 rounds per game). Values are the mean across participants of each participant's own rate or mean score, with SD across participants. Action coding was verified against the payoff matrix rather than assumed: in PD, action 1 pays 8 on mutual agreement and 0 when exploited, so action 1 is COOPERATE and action 0 is DEFECT. Reading it the other way inverts coop_rate_pd from 0.477 to 0.523. This port's payoff matrices match the paper exactly (PD JJ=[8,8] FJ=[10,0] JF=[0,10] FF=[5,5]; BoS FF=[10,7] JJ=[7,10] mismatch=[0,0]). SUPERSEDES the previous estimates (0.55 / 6.5 / 0.60 / 5.5). Cooperation and both payoffs were overstated; mean_payoff_bos most of all (5.5 vs 4.71). TWO DIFFERENCES A REVIEWER SHOULD BE TOLD. (1) OPPONENT: Akata's participants played GPT-4, in a base or socially-prompted version, whereas this port plays a fixed bot - tit-for-tat in PD, strict alternation in BoS. Against tit-for-tat, sustained cooperation is stable and pays 8 per round, so an agent can exceed this human baseline without matching human strategy. The pooled figure across both opponent conditions is used here as the best single summary; per-condition values are Base 0.500/6.11/0.543/4.34 and Prompted 0.455/6.21/0.616/5.08. (2) ROUNDS: 10 per game in the original, 15 here, so per-round means are comparable but totals are not.",
+  "coop_rate_pd": {
+    "mean": 0.477,
+    "sd": 0.378,
+    "n": 60
+  },
+  "coordination_rate_bos": {
+    "mean": 0.58,
+    "sd": 0.199,
+    "n": 60
+  },
+  "mean_payoff_pd": {
+    "mean": 6.16,
+    "sd": 1.45,
+    "n": 60
+  },
+  "mean_payoff_bos": {
+    "mean": 4.71,
+    "sd": 1.52,
+    "n": 60
+  },
+  "timeout_rate": {
+    "mean": 0.02,
+    "sd": 0.05,
+    "n": 60
+  }
 }

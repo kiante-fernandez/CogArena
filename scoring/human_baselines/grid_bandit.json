@@ -1,30 +1,30 @@
 {
   "task_id": "grid_bandit",
-  "source": "literature_estimates",
-  "note": "Estimates derived from Witte, K., Wise, T., Huys, Q. J. M. & Schulz, E. (2024), 'Exploring the Unexplored: Worry as a Catalyst for Exploratory Behavior in Anxiety and Depression', PsyArXiv doi:10.31234/osf.io/td8xh, Study 1 master.csv aggregation conventions. (Not to be confused with Witte, Thalmann & Schulz (2024), 'How should we measure exploration?', doi:10.31234/osf.io/tzuey, a different author set.) The original paper does not report headline means in raw form; numbers below are reasonable expectations from the GP-bandit literature (Schulz et al. 2018, Wu et al. 2018, Schulz et al. 2020). Replace with on-platform empirical baselines in v2.",
+  "source": "empirical_from_published_data",
+  "note": "COMPUTED FROM THE ORIGINAL AUTHORS' PARTICIPANT DATA, not estimated. Source: Witte, K., Wise, T., Huys, Q. J. M. & Schulz, E. (2024), 'Exploring the Unexplored: Worry as a Catalyst for Exploratory Behavior in Anxiety and Depression', PsyArXiv doi:10.31234/osf.io/td8xh, Study 1 data file github.com/KristinWitte/worried_exploration/blob/main/Study1/data/master.csv (26,565 clicks from n=220 participants, 11 blocks each). Each value is the mean across participants of that participant's own mean, with the SD taken across participants, so human_sd describes between-person variation and is the correct denominator for a per-session z-score. Metric definitions were matched one-to-one against tasks/grid_bandit/scoring/level2_metrics.json: z is the reward per click, krakenPres 0/1 maps to the safe/risky block conditions, krakenCaught to kraken_caught_rate_risky, and prop_high_value_clicks is the proportion of clicks with z > 50, the same threshold the spec declares. SUPERSEDES the previous estimates (65 / 65 / 67 / 0.75 / 0.25), which the earlier note described as 'reasonable expectations from the GP-bandit literature' because the paper reports no headline means. Two corrections matter: participants find high-value tiles far more often than assumed (0.877 vs 0.75), and the kraken-caught rate varies enormously between people (sd 0.267 vs the assumed 0.12), so the previous SD made that metric roughly twice as harsh as the data warrant. One design difference to note: the original runs ~11 clicks per block and this port runs 10, so per-click means are comparable but totals are not.",
   "mean_reward_per_click": {
-    "mean": 65,
-    "sd": 8,
+    "mean": 67.1,
+    "sd": 4.0,
     "n": 60
   },
   "mean_reward_safe": {
-    "mean": 65,
-    "sd": 9,
+    "mean": 66.79,
+    "sd": 4.74,
     "n": 60
   },
   "mean_reward_risky": {
-    "mean": 67,
-    "sd": 8,
+    "mean": 67.09,
+    "sd": 6.12,
     "n": 60
   },
   "prop_high_value_clicks": {
-    "mean": 0.75,
-    "sd": 0.1,
+    "mean": 0.877,
+    "sd": 0.062,
     "n": 60
   },
   "kraken_caught_rate_risky": {
-    "mean": 0.25,
-    "sd": 0.12,
+    "mean": 0.301,
+    "sd": 0.267,
     "n": 60
   }
 }
