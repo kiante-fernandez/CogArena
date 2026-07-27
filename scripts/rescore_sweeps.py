@@ -23,6 +23,7 @@ import argparse
 import csv
 import json
 import logging
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -73,11 +74,73 @@ def _rescore_session(artifacts: Path) -> dict[str, Any] | None:
 
 
 def _read_aggregate(sweep_dir: Path) -> list[dict]:
-    p = sweep_dir / "aggregate.csv"
-    if not p.exists():
+    """Row skeleton for the sweep, in preference order.
+
+    ``aggregate_audited.csv`` is a valid source: a sweep that was interrupted
+    and rebuilt, or one driven straight from ``harness eval``, may never have
+    produced the original ``aggregate.csv``. Reading only the latter made this
+    script treat every run as unmatched and then overwrite a perfectly good
+    audited aggregate with a header-only file.
+    """
+    for name in ("aggregate.csv", "aggregate_audited.csv"):
+        p = sweep_dir / name
+        if p.exists():
+            with p.open() as f:
+                rows = list(csv.DictReader(f))
+            if rows:
+                return rows
+    return _synthesize_aggregate(sweep_dir)
+
+
+def _synthesize_aggregate(sweep_dir: Path) -> list[dict]:
+    """Rebuild the row skeleton from the run directories themselves.
+
+    The aggregate is a derived artifact; runs/ plus progress.txt hold everything
+    it contains. Reconstructing beats refusing to re-score a sweep whose CSV was
+    lost, and beats the previous behaviour of silently emitting nothing.
+    """
+    runs_dir = sweep_dir / "runs"
+    if not runs_dir.exists():
         return []
-    with p.open() as f:
-        return list(csv.DictReader(f))
+
+    rc_by_name: dict[str, str] = {}
+    progress = sweep_dir / "progress.txt"
+    if progress.exists():
+        for line in progress.read_text().splitlines():
+            parts = line.split()
+            if len(parts) >= 2 and parts[-1].startswith("rc="):
+                rc_by_name[parts[0]] = parts[-1][3:]
+
+    rows: list[dict] = []
+    for i, run_dir in enumerate(sorted(runs_dir.iterdir())):
+        artifacts = run_dir / "artifacts"
+        meta_path = artifacts / "meta.json"
+        if not meta_path.exists():
+            continue
+        m = re.match(r"r(\d+)_", run_dir.name)
+        if not m:
+            continue
+        try:
+            meta = json.loads(meta_path.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        trial_dir = artifacts / "trial_data"
+        task_files = sorted(trial_dir.glob("*.json")) if trial_dir.exists() else []
+        if not task_files:
+            continue
+        rows.append({
+            "run_index": str(i),
+            "repeat_index": str(int(m.group(1))),
+            "model_id": meta.get("model", {}).get("id", "?"),
+            "task_id": task_files[0].stem,
+            "rc": rc_by_name.get(run_dir.name, ""),
+            "wall_time": "",
+            "composite": "", "l1": "", "l2": "", "l3": "",
+        })
+    if rows:
+        logger.warning("%s: no aggregate CSV found; reconstructed %d rows from runs/",
+                       sweep_dir.name, len(rows))
+    return rows
 
 
 def _write_aggregate_audited(sweep_dir: Path, rows: list[dict]) -> Path:
@@ -98,6 +161,13 @@ def _process_sweep(sweep_dir: Path) -> Path | None:
         return None
 
     original = _read_aggregate(sweep_dir)
+    if not original:
+        # Writing the audited CSV here would replace a good file with a bare
+        # header — the aggregate is derived, but it is still the only index of
+        # which cells were attempted.
+        logger.error("%s: no aggregate rows and none reconstructable; "
+                     "refusing to overwrite aggregate_audited.csv", sweep_dir.name)
+        return None
     by_run = {r["run_index"]: dict(r) for r in original}
 
     # Run directories follow the convention "r{repeat_index:02d}_{model_id}_{task_id}".
@@ -105,7 +175,6 @@ def _process_sweep(sweep_dir: Path) -> Path | None:
     # (repeat_index, model_id, task_id) tuple — random_floor sweeps repeat the
     # same (model, task) cell N times, so run_index alone is fine for ordering
     # but doesn't survive into the dir name.
-    import re
     by_key = {(r["repeat_index"], r["model_id"], r["task_id"]): r["run_index"]
               for r in original}
 

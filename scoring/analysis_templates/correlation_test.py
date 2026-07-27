@@ -11,6 +11,14 @@ def run_correlation_test(trial_data: list[dict], spec: dict) -> dict:
     field_x = spec["field_x"]
     field_y = spec["field_y"]
 
+    # NOTE: a mistyped field name yields zero pairs and reports
+    # "insufficient_data", which drops the signature from the L3 denominator —
+    # the same silent inflation as a mistyped test name. It is NOT checked here:
+    # a truncated session legitimately contains no trial carrying the field, so
+    # a runtime absence check cannot tell a spec typo from sparse data and fired
+    # on 48 real sessions when tried. The right home for that check is a
+    # repo-level test scoring each spec against a complete reference dataset;
+    # see results/CODEBASE_TODO.md.
     pairs = [
         (float(t[field_x]), float(t[field_y]))
         for t in filtered
@@ -27,6 +35,31 @@ def run_correlation_test(trial_data: list[dict], spec: dict) -> dict:
         }
 
     x_vals, y_vals = zip(*pairs)
+
+    # Both coefficients are undefined when either variable has zero variance,
+    # and the two cases mean opposite things. A constant predictor means the
+    # design never varied, so nothing about the agent can be concluded. A
+    # constant outcome means the agent gave the same response at every level of
+    # the manipulation, which is precisely the absence of the signature — the
+    # commonest instance being an agent that answered nothing correctly, so
+    # `correct` is uniformly False. Declaring which one occurred lets
+    # level3_behavioral exclude the first and score the second 0.0; leaving it
+    # to a bare nan check excluded both and raised L3 for the worst agents.
+    x_constant = len(set(x_vals)) < 2
+    y_constant = len(set(y_vals)) < 2
+    if x_constant or y_constant:
+        return {
+            "direction_correct": False,
+            "p_value": float("nan"),
+            "effect_size": float("nan"),
+            # Predictor takes precedence: if the design never varied, the
+            # outcome being constant too says nothing extra.
+            "undefined_reason": "constant_predictor" if x_constant else "constant_outcome",
+            "testable": True,
+            "detail": (f"{field_x} constant at {x_vals[0]!r}" if x_constant
+                       else f"{field_y} constant at {y_vals[0]!r} across n={len(pairs)}"),
+        }
+
     # Spearman for anything heavy-tailed. Reaction times here are dominated by
     # LLM inference latency and carry occasional multi-second provider stalls,
     # which a Pearson coefficient chases; rank correlation asks the question the

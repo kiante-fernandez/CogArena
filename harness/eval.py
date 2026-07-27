@@ -301,13 +301,24 @@ def fetch_and_save_raw_trial_data(
 # Eval driver
 # ---------------------------------------------------------------------------
 
-def _create_session(base_url: str, agent_name: str, model: ModelEntry) -> str:
+def _create_session(base_url: str, agent_name: str, model: ModelEntry,
+                    observation_mode: str | None) -> str:
+    """Create the session record the run will write into.
+
+    ``observation_mode`` must be the resolved value from
+    :func:`_resolve_observation_mode`, not a constant. It was hardcoded "dom"
+    here, and because ``harness eval`` always pre-creates the session and passes
+    the id down, the agent's own corrected value never reached the database:
+    817 browser-use sessions were stored as DOM-only, including runs that
+    demonstrably ran on screenshots. session_manager surfaces this field
+    directly on the public leaderboard, and the vision ablation turns on it.
+    """
     with httpx.Client(timeout=30.0, base_url=base_url) as client:
         r = client.post("/api/sessions", json={
             "agent_name": agent_name,
             "scaffold": model.scaffold,
             "model_name": model.api if model.scaffold != "random" else "none",
-            "observation_mode": "dom",
+            "observation_mode": observation_mode,
         })
         r.raise_for_status()
         return r.json()["session_id"]
@@ -331,16 +342,18 @@ def run_eval(args) -> int:
 
     try:
         # Create the session up-front so we have a stable ID for the artifact dir.
-        session_id = _create_session(args.base_url, agent_name, model)
-        logger.info("Session %s | model=%s | scaffold=%s | tasks=%s",
-                    session_id, model.id, scaffold, args.tasks)
+        # Resolve the modality once so the DB record and meta.json cannot disagree.
+        observation_mode = _resolve_observation_mode(model, args)
+        session_id = _create_session(args.base_url, agent_name, model, observation_mode)
+        logger.info("Session %s | model=%s | scaffold=%s | obs=%s | tasks=%s",
+                    session_id, model.id, scaffold, observation_mode, args.tasks)
         sdir = session_dir(session_id) if args.trace_dir is None else Path(args.trace_dir)
         sdir.mkdir(parents=True, exist_ok=True)
         write_meta(
             sdir, session_id=session_id, model=model, agent_name=agent_name,
             base_url=args.base_url, tasks=args.tasks, n_trials=args.n_trials,
             use_deadline=args.use_deadline, task_timeout=args.task_timeout,
-            observation_mode=_resolve_observation_mode(model, args),
+            observation_mode=observation_mode,
         )
 
         # Now hand off to the existing agent driver, but pass the pre-created

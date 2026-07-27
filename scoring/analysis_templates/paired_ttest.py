@@ -30,6 +30,20 @@ def run_paired_ttest(trial_data: list[dict], spec: dict) -> dict:
     mean_a = np.mean(values_a)
     mean_b = np.mean(values_b)
 
+    # ttest_ind is undefined when both groups are constant. Here that means the
+    # agent produced one identical value in both conditions, so the contrast the
+    # signature asks about is absent — behaviour, not a failed measurement.
+    # Declared so level3_behavioral scores it 0.0 rather than dropping it.
+    if len(set(values_a)) < 2 and len(set(values_b)) < 2:
+        return {
+            "direction_correct": False,
+            "p_value": float("nan"),
+            "effect_size": float("nan"),
+            "undefined_reason": "constant_outcome",
+            "testable": True,
+            "detail": f"both groups constant: a={values_a[0]!r}, b={values_b[0]!r}",
+        }
+
     t_stat, p_two = stats.ttest_ind(values_a, values_b)
 
     if spec["expected_direction"] == "a > b":

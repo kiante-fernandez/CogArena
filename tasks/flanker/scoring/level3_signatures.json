@@ -4,7 +4,7 @@
         {
             "name": "flanker_interference_rt",
             "description": "Slower RT on incongruent vs congruent trials (flanker effect)",
-            "test": "paired_ttest",
+            "test": "paired_ttest_greater",
             "group_a": {"filter": {"condition": "incongruent", "correct": true}, "field": "rt"},
             "group_b": {"filter": {"condition": "congruent", "correct": true}, "field": "rt"},
             "threshold_p": 0.05,

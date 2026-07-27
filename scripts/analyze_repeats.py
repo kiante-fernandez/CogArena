@@ -68,6 +68,35 @@ def _bool(x: Any) -> bool:
     return str(x).strip().lower() in ("true", "1", "yes")
 
 
+def _tri(x: Any) -> bool | None:
+    """Three-valued read of a CSV boolean: True / False / unknown.
+
+    ``l3_measurable`` is None for scorecards written before the field existed.
+    Collapsing that to False with :func:`_bool` would silently drop legitimate
+    runs from the measurable-only means, so unknown is kept distinct and
+    reported rather than guessed.
+    """
+    s = str(x).strip().lower()
+    if s in ("true", "1", "yes"):
+        return True
+    if s in ("false", "0", "no"):
+        return False
+    return None
+
+
+def is_measurable(r: dict) -> bool:
+    """Did this run's L3 rest on at least one testable signature?
+
+    A scored run whose signatures were all untestable still carries l3 == 0.0,
+    because level3_behavioral must return a float for the composite. Averaging
+    that 0.0 asserts the agent failed a test that never ran — the exact
+    unmeasured-as-floor conflation the scorer was rewritten to remove,
+    reintroduced one layer up in the analysis. 79 of 400 cells in the main study
+    are in this state, so it moves every per-model mean.
+    """
+    return _bool(r.get("scored")) and _tri(r.get("l3_measurable")) is True
+
+
 def _read(path: Path) -> list[dict[str, str]]:
     with open(path) as f:
         return list(csv.DictReader(f))
@@ -88,20 +117,35 @@ def cell_stability(runs: list[dict]) -> list[dict]:
     for (model, task), rs in sorted(cells.items()):
         scored = [r for r in rs if _bool(r["scored"])]
         complete = [r for r in rs if _bool(r["l1_complete"])]
+        measurable = [r for r in rs if is_measurable(r)]
         row = {
             "model_id": model, "task_id": task,
             "n_attempts": len(rs),
             "n_scored": len(scored),
             "n_complete": len(complete),
+            "n_l3_measurable": len(measurable),
             "completion_rate": round(len(complete) / len(rs), 4) if rs else None,
         }
-        for lvl in ("composite", "l1", "l2", "l3"):
-            vals = [v for v in (_f(r[lvl]) for r in scored) if v is not None]
+        # L1 and L2 are defined for any scored run, so they average over `scored`.
+        # L3 and the composite (which is 50% L3) are only defined where at least
+        # one signature could be tested, so they average over `measurable`. Both
+        # denominators are written out; a reader can see exactly what each mean
+        # was computed over instead of inferring it.
+        for lvl, base in (("l1", scored), ("l2", scored),
+                          ("l3", measurable), ("composite", measurable)):
+            vals = [v for v in (_f(r[lvl]) for r in base) if v is not None]
             m, sd = _stats(vals)
+            row[f"{lvl}_n"] = len(vals)
             row[f"{lvl}_mean"] = round(m, 4) if m is not None else None
             row[f"{lvl}_sd"] = round(sd, 4) if sd is not None else None
             row[f"{lvl}_min"] = round(min(vals), 4) if vals else None
             row[f"{lvl}_max"] = round(max(vals), 4) if vals else None
+        # Kept for continuity with the pre-fix tables and so the size of the
+        # correction is auditable rather than invisible.
+        for lvl in ("l3", "composite"):
+            allv = [v for v in (_f(r[lvl]) for r in scored) if v is not None]
+            m, _sd = _stats(allv)
+            row[f"{lvl}_mean_incl_unmeasurable"] = round(m, 4) if m is not None else None
         out.append(row)
     return out
 
@@ -152,10 +196,25 @@ def signature_pass_rates(sigs: list[dict]) -> list[dict]:
     return out
 
 
-def l3_zero_flips(runs: list[dict]) -> list[dict]:
+def l3_zero_flips(runs: list[dict], measurable_only: bool = False) -> list[dict]:
+    """Cells whose L3 is zero on some repeats and non-zero on others.
+
+    Two denominators answer two different questions, so both are produced:
+
+    ``measurable_only=False``
+        Every scored run. A run with no testable signature contributes a
+        structural 0.0, so this counts "would a single session have reported
+        zero here" — which is the literal question asked in review.
+    ``measurable_only=True``
+        Only runs where at least one signature could be tested. This is the
+        stricter claim: the agent was measured on both occasions and genuinely
+        showed the signature once and not the other. Reporting only the first
+        would credit instability to cells that were never measured.
+    """
     cells: dict[tuple[str, str], list[float]] = defaultdict(list)
     for r in runs:
-        if not _bool(r["scored"]):
+        keep = is_measurable(r) if measurable_only else _bool(r["scored"])
+        if not keep:
             continue
         v = _f(r["l3"])
         if v is not None:
@@ -168,7 +227,8 @@ def l3_zero_flips(runs: list[dict]) -> list[dict]:
             continue  # never zero, or always zero — no flip to report
         out.append({
             "model_id": model, "task_id": task,
-            "n_scored": len(vals),
+            "basis": "l3_measurable" if measurable_only else "scored",
+            "n_runs": len(vals),
             "n_l3_zero": zeros,
             "n_l3_nonzero": len(vals) - zeros,
             "flip_rate": round((len(vals) - zeros) / len(vals), 4),
@@ -176,6 +236,15 @@ def l3_zero_flips(runs: list[dict]) -> list[dict]:
             "note": "a single session would have reported one of these at random",
         })
     return out
+
+
+def _n_cells(runs: list[dict], measurable_only: bool) -> int:
+    seen = set()
+    for r in runs:
+        keep = is_measurable(r) if measurable_only else _bool(r["scored"])
+        if keep and _f(r["l3"]) is not None:
+            seen.add((r["model_id"], r["task_id"]))
+    return len(seen)
 
 
 def rank_stability(runs: list[dict], n_boot: int = N_BOOTSTRAP) -> list[dict]:
@@ -208,24 +277,37 @@ def rank_stability(runs: list[dict], n_boot: int = N_BOOTSTRAP) -> list[dict]:
             "P(rank)=1.00 as if certain. Skipping rank_stability.", max_reps)
         return []
 
-    def score(rs: list[dict], zero_fill: bool) -> float | None:
+    # Three conventions, because two independent judgement calls affect the
+    # ranking and a reader is entitled to see both:
+    #   failed_cells_as_0   every attempted cell counts; a cell with no
+    #                       scorecard scores 0.
+    #   ok_cells_only       only cells that produced a scorecard.
+    #   l3_measurable_only  only cells that produced a scorecard AND had at
+    #                       least one testable signature. The composite is 50%
+    #                       L3, so a cell with nothing testable contributes a
+    #                       structural 0.0 to it under the other two.
+    # A ranking that survives all three is the only one worth reporting as
+    # robust.
+    CONVENTIONS = ("failed_cells_as_0", "ok_cells_only", "l3_measurable_only")
+
+    def score(rs: list[dict], convention: str) -> float | None:
         vals = []
         for r in rs:
             v = _f(r["composite"])
-            if _bool(r["scored"]) and v is not None:
+            ok = is_measurable(r) if convention == "l3_measurable_only" else _bool(r["scored"])
+            if ok and v is not None:
                 vals.append(v)
-            elif zero_fill:
+            elif convention == "failed_cells_as_0":
                 vals.append(0.0)
         return statistics.mean(vals) if vals else None
 
     out = []
-    for zero_fill in (True, False):
-        convention = "failed_cells_as_0" if zero_fill else "ok_cells_only"
+    for convention in CONVENTIONS:
         wins: dict[str, list[int]] = {m: [0] * len(models) for m in models}
         point: dict[str, float | None] = {}
         for m in models:
             allr = [r for rs in by_model_repeat[m].values() for r in rs]
-            point[m] = score(allr, zero_fill)
+            point[m] = score(allr, convention)
 
         for _ in range(n_boot):
             draw = {}
@@ -233,7 +315,7 @@ def rank_stability(runs: list[dict], n_boot: int = N_BOOTSTRAP) -> list[dict]:
                 reps = list(by_model_repeat[m])
                 picked = [rng.choice(reps) for _ in reps]
                 rs = [r for p in picked for r in by_model_repeat[m][p]]
-                draw[m] = score(rs, zero_fill)
+                draw[m] = score(rs, convention)
             ranked = sorted((m for m in models if draw[m] is not None),
                             key=lambda m: -draw[m])
             for pos, m in enumerate(ranked):
@@ -288,11 +370,12 @@ def main(argv: list[str] | None = None) -> int:
     cells = cell_stability(runs)
     rates = signature_pass_rates(sigs)
     flips = l3_zero_flips(runs)
+    flips_meas = l3_zero_flips(runs, measurable_only=True)
     ranks = rank_stability(runs, args.bootstrap)
 
     _write(out / "cell_stability.csv", cells)
     _write(out / "signature_pass_rates.csv", rates)
-    _write(out / "l3_zero_flips.csv", flips)
+    _write(out / "l3_zero_flips.csv", flips + flips_meas)
     _write(out / "rank_stability.csv", ranks)
 
     n_rep = len({r["repeat_index"] for r in runs})
@@ -307,22 +390,40 @@ def main(argv: list[str] | None = None) -> int:
         comp = sum(c["n_complete"] for c in cs)
         print(f"   {m:26s} {comp:4d}/{att:<4d} = {comp/att:.0%}" if att else f"   {m:26s}   --")
 
+    n_scored = sum(1 for r in runs if _bool(r["scored"]))
+    n_meas = sum(1 for r in runs if is_measurable(r))
+    print(f"\nL3 measurability: {n_meas}/{n_scored} scored runs rest on at least one "
+          f"testable signature.")
+    if n_meas < n_scored:
+        print(f"   -> the other {n_scored - n_meas} carry l3 = 0.0 with nothing "
+              f"tested. They are excluded from every L3 and composite mean below;\n"
+              f"      *_mean_incl_unmeasurable in cell_stability.csv shows what "
+              f"including them would have given.")
+
     unstable = [r for r in rates if r["unstable"]]
     print(f"\nSignatures that fire on some repeats but not others: "
           f"{len(unstable)}/{len(rates)}")
-    for r in sorted(unstable, key=lambda x: -abs(x["pass_rate"] - 0.5))[:10]:
+    # Ascending |pass_rate - 0.5|: the coin-flip signatures first. Sorting
+    # descending printed the 9/10 and 1/10 rows — the most deterministic ones —
+    # under a heading promising the least stable, and pushed the genuine 5/10
+    # cells past the [:10] cut.
+    for r in sorted(unstable, key=lambda x: abs(x["pass_rate"] - 0.5))[:10]:
         print(f"   {r['model_id']:22s} {r['task_id']:22s} {r['signature']:28s} "
               f"{r['k_passed']}/{r['n']}  [{r['wilson_lo']:.2f},{r['wilson_hi']:.2f}]")
 
-    print(f"\nCells where L3 flips between zero and non-zero across repeats: {len(flips)}")
-    for r in flips[:10]:
+    print(f"\nCells where L3 flips between zero and non-zero across repeats:")
+    print(f"   {len(flips)}/{_n_cells(runs, False)} counting every scored run "
+          f"(an untested run contributes a structural zero)")
+    print(f"   {len(flips_meas)}/{_n_cells(runs, True)} counting only runs where "
+          f"a signature could actually be tested")
+    for r in flips_meas[:10]:
         print(f"   {r['model_id']:22s} {r['task_id']:22s} "
-              f"zero on {r['n_l3_zero']}/{r['n_scored']} runs (max L3 {r['l3_max']})")
+              f"zero on {r['n_l3_zero']}/{r['n_runs']} measured runs (max L3 {r['l3_max']})")
     if flips:
         print("   -> each of these would have been reported as a single "
               "point estimate in the submitted paper.")
 
-    for conv in ("failed_cells_as_0", "ok_cells_only"):
+    for conv in ("failed_cells_as_0", "ok_cells_only", "l3_measurable_only"):
         rows = [r for r in ranks if r["convention"] == conv]
         if not rows:
             continue

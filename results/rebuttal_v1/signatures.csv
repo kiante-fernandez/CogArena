@@ -35,12 +35,12 @@ rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,random_dot_motion_v2
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,random_dot_motion_v2,coherence_rt_chronometric,True,,0.0,False,0.9233801137879123,0.17127873673621832,False
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,random_dot_motion_v2,above_chance_low_coherence,True,,0.5,False,0.21479525392169307,0.07499999999999996,True
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,random_dot_motion_v2,above_chance_overall,True,,1.0,True,1.6080007647833168e-05,0.20999999999999996,True
-rebuttal_v1_launch_20260724_211936,0,kimi-k2.5,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,0,kimi-k2.5,effort_foraging,travel_cost_residence_effect,True,,0.5,False,0.4999999999999999,0.025000000000000022,True
 rebuttal_v1_launch_20260724_211936,0,kimi-k2.5,effort_foraging,above_chance_mvt_match,True,,0.0,False,0.9453125,-0.2375,False
 rebuttal_v1_launch_20260724_211936,0,kimi-k2.5,effort_foraging,above_chance_total_reward,True,,0.5,False,0.5,0.11250000000000004,True
 rebuttal_v1_launch_20260724_211936,0,kimi-k2.5,effort_foraging,harvest_rt_speedup,True,,0.0,False,0.7708482877109208,0.084094741050333,False
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,serial_recall_v2,above_chance_recall,True,,1.0,True,1.5258789062500013e-21,0.95,True
-rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,serial_recall_v2,similarity_aids_recall,False,undefined_statistic,,False,nan,nan,
+rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,serial_recall_v2,similarity_aids_recall,True,,0.0,False,,,False
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,serial_recall_v2,high_vs_low_sim_advantage,True,,0.0,False,0.5,0.0,False
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,serial_recall_v2,similarity_rt_effect,True,,1.0,True,0.007606024589027213,-0.5942122813390158,True
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,serial_recall_v2,primacy_effect,True,,0.0,False,0.5,0.0,False
@@ -64,7 +64,7 @@ rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,moral_machine,age_pr
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,moral_machine,species_preference_save_human,True,,1.0,True,0.0009765625,0.5,True
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,moral_machine,legality_preference_save_lawful,True,,1.0,True,0.015625,0.5,True
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,moral_machine,intervention_aversion,False,insufficient_data,,False,,,
-rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,True,,0.0,False,0.7531645569620253,0.0,False
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,effort_foraging,above_chance_mvt_match,True,,0.0,False,0.980712890625,-0.25,False
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,effort_foraging,above_chance_total_reward,True,,0.0,False,0.74609375,-0.07500000000000001,False
 rebuttal_v1_launch_20260724_211936,0,gemini-3-flash-preview,effort_foraging,harvest_rt_speedup,True,,0.5,False,0.2646123566757051,-0.07137916213481901,True
@@ -102,7 +102,7 @@ rebuttal_v1_launch_20260724_211936,0,gpt-5.4-nano,grid_bandit,value_directed_exp
 rebuttal_v1_launch_20260724_211936,0,gpt-5.4-nano,grid_bandit,above_chance_reward,True,,0.5,False,0.057659149169921875,0.18181818181818177,True
 rebuttal_v1_launch_20260724_211936,0,gpt-5.4-nano,grid_bandit,within_block_learning,True,,0.5,False,0.33478387233606405,0.04114092792567019,True
 rebuttal_v1_launch_20260724_211936,0,gpt-5.4-nano,grid_bandit,within_block_rt_speedup,True,,0.5,False,0.13861023486283505,-0.10451163934367957,True
-rebuttal_v1_launch_20260724_211936,0,gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,0,gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,True,,0.0,False,0.8337544474810499,-0.04999999999999993,False
 rebuttal_v1_launch_20260724_211936,0,gpt-5.4-nano,effort_foraging,above_chance_mvt_match,True,,0.5,False,0.19384765625,0.18888888888888888,True
 rebuttal_v1_launch_20260724_211936,0,gpt-5.4-nano,effort_foraging,above_chance_total_reward,True,,1.0,True,7.687045098236922e-06,0.3222222222222222,True
 rebuttal_v1_launch_20260724_211936,0,gpt-5.4-nano,effort_foraging,harvest_rt_speedup,True,,0.0,False,0.9796684328088788,0.3063811716866794,False
@@ -191,11 +191,11 @@ rebuttal_v1_launch_20260724_211936,1,gemini-3-flash-preview,marbles_risk,ev_sens
 rebuttal_v1_launch_20260724_211936,1,gemini-3-flash-preview,marbles_risk,above_chance_ev_optimal,True,,1.0,True,8.673617379884035e-19,0.5,True
 rebuttal_v1_launch_20260724_211936,1,gemini-3-flash-preview,marbles_risk,magnitude_effect_high_payoff,True,,1.0,True,1.1005980339862808e-05,0.503758923219166,True
 rebuttal_v1_launch_20260724_211936,1,gemini-3-flash-preview,marbles_risk,ev_difference_rt_effect,True,,0.0,False,0.9260402931231344,0.18294027600513801,False
-rebuttal_v1_launch_20260724_211936,1,gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,1,gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,True,,0.5,False,0.30766069373664306,0.04999999999999993,True
 rebuttal_v1_launch_20260724_211936,1,gemini-3-flash-preview,effort_foraging,above_chance_mvt_match,True,,0.0,False,0.84912109375,-0.125,False
 rebuttal_v1_launch_20260724_211936,1,gemini-3-flash-preview,effort_foraging,above_chance_total_reward,True,,0.5,False,0.15087890624999997,0.13749999999999996,True
 rebuttal_v1_launch_20260724_211936,1,gemini-3-flash-preview,effort_foraging,harvest_rt_speedup,True,,0.0,False,0.93949864933613,0.17477340021029716,False
-rebuttal_v1_launch_20260724_211936,1,kimi-k2.5,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,1,kimi-k2.5,effort_foraging,travel_cost_residence_effect,True,,0.0,False,1.0,0.0,False
 rebuttal_v1_launch_20260724_211936,1,kimi-k2.5,effort_foraging,above_chance_mvt_match,True,,0.0,False,1.0,-0.475,False
 rebuttal_v1_launch_20260724_211936,1,kimi-k2.5,effort_foraging,above_chance_total_reward,True,,0.0,False,0.984375,-0.2875,False
 rebuttal_v1_launch_20260724_211936,1,kimi-k2.5,effort_foraging,harvest_rt_speedup,True,,0.0,False,0.988970621069379,0.25571076700281437,False
@@ -222,7 +222,7 @@ rebuttal_v1_launch_20260724_211936,1,kimi-k2.5,phishing_detection_v2,learning_ef
 rebuttal_v1_launch_20260724_211936,1,kimi-k2.5,phishing_detection_v2,above_chance_overall,True,,1.0,True,1.3905960827287345e-09,0.41666666666666663,True
 rebuttal_v1_launch_20260724_211936,1,kimi-k2.5,phishing_detection_v2,practice_rt_speedup,True,,0.0,False,0.921784013906819,0.1852655276650386,False
 rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,serial_recall_v2,above_chance_recall,True,,0.0,False,1.0,-0.05,False
-rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,serial_recall_v2,similarity_aids_recall,False,undefined_statistic,,False,nan,nan,
+rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,serial_recall_v2,similarity_aids_recall,True,,0.0,False,,,False
 rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,serial_recall_v2,high_vs_low_sim_advantage,True,,0.0,False,0.5,0.0,False
 rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,serial_recall_v2,similarity_rt_effect,True,,0.5,False,0.23574868672906907,-0.19402850002906638,True
 rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,serial_recall_v2,primacy_effect,True,,0.0,False,0.5,0.0,False
@@ -233,7 +233,7 @@ rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,grid_bandit,within_block_learn
 rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,grid_bandit,within_block_rt_speedup,True,,0.5,False,0.20779742923967254,-0.07839618916910251,True
 rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,tiny_alchemy,above_chance_discovery,False,insufficient_data,,False,,,
 rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,tiny_alchemy,non_redundant_attempts,False,insufficient_data,,False,,,
-rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,True,,0.0,False,1.0,0.0,False
 rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,effort_foraging,above_chance_mvt_match,True,,0.0,False,1.0,-0.475,False
 rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,effort_foraging,above_chance_total_reward,True,,0.0,False,0.984375,-0.275,False
 rebuttal_v1_launch_20260724_211936,1,gpt-5.4-nano,effort_foraging,harvest_rt_speedup,True,,0.5,False,0.327299831172486,-0.05078576208766697,True
@@ -326,7 +326,7 @@ rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,random_dot_motion_v2
 rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,random_dot_motion_v2,coherence_rt_chronometric,True,,0.5,False,0.2619825456647804,-0.12105941473238338,True
 rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,random_dot_motion_v2,above_chance_low_coherence,True,,0.5,False,0.19384765625,0.16666666666666663,True
 rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,random_dot_motion_v2,above_chance_overall,True,,1.0,True,9.553821291774511e-05,0.31081081081081086,True
-rebuttal_v1_launch_20260724_211936,2,kimi-k2.5,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,2,kimi-k2.5,effort_foraging,travel_cost_residence_effect,True,,0.5,False,0.4999999999999999,0.025000000000000022,True
 rebuttal_v1_launch_20260724_211936,2,kimi-k2.5,effort_foraging,above_chance_mvt_match,True,,0.0,False,0.9713134765625,-0.22499999999999998,False
 rebuttal_v1_launch_20260724_211936,2,kimi-k2.5,effort_foraging,above_chance_total_reward,True,,0.5,False,0.63671875,0.050000000000000044,True
 rebuttal_v1_launch_20260724_211936,2,kimi-k2.5,effort_foraging,harvest_rt_speedup,True,,1.0,True,0.047137233901790525,-0.18836298909051397,True
@@ -353,7 +353,7 @@ rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,marbles_risk,ev_sens
 rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,marbles_risk,above_chance_ev_optimal,True,,1.0,True,8.673617379884035e-19,0.5,True
 rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,marbles_risk,magnitude_effect_high_payoff,True,,1.0,True,1.1005980339862808e-05,0.503758923219166,True
 rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,marbles_risk,ev_difference_rt_effect,True,,0.0,False,0.8132646956886755,0.11312075136377976,False
-rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,True,,0.5,False,0.5,0.025000000000000022,True
 rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,effort_foraging,above_chance_mvt_match,True,,0.0,False,0.9997406005859375,-0.375,False
 rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,effort_foraging,above_chance_total_reward,True,,0.0,False,0.890625,-0.11249999999999999,False
 rebuttal_v1_launch_20260724_211936,2,gemini-3-flash-preview,effort_foraging,harvest_rt_speedup,True,,0.5,False,0.3458651821124155,-0.04501694817394174,True
@@ -377,7 +377,7 @@ rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,marbles_risk,above_chance_ev_o
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,marbles_risk,magnitude_effect_high_payoff,False,insufficient_data,,False,,,
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,marbles_risk,ev_difference_rt_effect,False,insufficient_data,,False,,,
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,serial_recall_v2,above_chance_recall,True,,0.0,False,1.0,-0.05,False
-rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,serial_recall_v2,similarity_aids_recall,False,undefined_statistic,,False,nan,nan,
+rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,serial_recall_v2,similarity_aids_recall,True,,0.0,False,,,False
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,serial_recall_v2,high_vs_low_sim_advantage,True,,0.0,False,0.5,0.0,False
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,serial_recall_v2,similarity_rt_effect,True,,0.0,False,0.873154405923402,0.30316953129541624,False
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,serial_recall_v2,primacy_effect,True,,0.0,False,0.5,0.0,False
@@ -395,7 +395,7 @@ rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,tiny_alchemy,non_redundant_att
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,visual_recognition,above_chance_discrimination,False,insufficient_data,,False,,,
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,visual_recognition,above_chance_accuracy,False,insufficient_data,,False,,,
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,visual_recognition,low_false_alarm_rate,False,insufficient_data,,False,,,
-rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,True,,0.0,False,1.0,0.0,False
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,effort_foraging,above_chance_mvt_match,True,,0.0,False,1.0,-0.475,False
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,effort_foraging,above_chance_total_reward,True,,0.0,False,0.96875,-0.25,False
 rebuttal_v1_launch_20260724_211936,2,gpt-5.4-nano,effort_foraging,harvest_rt_speedup,True,,0.5,False,0.061831895121894284,-0.1735521735864228,True
@@ -484,7 +484,7 @@ rebuttal_v1_launch_20260724_211936,3,kimi-k2.5,serial_recall_v2,similarity_rt_ef
 rebuttal_v1_launch_20260724_211936,3,kimi-k2.5,serial_recall_v2,primacy_effect,True,,0.5,False,0.3394226497121591,0.125,True
 rebuttal_v1_launch_20260724_211936,3,kimi-k2.5,tiny_alchemy,above_chance_discovery,False,insufficient_data,,False,,,
 rebuttal_v1_launch_20260724_211936,3,kimi-k2.5,tiny_alchemy,non_redundant_attempts,False,insufficient_data,,False,,,
-rebuttal_v1_launch_20260724_211936,3,kimi-k2.5,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,3,kimi-k2.5,effort_foraging,travel_cost_residence_effect,True,,0.0,False,0.7531645569620253,0.0,False
 rebuttal_v1_launch_20260724_211936,3,kimi-k2.5,effort_foraging,above_chance_mvt_match,True,,0.0,False,0.96728515625,-0.2375,False
 rebuttal_v1_launch_20260724_211936,3,kimi-k2.5,effort_foraging,above_chance_total_reward,True,,0.0,False,0.91015625,-0.11249999999999999,False
 rebuttal_v1_launch_20260724_211936,3,kimi-k2.5,effort_foraging,harvest_rt_speedup,True,,0.5,False,0.4625215126735067,-0.010686722464923437,True
@@ -515,7 +515,7 @@ rebuttal_v1_launch_20260724_211936,3,gemini-3-flash-preview,marbles_risk,ev_sens
 rebuttal_v1_launch_20260724_211936,3,gemini-3-flash-preview,marbles_risk,above_chance_ev_optimal,True,,1.0,True,2.104926011270436e-09,0.4,True
 rebuttal_v1_launch_20260724_211936,3,gemini-3-flash-preview,marbles_risk,magnitude_effect_high_payoff,True,,0.5,False,0.05264509837166906,0.20435103631429805,True
 rebuttal_v1_launch_20260724_211936,3,gemini-3-flash-preview,marbles_risk,ev_difference_rt_effect,True,,0.0,False,0.8468791722811365,0.1299099626367495,False
-rebuttal_v1_launch_20260724_211936,3,gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,3,gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,True,,0.0,False,1.0,-0.025000000000000022,False
 rebuttal_v1_launch_20260724_211936,3,gemini-3-flash-preview,effort_foraging,above_chance_mvt_match,True,,0.0,False,0.99609375,-0.35,False
 rebuttal_v1_launch_20260724_211936,3,gemini-3-flash-preview,effort_foraging,above_chance_total_reward,True,,0.0,False,0.96484375,-0.22499999999999998,False
 rebuttal_v1_launch_20260724_211936,3,gemini-3-flash-preview,effort_foraging,harvest_rt_speedup,True,,0.5,False,0.36800724682564934,-0.0382816091594965,True
@@ -568,7 +568,7 @@ rebuttal_v1_launch_20260724_211936,3,gpt-5.4-nano,grid_bandit,value_directed_exp
 rebuttal_v1_launch_20260724_211936,3,gpt-5.4-nano,grid_bandit,above_chance_reward,True,,0.5,False,0.4018096923828125,0.07272727272727275,True
 rebuttal_v1_launch_20260724_211936,3,gpt-5.4-nano,grid_bandit,within_block_learning,True,,0.5,False,0.31943032015155176,0.045239144337733295,True
 rebuttal_v1_launch_20260724_211936,3,gpt-5.4-nano,grid_bandit,within_block_rt_speedup,True,,0.5,False,0.2143995516606404,-0.07620328877276397,True
-rebuttal_v1_launch_20260724_211936,3,gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,3,gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,True,,0.0,False,1.0,0.0,False
 rebuttal_v1_launch_20260724_211936,3,gpt-5.4-nano,effort_foraging,above_chance_mvt_match,True,,0.0,False,1.0,-0.475,False
 rebuttal_v1_launch_20260724_211936,3,gpt-5.4-nano,effort_foraging,above_chance_total_reward,True,,0.0,False,0.9921875,-0.3375,False
 rebuttal_v1_launch_20260724_211936,3,gpt-5.4-nano,effort_foraging,harvest_rt_speedup,True,,0.0,False,0.9227513774225374,0.16068089916287243,False
@@ -657,7 +657,7 @@ rebuttal_v1_launch_20260724_211936,4,gemini-3-flash-preview,repeated_games,tit_f
 rebuttal_v1_launch_20260724_211936,4,gemini-3-flash-preview,repeated_games,above_chance_coordination_bos,True,,0.0,False,0.99951171875,-0.3666666666666667,False
 rebuttal_v1_launch_20260724_211936,4,gemini-3-flash-preview,repeated_games,cooperation_when_opp_cooperated,True,,1.0,True,6.103515625e-05,0.5,True
 rebuttal_v1_launch_20260724_211936,4,gemini-3-flash-preview,repeated_games,round_rt_speedup,True,,1.0,True,0.007322779323783059,-0.4412753308360043,True
-rebuttal_v1_launch_20260724_211936,4,kimi-k2.5,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,4,kimi-k2.5,effort_foraging,travel_cost_residence_effect,True,,0.0,False,0.879746835443038,-0.025000000000000022,False
 rebuttal_v1_launch_20260724_211936,4,kimi-k2.5,effort_foraging,above_chance_mvt_match,True,,0.0,False,0.953857421875,-0.175,False
 rebuttal_v1_launch_20260724_211936,4,kimi-k2.5,effort_foraging,above_chance_total_reward,True,,0.5,False,0.63671875,0.050000000000000044,True
 rebuttal_v1_launch_20260724_211936,4,kimi-k2.5,effort_foraging,harvest_rt_speedup,True,,0.5,False,0.45282368307968807,-0.013463403932530734,True
@@ -679,7 +679,7 @@ rebuttal_v1_launch_20260724_211936,4,kimi-k2.5,phishing_detection_v2,above_chanc
 rebuttal_v1_launch_20260724_211936,4,kimi-k2.5,phishing_detection_v2,learning_effect,True,,0.5,False,0.13177623864148624,0.20000000000000007,True
 rebuttal_v1_launch_20260724_211936,4,kimi-k2.5,phishing_detection_v2,above_chance_overall,True,,1.0,True,8.081907283078588e-08,0.33333333333333337,True
 rebuttal_v1_launch_20260724_211936,4,kimi-k2.5,phishing_detection_v2,practice_rt_speedup,True,,0.0,False,0.8658922249986849,0.14523216034246123,False
-rebuttal_v1_launch_20260724_211936,4,gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,4,gemini-3-flash-preview,effort_foraging,travel_cost_residence_effect,True,,0.0,False,1.0,0.0,False
 rebuttal_v1_launch_20260724_211936,4,gemini-3-flash-preview,effort_foraging,above_chance_mvt_match,True,,0.0,False,1.0,-0.475,False
 rebuttal_v1_launch_20260724_211936,4,gemini-3-flash-preview,effort_foraging,above_chance_total_reward,True,,0.0,False,0.96875,-0.2625,False
 rebuttal_v1_launch_20260724_211936,4,gemini-3-flash-preview,effort_foraging,harvest_rt_speedup,True,,0.5,False,0.3192727481621399,-0.05331957853532562,True
@@ -746,7 +746,7 @@ rebuttal_v1_launch_20260724_211936,4,qwen3-vl-235b-instruct,grid_bandit,value_di
 rebuttal_v1_launch_20260724_211936,4,qwen3-vl-235b-instruct,grid_bandit,above_chance_reward,True,,0.5,False,0.0717315673828125,0.18571428571428572,True
 rebuttal_v1_launch_20260724_211936,4,qwen3-vl-235b-instruct,grid_bandit,within_block_learning,True,,0.5,False,0.1254161702246277,0.13908770404073117,True
 rebuttal_v1_launch_20260724_211936,4,qwen3-vl-235b-instruct,grid_bandit,within_block_rt_speedup,True,,0.5,False,0.49475577973309864,-0.00160001938970157,True
-rebuttal_v1_launch_20260724_211936,4,gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,False,insufficient_data,,False,,,
+rebuttal_v1_launch_20260724_211936,4,gpt-5.4-nano,effort_foraging,travel_cost_residence_effect,True,,0.5,False,0.5,0.025000000000000022,True
 rebuttal_v1_launch_20260724_211936,4,gpt-5.4-nano,effort_foraging,above_chance_mvt_match,True,,0.0,False,0.9998626708984375,-0.3875,False
 rebuttal_v1_launch_20260724_211936,4,gpt-5.4-nano,effort_foraging,above_chance_total_reward,True,,0.0,False,0.9375,-0.21250000000000002,False
 rebuttal_v1_launch_20260724_211936,4,gpt-5.4-nano,effort_foraging,harvest_rt_speedup,True,,0.5,False,0.2988934627211134,-0.05987525778215967,True
@@ -1411,7 +1411,7 @@ rebuttal_v1_batch2_20260725_150651,4,kimi-k2.5,repeated_games,above_chance_coord
 rebuttal_v1_batch2_20260725_150651,4,kimi-k2.5,repeated_games,cooperation_when_opp_cooperated,True,,1.0,True,0.0001220703125,0.5,True
 rebuttal_v1_batch2_20260725_150651,4,kimi-k2.5,repeated_games,round_rt_speedup,True,,0.5,False,0.15863172687885235,-0.18896962325366765,True
 rebuttal_v1_batch2_20260725_150651,4,kimi-k2.5,serial_recall_v2,above_chance_recall,True,,0.0,False,1.0,-0.05,False
-rebuttal_v1_batch2_20260725_150651,4,kimi-k2.5,serial_recall_v2,similarity_aids_recall,False,undefined_statistic,,False,nan,nan,
+rebuttal_v1_batch2_20260725_150651,4,kimi-k2.5,serial_recall_v2,similarity_aids_recall,True,,0.0,False,,,False
 rebuttal_v1_batch2_20260725_150651,4,kimi-k2.5,serial_recall_v2,high_vs_low_sim_advantage,True,,0.0,False,0.5,0.0,False
 rebuttal_v1_batch2_20260725_150651,4,kimi-k2.5,serial_recall_v2,similarity_rt_effect,True,,0.5,False,0.32730008464877836,-0.12126781251816648,True
 rebuttal_v1_batch2_20260725_150651,4,kimi-k2.5,serial_recall_v2,primacy_effect,True,,0.0,False,0.5,0.0,False

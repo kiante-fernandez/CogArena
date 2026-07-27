@@ -43,7 +43,7 @@ RUN_FIELDS = [
     "sweep", "run_index", "repeat_index", "replicate_id", "model_id", "task_id",
     "rc", "wall_time", "scored", "l1_complete", "l3_measurable",
     "composite", "l1", "l2", "l3",
-    "l3_n_testable", "l3_n_untestable", "l3_coverage",
+    "l3_n_testable", "l3_n_untestable", "l3_n_errors", "l3_coverage",
     "n_trials", "observation_mode", "git_sha", "session_id",
 ]
 
@@ -165,10 +165,17 @@ def collect(sweep_dir: Path, max_repeat: int | None = None) -> tuple[list[dict],
         l3_detail = ((entry.get("details") or {}).get("l3") or {}) if entry else {}
         n_testable = l3_detail.get("n_testable")
         coverage = l3_detail.get("coverage")
+        # A template that raised is a defect in this repository, not a property
+        # of the run: the signature drops out of the denominator, so the L3 that
+        # remains is computed over a set we broke. Such a cell is not a low
+        # score, it is an unmeasured one.
+        n_errors = l3_detail.get("n_errors") or 0
         # Older scorecards predate these fields; absence is unknown, not zero.
         measurable = None
         if n_testable is not None and coverage is not None:
-            measurable = bool(n_testable > 0 and coverage >= MIN_L3_COVERAGE)
+            measurable = bool(n_testable > 0
+                              and coverage >= MIN_L3_COVERAGE
+                              and n_errors == 0)
 
         runs.append({
             "sweep": sweep_dir.name,
@@ -190,6 +197,7 @@ def collect(sweep_dir: Path, max_repeat: int | None = None) -> tuple[list[dict],
             "l3_measurable": measurable,
             "l3_n_testable": n_testable,
             "l3_n_untestable": l3_detail.get("n_untestable"),
+            "l3_n_errors": l3_detail.get("n_errors"),
             "l3_coverage": round(coverage, 4) if coverage is not None else None,
             "composite": row.get("composite") or (entry.get("composite") if entry else None),
             "l1": row.get("l1") or (entry.get("l1_completion") if entry else None),
