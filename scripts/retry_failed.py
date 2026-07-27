@@ -70,7 +70,18 @@ def _has_usable_result(artifacts: Path, task_id: str) -> bool:
     return any(t.get("task_id") == task_id for t in score.get("task_scores") or [])
 
 
-def find_failed(sweep_dir: Path) -> list[dict[str, Any]]:
+def find_failed(sweep_dir: Path, max_repeat: int | None = None,
+                models: list[str] | None = None,
+                tasks: list[str] | None = None) -> list[dict[str, Any]]:
+    """Cells with no usable scorecard, optionally narrowed.
+
+    The filters exist because a sweep's aggregate can contain repeats that the
+    analysis deliberately excludes — `rebuttal_v1_launch` holds 400 rows but only
+    repeats 0-4 are used, the rest having died on an OpenRouter spend cap and
+    been dropped via `build_results --max-repeat 4`. Retrying those would spend
+    money re-running cells no reported number depends on, so the retry set must
+    be narrowable to the same slice the analysis actually uses.
+    """
     agg = None
     for name in ("aggregate_audited.csv", "aggregate.csv"):
         if (sweep_dir / name).exists():
@@ -84,6 +95,12 @@ def find_failed(sweep_dir: Path) -> list[dict[str, Any]]:
         for row in csv.DictReader(f):
             repeat_index = int(row["repeat_index"])
             model_id, task_id = row["model_id"], row["task_id"]
+            if max_repeat is not None and repeat_index > max_repeat:
+                continue
+            if models and model_id not in models:
+                continue
+            if tasks and task_id not in tasks:
+                continue
             artifacts = sweep_dir / "runs" / _rid(repeat_index, model_id, task_id) / "artifacts"
             if _has_usable_result(artifacts, task_id):
                 continue
@@ -158,6 +175,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--base-port", type=int, default=9500)
     ap.add_argument("--max-retries", type=int, default=1,
                     help="Attempts per failed cell. Keep at 1; more selects for lucky runs.")
+    ap.add_argument("--max-repeat", type=int, default=None,
+                    help="Ignore repeats above this index. Use to match the slice the "
+                         "analysis keeps, so retries do not spend money on excluded waves.")
+    ap.add_argument("--model", action="append", default=None,
+                    help="Only retry this model_id. Repeatable.")
+    ap.add_argument("--task", action="append", default=None,
+                    help="Only retry this task_id. Repeatable.")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--verbose", "-v", action="store_true")
     args = ap.parse_args(argv)
@@ -169,7 +193,8 @@ def main(argv: list[str] | None = None) -> int:
         logger.error("not a directory: %s", sweep_dir)
         return 2
 
-    failed = find_failed(sweep_dir)
+    failed = find_failed(sweep_dir, max_repeat=args.max_repeat,
+                         models=args.model, tasks=args.task)
     if not failed:
         print("No failed cells — nothing to retry.")
         return 0
