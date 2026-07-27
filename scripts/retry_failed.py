@@ -57,17 +57,18 @@ def _has_usable_result(artifacts: Path, task_id: str) -> bool:
     """A cell is usable if it archived raw trial data AND produced a scorecard
     entry for the task. Either alone is not enough: trial_data without a score
     means scoring failed, a score without trial_data cannot be re-scored later."""
-    trials = _read_json(artifacts / "trial_data" / f"{task_id}.json")
-    if not isinstance(trials, list) or not trials:
+    # Cheap checks first. Parsing trial_data to test "non-empty list" costs a
+    # full JSON decode of up to 1.6 MB per cell; a stat plus the small score.json
+    # rules out most rows for ~0.4% of that.
+    trial_file = artifacts / "trial_data" / f"{task_id}.json"
+    if not trial_file.exists() or trial_file.stat().st_size <= 2:  # "[]" or empty
         return False
     score = _read_json(artifacts / "score.json")
-    if not score:
-        for p in artifacts.rglob("score.json"):
-            score = _read_json(p)
-            break
-    if not score:
+    if not score or not any(t.get("task_id") == task_id
+                            for t in score.get("task_scores") or []):
         return False
-    return any(t.get("task_id") == task_id for t in score.get("task_scores") or [])
+    trials = _read_json(trial_file)
+    return isinstance(trials, list) and bool(trials)
 
 
 def find_failed(sweep_dir: Path, max_repeat: int | None = None,
@@ -114,13 +115,27 @@ def find_failed(sweep_dir: Path, max_repeat: int | None = None,
 
 
 def _load_suite(sweep_dir: Path) -> dict[str, Any]:
+    """The suite the original sweep ran, with its recorded conditions restored.
+
+    The suite YAML may have moved or changed since the sweep, so anything the
+    manifest recorded about the run condition wins over the file. `no_vision` in
+    particular must survive: retrying a vision-off arm with vision produces runs
+    of a different condition inside a directory named for the first one, and
+    `build_results --substitute-retries` would then fold them together.
+    """
     manifest = _read_json(sweep_dir / "suite_manifest.json") or {}
+    suite: dict[str, Any] = {}
     suite_path = manifest.get("suite_path")
     if suite_path and Path(suite_path).exists():
         with open(suite_path) as f:
-            return yaml.safe_load(f) or {}
-    logger.warning("suite YAML not found; falling back to harness defaults")
-    return {}
+            suite = yaml.safe_load(f) or {}
+    else:
+        logger.warning("suite YAML not found; falling back to harness defaults")
+    if "no_vision" in manifest:
+        suite["no_vision"] = manifest["no_vision"]
+    if suite.get("no_vision"):
+        logger.info("parent sweep ran vision-off; retries will too")
+    return suite
 
 
 def _execute(cell: dict[str, Any], out_dir: Path, suite: dict[str, Any],
@@ -143,6 +158,10 @@ def _execute(cell: dict[str, Any], out_dir: Path, suite: dict[str, Any],
     ]
     if suite.get("n_trials_override"):
         args += ["--n-trials", str(suite["n_trials_override"])]
+    # Same key as harness/sweep.py: a retried cell must run the condition the
+    # original ran, or it is a different experiment wearing the same directory.
+    if suite.get("no_vision"):
+        args.append("--no-vision")
     if not suite.get("no_deadline", True):
         args += ["--use-deadline"]
 

@@ -169,12 +169,16 @@ async def run_task_with_browser_use(
                 # vision mode Browser-Use hands us a base64 PNG on the state
                 # summary; in DOM mode there is none, and the absence is itself
                 # the record of what the model had to work with.
+                # `use_vision` is the gate, not just capture_screenshots:
+                # Browser-Use populates browser_state.screenshot regardless of
+                # use_vision, so without this the vision-off arm archived a
+                # frame the model was explicitly denied — 9,104 files and 293 MB
+                # in the ablation sweep, every one of them a record of something
+                # that never reached the model.
                 shot = None
-                if getattr(trace_writer, "capture_screenshots", False):
-                    b64 = getattr(browser_state, "screenshot", None)
-                    if b64 is None and hasattr(browser_state, "get_screenshot"):
-                        b64 = browser_state.get_screenshot()
-                    shot = trace_writer.save_screenshot_b64(b64, task_id)
+                if use_vision and getattr(trace_writer, "capture_screenshots", False):
+                    shot = trace_writer.save_screenshot_b64(
+                        getattr(browser_state, "screenshot", None), task_id)
 
                 try:
                     response_chars = len(json.dumps(

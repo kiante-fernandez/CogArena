@@ -69,7 +69,7 @@ def db_rows(db_path: Path, session_id: str) -> list[tuple[str, list, int]]:
 
 def scan(sweep: Path, db_path: Path) -> list[dict]:
     actions = []
-    for meta_path in sorted(sweep.rglob("runs/*/artifacts/meta.json")):
+    for meta_path in sorted(sweep.glob("runs/*/artifacts/meta.json")):
         artifacts = meta_path.parent
         meta = _load(meta_path) or {}
         sid = meta.get("session_id")

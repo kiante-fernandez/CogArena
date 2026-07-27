@@ -117,6 +117,12 @@ def _execute_run(run: Run, suite: dict[str, Any], n_trials: int | None) -> Run:
         args += ["--n-trials", str(n_trials)]
     elif suite.get("n_trials_override"):
         args += ["--n-trials", str(suite["n_trials_override"])]
+    # Observation modality belongs in the suite, not only on the eval CLI: a
+    # sweep and a retry of that sweep must run the same condition, and a
+    # vision-off arm that silently retries with vision would land both
+    # conditions in one results table under one directory name.
+    if suite.get("no_vision"):
+        args.append("--no-vision")
     if not suite.get("no_deadline", True):
         args += ["--use-deadline"]
 
@@ -185,6 +191,12 @@ def run_sweep(args) -> int:
         results_dir = REPO_ROOT / "data" / "sweeps" / f"{suite_name}_{stamp}"
     results_dir.mkdir(parents=True, exist_ok=True)
 
+    # CLI overrides the suite so an ablation can be driven either way, but the
+    # resolved value is written into the manifest below — the sweep dir must
+    # record which condition it ran, since retries read it back from there.
+    if args.no_vision:
+        suite["no_vision"] = True
+
     runs = expand_runs(
         suite, base_port=args.base_port,
         tasks_filter=args.tasks, models_filter=args.models,
@@ -213,6 +225,9 @@ def run_sweep(args) -> int:
             "total_runs": len(runs), "max_parallel": args.max_parallel,
             "started_at_utc": _dt.datetime.utcnow().isoformat() + "Z",
             "n_repeats": n_repeats,
+            # Recorded so a retry of this sweep reproduces the same condition
+            # rather than silently running the default one.
+            "no_vision": bool(suite.get("no_vision")),
         }, f, indent=2)
 
     # Execute wave-by-wave with bounded parallelism.

@@ -35,25 +35,20 @@ def score_accuracy(trial_data: list[dict], metrics_spec: dict) -> dict:
         if human_mean is not None and human_sd is not None and human_sd > 0:
             z = (raw_value - human_mean) / human_sd
             direction = metric.get("direction")
-            if direction == "closer_to_human":
-                # Two-sided similarity: 1.0 when the agent matches the human mean,
-                # decaying as it departs in EITHER direction.
-                #
-                # The default normal-CDF mapping is monotonic, so "more" always
-                # scores higher. That is defensible for an accuracy metric, where
-                # exceeding humans is genuinely better, but it inverts the
-                # construct for a preference. moral_machine's prop_intervention
-                # has human_mean=0.46 (humans mildly AVOID intervening), so under
-                # the monotonic mapping an agent that always intervenes scored
-                # ~1.0 while a perfectly human-like agent scored 0.50 -- and the
-                # L3 signature intervention_aversion rewarded the opposite. The
-                # same task was pulling in two directions at once.
-                normalized = float(2.0 * (1.0 - stats.norm.cdf(abs(z))))
-            else:
-                if direction == "lower_is_better":
-                    z = -z
-                normalized = float(min(1.0, max(0.0, stats.norm.cdf(z))))
-            normalized = float(min(1.0, max(0.0, normalized)))
+            if direction not in _KNOWN_DIRECTIONS:
+                raise ValueError(
+                    f"Unknown direction {direction!r} in metric {metric['name']!r}. "
+                    f"Known: {sorted(str(k) for k in _KNOWN_DIRECTIONS)}. An "
+                    f"unrecognised value would fall through to the default "
+                    f"mapping and score the metric backwards without saying so.")
+            # Monotonic in the direction the literature predicts: 0.5 at the
+            # human mean, rising as the agent exceeds the human effect. Every
+            # task uses this scale, which is what makes L2 comparable across
+            # tasks. stats.norm.cdf is already in [0, 1]; the clamp guards
+            # against float drift at the extremes only.
+            if direction == "lower_is_better":
+                z = -z
+            normalized = float(min(1.0, max(0.0, stats.norm.cdf(z))))
         else:
             normalized = float(min(1.0, max(0.0, raw_value)))
 
@@ -91,6 +86,18 @@ _KNOWN_METRIC_KEYS = {
     "name", "type", "field", "human_mean", "human_sd", "filter",
     "direction", "description", "hit_field", "fa_field", "threshold",
 }
+
+# None is the default, "higher is better". Validated for the same reason the
+# keys above are: a direction that falls through unrecognised scores the metric
+# backwards and looks entirely plausible doing it.
+#
+# `closer_to_human` was tried for moral_machine and removed. It peaks at 1.0
+# where this mapping peaks at 0.5, so it put one task on double the scale of
+# every other, and it contradicted the above_chance L3 signatures on four of
+# that task's five dimensions. moral_machine now uses `lower_is_better` on the
+# one metric that needed it. Do not reintroduce a two-sided mapping without
+# resolving that scale difference first.
+_KNOWN_DIRECTIONS = {None, "higher_better", "lower_is_better", "neutral"}
 
 
 def _compute_metric(trials: list[dict], metric: dict) -> float:

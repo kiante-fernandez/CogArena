@@ -36,6 +36,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from scoring.level3_behavioral import is_l3_measurable
 from scripts._aggregate_schema import normalize
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -51,10 +52,11 @@ RUN_FIELDS = [
     "retried", "retry_of_rc",
 ]
 
-# A cell whose L3 rests on no testable signature carries no behavioural
-# information, but still contributes 0 to any average computed over it. Rather
-# than silently dropping such cells, they are marked so the exclusion rule is
-# explicit and reportable.
+# The measurability rule itself lives in scoring.level3_behavioral, next to the
+# fields it reads, so the producer here and the consumers in scripts/ cannot
+# hold different copies of it. Both l3_n_testable and l3_coverage are written to
+# runs.csv alongside the flag, so a reader can re-derive it at another threshold
+# without regenerating anything.
 MIN_L3_COVERAGE = 0.5
 SIG_FIELDS = [
     "sweep", "repeat_index", "model_id", "task_id",
@@ -92,12 +94,11 @@ def _aggregate_rows(sweep_dir: Path) -> list[dict[str, str]]:
 
 
 def _score_for(artifacts: Path) -> dict[str, Any] | None:
-    direct = artifacts / "score.json"
-    if direct.exists():
-        return _read_json(direct)
-    for p in artifacts.rglob("score.json"):
-        return _read_json(p)
-    return None
+    # Every score.json the harness has ever written sits directly here (verified
+    # across all 748 in data/sweeps/). A recursive fallback walked the whole
+    # artifacts subtree — which now grows by one screenshot per agent step — and
+    # never once matched.
+    return _read_json(artifacts / "score.json")
 
 
 def _task_entry(score: dict[str, Any], task_id: str) -> dict[str, Any] | None:
@@ -149,6 +150,13 @@ def collect(sweep_dir: Path, max_repeat: int | None = None) -> tuple[list[dict],
     runs: list[dict] = []
     sigs: list[dict] = []
     skipped = 0
+    # retry_failed records which sweep it is a retry of. Reading it here means
+    # substitution keys on recorded provenance rather than on the directory
+    # name, so `--out` can name the retry dir anything without silently
+    # disabling the fold-in.
+    manifest = _read_json(sweep_dir / "suite_manifest.json") or {}
+    retry_of = manifest.get("retry_of")
+    retry_of_sweep = Path(retry_of).name if retry_of else None
     for row in _aggregate_rows(sweep_dir):
         repeat_index = int(row["repeat_index"])
         if max_repeat is not None and repeat_index > max_repeat:
@@ -175,16 +183,16 @@ def collect(sweep_dir: Path, max_repeat: int | None = None) -> tuple[list[dict],
         # of the run: the signature drops out of the denominator, so the L3 that
         # remains is computed over a set we broke. Such a cell is not a low
         # score, it is an unmeasured one.
-        n_errors = l3_detail.get("n_errors") or 0
-        # Older scorecards predate these fields; absence is unknown, not zero.
+        # Older scorecards predate these fields; absence is unknown, not zero,
+        # so the flag stays None rather than False and the run is reported as
+        # having an unknown measurability rather than a failed one.
         measurable = None
         if n_testable is not None and coverage is not None:
-            measurable = bool(n_testable > 0
-                              and coverage >= MIN_L3_COVERAGE
-                              and n_errors == 0)
+            measurable = is_l3_measurable(l3_detail, MIN_L3_COVERAGE)
 
         runs.append({
             "sweep": sweep_dir.name,
+            "retry_of_sweep": retry_of_sweep,
             "run_index": row.get("run_index"),
             "repeat_index": repeat_index,
             # Repeat indices restart at 0 in every sweep, so merging two batches
@@ -281,13 +289,18 @@ def substitute_retries(runs: list[dict], sigs: list[dict]) -> tuple[list[dict], 
 
     by_sweep_key = {(r["sweep"], key(r)): r for r in runs}
     substituted = 0
-    drop_run_ids, drop_sig_sweeps = set(), set()
+    drop_run_ids: set[int] = set()
+    drop_sig_sweeps: dict = {}  # (sweep, cell key) -> parent sweep name
 
     for r in runs:
         sweep = r["sweep"]
-        if not sweep.endswith(RETRY_SUFFIX):
-            continue
-        parent_name = sweep[: -len(RETRY_SUFFIX)]
+        # Recorded provenance first; the name suffix is only a fallback for
+        # retry dirs written before `retry_of` was in the manifest.
+        parent_name = r.get("retry_of_sweep")
+        if not parent_name:
+            if not sweep.endswith(RETRY_SUFFIX):
+                continue
+            parent_name = sweep[: -len(RETRY_SUFFIX)]
         parent = by_sweep_key.get((parent_name, key(r)))
         if parent is None:
             continue  # retry of a cell outside the merged slice; leave it alone
@@ -302,7 +315,7 @@ def substitute_retries(runs: list[dict], sigs: list[dict]) -> tuple[list[dict], 
         parent["retry_of_rc"] = retry_of_rc
         parent["retried"] = True
         drop_run_ids.add(id(r))
-        drop_sig_sweeps.add((sweep, key(r)))
+        drop_sig_sweeps[(sweep, key(r))] = parent_name
         substituted += 1
 
     runs_out = [r for r in runs if id(r) not in drop_run_ids]
@@ -312,7 +325,7 @@ def substitute_retries(runs: list[dict], sigs: list[dict]) -> tuple[list[dict], 
     for s in sigs:
         k = (s["sweep"], (str(s["repeat_index"]), s["model_id"], s["task_id"]))
         if k in drop_sig_sweeps:
-            s = dict(s, sweep=s["sweep"][: -len(RETRY_SUFFIX)])
+            s = dict(s, sweep=drop_sig_sweeps[k])
         sigs_out.append(s)
     # Drop the parent's stale (empty) signature rows for substituted cells —
     # a failed run has none, so there is nothing to remove in practice.

@@ -1,5 +1,7 @@
 from scipy import stats
 
+from scoring.analysis_templates import constant_side, insufficient
+
 
 def run_correlation_test(trial_data: list[dict], spec: dict) -> dict:
     filter_spec = spec.get("filter", {})
@@ -26,39 +28,17 @@ def run_correlation_test(trial_data: list[dict], spec: dict) -> dict:
     ]
 
     if len(pairs) < 10:
-        return {
-            "direction_correct": False,
-            "p_value": 1.0,
-            "effect_size": 0.0,
-            "detail": f"Insufficient paired data: n={len(pairs)}",
-            "testable": False,
-        }
+        return insufficient(f"Insufficient paired data: n={len(pairs)}")
 
     x_vals, y_vals = zip(*pairs)
 
     # Both coefficients are undefined when either variable has zero variance,
-    # and the two cases mean opposite things. A constant predictor means the
-    # design never varied, so nothing about the agent can be concluded. A
-    # constant outcome means the agent gave the same response at every level of
-    # the manipulation, which is precisely the absence of the signature — the
-    # commonest instance being an agent that answered nothing correctly, so
-    # `correct` is uniformly False. Declaring which one occurred lets
-    # level3_behavioral exclude the first and score the second 0.0; leaving it
-    # to a bare nan check excluded both and raised L3 for the worst agents.
-    x_constant = len(set(x_vals)) < 2
-    y_constant = len(set(y_vals)) < 2
-    if x_constant or y_constant:
-        return {
-            "direction_correct": False,
-            "p_value": float("nan"),
-            "effect_size": float("nan"),
-            # Predictor takes precedence: if the design never varied, the
-            # outcome being constant too says nothing extra.
-            "undefined_reason": "constant_predictor" if x_constant else "constant_outcome",
-            "testable": True,
-            "detail": (f"{field_x} constant at {x_vals[0]!r}" if x_constant
-                       else f"{field_y} constant at {y_vals[0]!r} across n={len(pairs)}"),
-        }
+    # and the two cases mean opposite things — see analysis_templates/__init__.
+    # The commonest instance is an agent that answered nothing correctly, so
+    # `correct` is uniformly False: that is the absence of the signature, not a
+    # failed measurement, and must score 0.0 rather than be excluded.
+    if (undef := constant_side((field_x, x_vals), (field_y, y_vals))):
+        return undef
 
     # Spearman for anything heavy-tailed. Reaction times here are dominated by
     # LLM inference latency and carry occasional multi-second provider stalls,

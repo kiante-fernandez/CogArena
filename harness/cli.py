@@ -67,6 +67,9 @@ def _add_sweep_args(p: argparse.ArgumentParser) -> None:
                    help="Override the suite's `repeats` field.")
     p.add_argument("--n-trials", type=int, default=None,
                    help="Override the suite's `n_trials_override` field.")
+    p.add_argument("--no-vision", action="store_true", default=None,
+                   help="Override the suite's `no_vision` field, forcing DOM-text-only "
+                        "observation for every run in the sweep.")
     p.add_argument("--tasks", nargs="*", default=None,
                    help="Restrict the suite's tasks to this subset.")
     p.add_argument("--models", nargs="*", default=None,

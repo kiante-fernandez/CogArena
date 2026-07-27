@@ -42,6 +42,7 @@ from scoring.analysis_templates.sequential_regression import run_sequential_regr
 from scoring.analysis_templates.interaction_test import run_interaction_test
 from scoring.analysis_templates.proportion_test import run_proportion_test
 from scoring.analysis_templates.correlation_test import run_correlation_test
+from scoring.analysis_templates import CONSTANT_OUTCOME, CONSTANT_PREDICTOR
 from scoring.analysis_templates.conditional_proportion_contrast import (
     run_conditional_proportion_contrast,
 )
@@ -118,8 +119,8 @@ def validate_signatures_spec(signatures_spec: dict) -> None:
 # template that has not been updated, and is surfaced as an error rather than
 # guessed at — guessing "untestable" would inflate, guessing "absent" would
 # penalise a design failure as though it were behaviour.
-_UNDEFINED_UNTESTABLE = {"constant_predictor"}   # design never varied
-_UNDEFINED_ABSENT = {"constant_outcome"}         # agent never varied
+_UNDEFINED_UNTESTABLE = {CONSTANT_PREDICTOR}   # design never varied
+_UNDEFINED_ABSENT = {CONSTANT_OUTCOME}         # agent never varied
 
 
 def _grade(sig: dict, result: dict) -> dict:
@@ -132,7 +133,7 @@ def _grade(sig: dict, result: dict) -> dict:
     if p_value is None or _is_nan(p_value) or _is_nan(effect):
         reason = result.get("undefined_reason")
         if reason in _UNDEFINED_UNTESTABLE:
-            return _untestable(sig, "constant_predictor", detail=result.get("detail"))
+            return _untestable(sig, CONSTANT_PREDICTOR, detail=result.get("detail"))
         if reason in _UNDEFINED_ABSENT:
             # Zero variance in the outcome IS the finding: the agent gave the
             # same response regardless of the manipulation, so the human
@@ -210,3 +211,28 @@ def score_behavioral(trial_data: list[dict], signatures_spec: dict) -> dict:
         # Fraction of the signature set this session could actually speak to.
         "coverage": float(testable_weight / total_weight) if total_weight > 0 else 0.0,
     }
+
+
+def is_l3_measurable(l3_result: dict, min_coverage: float = 0.5) -> bool:
+    """Does this L3 result carry enough measurement to enter an average?
+
+    The rule is deliberately stricter than "at least one signature ran":
+
+    * ``n_testable > 0`` — something was measured at all.
+    * ``coverage >= min_coverage`` — enough of the signature set was measured
+      that the surviving mean represents the task rather than a fragment of it.
+    * ``n_errors == 0`` — no template raised, so the denominator is the one the
+      spec describes and not one this repository broke.
+
+    Lives here, next to the fields it reads, because a cell that fails this is
+    reported as *unmeasured* rather than as a low score — and a producer and a
+    CSV-reading consumer holding separate copies of the predicate had already
+    drifted apart on the coverage clause.
+    """
+    n_testable = l3_result.get("n_testable")
+    coverage = l3_result.get("coverage")
+    if n_testable is None or coverage is None:
+        return False  # scorecard predates these fields: unknown, not measurable
+    return bool(n_testable > 0
+                and coverage >= min_coverage
+                and (l3_result.get("n_errors") or 0) == 0)

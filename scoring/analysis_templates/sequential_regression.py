@@ -1,5 +1,7 @@
 from scipy import stats
 
+from scoring.analysis_templates import constant_side, insufficient
+
 
 def run_sequential_regression(trial_data: list[dict], spec: dict) -> dict:
     pred_field = spec["predictor"]["field"]
@@ -22,31 +24,14 @@ def run_sequential_regression(trial_data: list[dict], spec: dict) -> dict:
             outcomes.append(float(out_val))
 
     if len(predictors) < 10:
-        return {
-            "direction_correct": False,
-            "p_value": 1.0,
-            "effect_size": 0.0,
-            "detail": f"Insufficient sequential pairs: {len(predictors)}",
-            "testable": False,
-        }
+        return insufficient(f"Insufficient sequential pairs: {len(predictors)}")
 
-    # linregress is undefined when either side is constant. A constant predictor
-    # means the lagged manipulation never varied and nothing about the agent
-    # follows; a constant outcome means the agent responded identically whatever
-    # happened on the previous trial, which is the absence of the sequential
-    # effect. level3_behavioral scores those differently, so say which it was.
-    if len(set(predictors)) < 2 or len(set(outcomes)) < 2:
-        x_constant = len(set(predictors)) < 2
-        return {
-            "direction_correct": False,
-            "p_value": float("nan"),
-            "effect_size": float("nan"),
-            "undefined_reason": "constant_predictor" if x_constant else "constant_outcome",
-            "testable": True,
-            "detail": (f"{pred_field} (lag {lag}) constant at {predictors[0]!r}" if x_constant
-                       else f"{outcome_field} constant at {outcomes[0]!r} "
-                            f"across n={len(outcomes)}"),
-        }
+    # A constant lagged predictor means the manipulation never varied; a
+    # constant outcome means the agent responded identically whatever happened
+    # on the previous trial, which is the absence of the sequential effect.
+    if (undef := constant_side((f"{pred_field} (lag {lag})", predictors),
+                               (outcome_field, outcomes))):
+        return undef
 
     slope, intercept, r_value, p_value, std_err = stats.linregress(predictors, outcomes)
 

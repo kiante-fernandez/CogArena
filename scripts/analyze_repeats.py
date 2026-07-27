@@ -68,33 +68,21 @@ def _bool(x: Any) -> bool:
     return str(x).strip().lower() in ("true", "1", "yes")
 
 
-def _tri(x: Any) -> bool | None:
-    """Three-valued read of a CSV boolean: True / False / unknown.
-
-    ``l3_measurable`` is None for scorecards written before the field existed.
-    Collapsing that to False with :func:`_bool` would silently drop legitimate
-    runs from the measurable-only means, so unknown is kept distinct and
-    reported rather than guessed.
-    """
-    s = str(x).strip().lower()
-    if s in ("true", "1", "yes"):
-        return True
-    if s in ("false", "0", "no"):
-        return False
-    return None
-
-
 def is_measurable(r: dict) -> bool:
-    """Did this run's L3 rest on at least one testable signature?
+    """Was enough of this run's L3 signature set actually measured to average?
 
-    A scored run whose signatures were all untestable still carries l3 == 0.0,
-    because level3_behavioral must return a float for the composite. Averaging
-    that 0.0 asserts the agent failed a test that never ran — the exact
-    unmeasured-as-floor conflation the scorer was rewritten to remove,
-    reintroduced one layer up in the analysis. 79 of 400 cells in the main study
-    are in this state, so it moves every per-model mean.
+    Stricter than "at least one signature ran": the rule (owned by
+    ``scoring.level3_behavioral.is_l3_measurable``, recorded per row by
+    ``build_results``) also requires that at least half the signature weight was
+    testable and that no template raised.
+
+    It matters because a scored run whose signatures were all untestable still
+    carries ``l3 == 0.0`` — level3_behavioral must return a float for the
+    composite. Averaging that 0.0 asserts the agent failed a test that never
+    ran, which is the unmeasured-as-floor conflation the scorer was rewritten to
+    remove, reintroduced one layer up in the analysis.
     """
-    return _bool(r.get("scored")) and _tri(r.get("l3_measurable")) is True
+    return _bool(r.get("scored")) and _bool(r.get("l3_measurable"))
 
 
 def _read(path: Path) -> list[dict[str, str]]:
@@ -290,32 +278,48 @@ def rank_stability(runs: list[dict], n_boot: int = N_BOOTSTRAP) -> list[dict]:
     # robust.
     CONVENTIONS = ("failed_cells_as_0", "ok_cells_only", "l3_measurable_only")
 
-    def score(rs: list[dict], convention: str) -> float | None:
-        vals = []
+    # A replicate's contribution to a convention is fixed by its rows, so it is
+    # computed once per (model, replicate, convention) rather than re-derived on
+    # every draw. The naive form re-parsed the same CSV strings ~2.4M times and
+    # was 95% of this script's runtime; the resampling itself is trivial.
+    def contribution(rs: list[dict], convention: str) -> tuple[float, int]:
+        total, n = 0.0, 0
         for r in rs:
             v = _f(r["composite"])
             ok = is_measurable(r) if convention == "l3_measurable_only" else _bool(r["scored"])
             if ok and v is not None:
-                vals.append(v)
+                total += v
+                n += 1
             elif convention == "failed_cells_as_0":
-                vals.append(0.0)
-        return statistics.mean(vals) if vals else None
+                n += 1  # contributes 0.0
+        return total, n
 
     out = []
     for convention in CONVENTIONS:
         wins: dict[str, list[int]] = {m: [0] * len(models) for m in models}
-        point: dict[str, float | None] = {}
-        for m in models:
-            allr = [r for rs in by_model_repeat[m].values() for r in rs]
-            point[m] = score(allr, convention)
+        # model -> replicate_id -> (sum of composites, count) under this convention
+        pre: dict[str, dict[str, tuple[float, int]]] = {
+            m: {rep: contribution(rs, convention)
+                for rep, rs in by_model_repeat[m].items()}
+            for m in models
+        }
+        reps_by_model = {m: list(by_model_repeat[m]) for m in models}
+
+        def mean_of(model: str, picked: list[str]) -> float | None:
+            total, n = 0.0, 0
+            for rep in picked:
+                s, c = pre[model][rep]
+                total += s
+                n += c
+            return total / n if n else None
+
+        point = {m: mean_of(m, reps_by_model[m]) for m in models}
 
         for _ in range(n_boot):
             draw = {}
             for m in models:
-                reps = list(by_model_repeat[m])
-                picked = [rng.choice(reps) for _ in reps]
-                rs = [r for p in picked for r in by_model_repeat[m][p]]
-                draw[m] = score(rs, convention)
+                reps = reps_by_model[m]
+                draw[m] = mean_of(m, [rng.choice(reps) for _ in reps])
             ranked = sorted((m for m in models if draw[m] is not None),
                             key=lambda m: -draw[m])
             for pos, m in enumerate(ranked):
@@ -325,7 +329,6 @@ def rank_stability(runs: list[dict], n_boot: int = N_BOOTSTRAP) -> list[dict]:
             row = {
                 "convention": convention, "model_id": m,
                 "point_estimate": round(point[m], 2) if point[m] is not None else None,
-                "p_rank1": round(wins[m][0] / n_boot, 4),
             }
             for pos in range(len(models)):
                 row[f"p_rank{pos + 1}"] = round(wins[m][pos] / n_boot, 4)
@@ -392,8 +395,9 @@ def main(argv: list[str] | None = None) -> int:
 
     n_scored = sum(1 for r in runs if _bool(r["scored"]))
     n_meas = sum(1 for r in runs if is_measurable(r))
-    print(f"\nL3 measurability: {n_meas}/{n_scored} scored runs rest on at least one "
-          f"testable signature.")
+    print(f"\nL3 measurability: {n_meas}/{n_scored} scored runs had enough of their "
+          f"signature set tested to enter an average\n   (>=1 testable signature, "
+          f">=50% of signature weight, no template error).")
     if n_meas < n_scored:
         print(f"   -> the other {n_scored - n_meas} carry l3 = 0.0 with nothing "
               f"tested. They are excluded from every L3 and composite mean below;\n"

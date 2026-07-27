@@ -1,6 +1,8 @@
 import numpy as np
 from scipy import stats
 
+from scoring.analysis_templates import constant_side, insufficient
+
 
 def run_paired_ttest(trial_data: list[dict], spec: dict) -> dict:
     group_a_trials = [
@@ -19,30 +21,18 @@ def run_paired_ttest(trial_data: list[dict], spec: dict) -> dict:
     values_b = [t[field_b] for t in group_b_trials if t.get(field_b) is not None]
 
     if len(values_a) < 3 or len(values_b) < 3:
-        return {
-            "direction_correct": False,
-            "p_value": 1.0,
-            "effect_size": 0.0,
-            "detail": f"Insufficient data: group_a={len(values_a)}, group_b={len(values_b)}",
-            "testable": False,
-        }
+        return insufficient(
+            f"Insufficient data: group_a={len(values_a)}, group_b={len(values_b)}")
 
     mean_a = np.mean(values_a)
     mean_b = np.mean(values_b)
 
-    # ttest_ind is undefined when both groups are constant. Here that means the
-    # agent produced one identical value in both conditions, so the contrast the
-    # signature asks about is absent — behaviour, not a failed measurement.
-    # Declared so level3_behavioral scores it 0.0 rather than dropping it.
-    if len(set(values_a)) < 2 and len(set(values_b)) < 2:
-        return {
-            "direction_correct": False,
-            "p_value": float("nan"),
-            "effect_size": float("nan"),
-            "undefined_reason": "constant_outcome",
-            "testable": True,
-            "detail": f"both groups constant: a={values_a[0]!r}, b={values_b[0]!r}",
-        }
+    # Group membership varies by construction, so only the outcome side can go
+    # constant: the agent produced one identical value in both conditions, so
+    # the contrast the signature asks about is absent. predictor=None encodes
+    # exactly the "both groups constant" condition this replaces.
+    if (undef := constant_side(None, ("both groups", values_a + values_b))):
+        return undef
 
     t_stat, p_two = stats.ttest_ind(values_a, values_b)
 
@@ -83,13 +73,8 @@ def run_paired_proportion_test(trial_data: list[dict], spec: dict) -> dict:
     values_b = [t[field_b] for t in group_b_trials if field_b in t]
 
     if len(values_a) < 3 or len(values_b) < 3:
-        return {
-            "direction_correct": False,
-            "p_value": 1.0,
-            "effect_size": 0.0,
-            "detail": f"Insufficient data: group_a={len(values_a)}, group_b={len(values_b)}",
-            "testable": False,
-        }
+        return insufficient(
+            f"Insufficient data: group_a={len(values_a)}, group_b={len(values_b)}")
 
     prop_a = sum(1 for v in values_a if v) / len(values_a)
     prop_b = sum(1 for v in values_b if v) / len(values_b)
