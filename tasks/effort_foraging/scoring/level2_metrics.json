@@ -1,50 +1,64 @@
 {
-    "task_id": "effort_foraging",
-    "metrics": [
-        {
-            "name": "total_reward",
-            "description": "Sum of harvest_reward across all decisions. Random foraging averages around the per-stay mean (~50) times the prop-stay (~0.5) times n_trials. MVT-following humans should substantially exceed this.",
-            "type": "mean",
-            "field": "harvest_reward",
-            "filter": {"timed_out": false},
-            "human_mean": 32,
-            "human_sd": 10
-        },
-        {
-            "name": "prop_stay_overall",
-            "description": "Proportion of decisions that were STAY across both blocks (uses derived boolean is_stay field). MVT-following humans typically stay more often than random (~0.6-0.8 across patches before leaving).",
-            "type": "proportion_correct",
-            "field": "is_stay",
-            "filter": {"timed_out": false},
-            "human_mean": 0.65,
-            "human_sd": 0.12
-        },
-        {
-            "name": "mean_residence_time_low",
-            "description": "Average number of consecutive STAY decisions per patch in the LOW-COST block. Lower under MVT because cheap travel encourages early leaving.",
-            "type": "mean",
-            "field": "harvests_stayed_in_patch",
-            "filter": {"timed_out": false, "block_condition": "low_cost", "action": "leave"},
-            "human_mean": 2.5,
-            "human_sd": 0.8
-        },
-        {
-            "name": "mean_residence_time_high",
-            "description": "Average number of consecutive STAY decisions per patch in the HIGH-COST block. Higher under MVT because expensive travel discourages leaving.",
-            "type": "mean",
-            "field": "harvests_stayed_in_patch",
-            "filter": {"timed_out": false, "block_condition": "high_cost", "action": "leave"},
-            "human_mean": 4.5,
-            "human_sd": 1.0
-        },
-        {
-            "name": "mvt_optimal_match_rate",
-            "description": "Proportion of decisions matching the per-trial MVT-optimal prediction (stay if current_reward >= running average, else leave). Random foraging is at chance (~0.5).",
-            "type": "proportion_correct",
-            "field": "mvt_optimal_match",
-            "filter": {"timed_out": false},
-            "human_mean": 0.7,
-            "human_sd": 0.10
-        }
-    ]
+  "task_id": "effort_foraging",
+  "metrics": [
+    {
+      "name": "total_reward",
+      "description": "Sum of harvest_reward across all decisions. Random foraging averages around the per-stay mean (~50) times the prop-stay (~0.5) times n_trials. MVT-following humans should substantially exceed this.",
+      "type": "mean",
+      "field": "harvest_reward",
+      "filter": {
+        "timed_out": false
+      },
+      "human_mean": 32,
+      "human_sd": 10
+    },
+    {
+      "name": "prop_stay_overall",
+      "description": "Proportion of decisions that were STAY across both blocks (uses derived boolean is_stay field). MVT-following humans typically stay more often than random (~0.6-0.8 across patches before leaving).",
+      "type": "proportion_correct",
+      "field": "is_stay",
+      "filter": {
+        "timed_out": false
+      },
+      "human_mean": 0.65,
+      "human_sd": 0.12
+    },
+    {
+      "name": "mean_residence_time_low",
+      "description": "Average number of consecutive STAY decisions per patch in the LOW-COST block. Lower under MVT because cheap travel encourages early leaving.",
+      "type": "mean",
+      "field": "harvests_stayed_in_patch",
+      "filter": {
+        "timed_out": false,
+        "block_condition": "low_cost",
+        "action": "leave"
+      },
+      "human_mean": 5.0,
+      "human_sd": 1.5
+    },
+    {
+      "name": "mean_residence_time_high",
+      "description": "Average number of consecutive STAY decisions per patch in the HIGH-COST block. Higher under MVT because expensive travel discourages leaving.",
+      "type": "mean",
+      "field": "harvests_stayed_in_patch",
+      "filter": {
+        "timed_out": false,
+        "block_condition": "high_cost",
+        "action": "leave"
+      },
+      "human_mean": 7.0,
+      "human_sd": 1.8
+    },
+    {
+      "name": "mvt_optimal_match_rate",
+      "description": "Proportion of decisions matching the per-trial MVT-optimal prediction (stay if current_reward >= running average, else leave). Random foraging is at chance (~0.5).",
+      "type": "proportion_correct",
+      "field": "mvt_optimal_match",
+      "filter": {
+        "timed_out": false
+      },
+      "human_mean": 0.7,
+      "human_sd": 0.1
+    }
+  ]
 }

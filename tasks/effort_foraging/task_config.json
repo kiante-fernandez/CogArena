@@ -3,7 +3,7 @@
   "task_name": "Effort Foraging (Apple Patches)",
   "domain": "foraging",
   "version": "1.0.0",
-  "citation": "Bustamante, Oshinowo, Lee, Tong, Burton, Shenhav, Cohen & Daw (2023) \u2014 Effort Foraging Task reveals positive correlation between individual differences in the cost of cognitive and physical effort in humans, PNAS 120(50):e2221510120",
+  "citation": "Constantino, S. M. & Daw, N. D. (2015) - Learning the opportunity cost of time in a patch-foraging task, Cognitive, Affective, & Behavioral Neuroscience 15(4):837-853, doi:10.3758/s13415-015-0350-y. (Bustamante et al. 2023 PNAS adapts this paradigm by replacing the travel-TIME manipulation with a travel-EFFORT one; this port manipulates travel time and so follows Constantino & Daw.)",
   "psych201_reference": null,
   "source": {
     "url": "https://github.com/lcnbu/effort_foraging_task_code",

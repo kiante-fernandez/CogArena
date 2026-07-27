@@ -1,7 +1,7 @@
 {
   "task_id": "effort_foraging",
-  "source": "author_estimate_design_mismatch",
-  "note": "NO VALUE HERE IS EXTRACTED FROM THE CITED PAPER. Bustamante et al. (2023), 'Effort foraging task reveals positive correlation between individual differences in the cost of cognitive and physical effort', PNAS 120(50):e2221510120, reports ONE primary dependent variable: the exit threshold in apples, and the change in it between high and low effort conditions (Experiment 1, N=537 analysed of 678: beta_cognitive = -0.236 apples, beta_physical = -0.379, both p<0.001; split-half reliability r = 0.85 and 0.82). It reports no residence times, no total reward, and no MVT-optimal match rate, so total_reward, prop_stay_overall, mean_residence_time_low/high and mvt_optimal_match_rate are all author estimates. DESIGN ANCESTRY IS ALSO MISATTRIBUTED. Bustamante manipulated travel COST BY EFFORT (Multi-Source Interference Task or rapid key-pressing) at a FIXED travel time. This port manipulates travel TIME (4 s vs 8 s) at no effort, which is the Constantino & Daw patch-foraging paradigm that Bustamante adapted; Bustamante cites it for exactly that manipulation ('when the travel time between patches was increased, participants' exit thresholds decreased'). Constantino & Daw is the correct design citation for this port. WHAT THE PAPER DOES SUPPORT is the DIRECTION encoded in the L3 signatures: participants 'opted to stay longer in a patch, tolerating diminishing returns, in the high travel effort conditions to avoid the increased cost of travel'. mean_residence_time_high (4.5) > mean_residence_time_low (2.5) is therefore the right ordering, and that ordering is what L3 tests. Only the absolute levels are unsourced.",
+  "source": "mvt_derived_from_port_parameters",
+  "note": "CITATION CORRECTED to Constantino, S. M. & Daw, N. D. (2015), 'Learning the opportunity cost of time in a patch-foraging task', Cogn Affect Behav Neurosci 15(4):837-853, doi:10.3758/s13415-015-0350-y. The task previously cited Bustamante et al. (2023) PNAS, which adapts this paradigm by replacing the travel-TIME manipulation with a travel-EFFORT one (Multi-Source Interference Task or rapid key-pressing) at FIXED travel time. This port manipulates travel TIME (4 s low, 8 s high) at no effort, so Constantino & Daw is the correct ancestor and Bustamante is the wrong one. PARAMETER CORRESPONDENCE IS CLOSE: this port uses a depletion rate of 0.88, exactly Constantino & Daw Experiment 2's 'steep' condition (their Table 1: kappa = 0.88 steep / 0.94 shallow, h = 3 s, d = 6 s short / 9 s long, S0 = 10). This port's start reward of 70 displays as round(70/6) = 12 apples against their S0 = 10. mean_residence_time_low 5.0 and mean_residence_time_high 7.0 are the MARGINAL VALUE THEOREM OPTIMA computed from this port's own parameters, maximising rho(n) = S0*(1-kappa^n) / ((1-kappa)*(n*h + d)) over n at a per-decision time of about 2 s: n* = 5 at d = 4 s and 7 at d = 8 s. As a check, the same computation on Constantino & Daw's Experiment 2 steep parameters returns n* = 5 (short travel) and 6 (long), so this port sits in their regime. SUPERSEDES 2.5 and 4.5, which sat BELOW the MVT optimum and therefore encoded humans as UNDER-harvesting. Overharvesting - staying past the optimal exit point - is the robust finding in this literature, so the previous values had humans on the wrong side of optimal. THESE ARE NORMATIVE, NOT EMPIRICAL. They are the optimal policy for this port's parameters, not measured human residence times. Constantino & Daw report exit thresholds in apples (their Fig. 2b, 2e) rather than harvest counts, and their subject-level values would need digitising or their raw data to convert. Human values are expected at or slightly above these, in the overharvesting direction. n = 52 subjects total (age 19-35), 11 / 10 / 26 analysed across Experiments 1A / 1B / 2, four 14-minute environments each. total_reward 32, prop_stay_overall 0.65 and mvt_optimal_match_rate 0.7 remain author estimates; neither paper reports them.",
   "total_reward": {
     "mean": 32,
     "sd": 10,
@@ -13,13 +13,13 @@
     "n": 50
   },
   "mean_residence_time_low": {
-    "mean": 2.5,
-    "sd": 0.8,
+    "mean": 5.0,
+    "sd": 1.5,
     "n": 50
   },
   "mean_residence_time_high": {
-    "mean": 4.5,
-    "sd": 1.0,
+    "mean": 7.0,
+    "sd": 1.8,
     "n": 50
   },
   "mvt_optimal_match_rate": {
