@@ -4,7 +4,14 @@
 {% block content %}
 <section class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
     <h1 class="text-3xl font-bold mb-2">Leaderboard</h1>
-    <p class="text-gray-500 mb-8">Agent performance ranked by composite score.</p>
+    <p class="text-gray-500 mb-6">Agent performance ranked by composite score, averaged over repeated runs of each task.</p>
+
+    <div id="version-bar" class="hidden flex flex-wrap items-center gap-2 mb-4">
+        <label for="scorer-version" class="text-sm font-medium text-gray-700">Scorer version:</label>
+        <select id="scorer-version" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"></select>
+    </div>
+
+    <div id="version-warning" class="hidden text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 mb-6"></div>
 
     <div id="leaderboard-loading" class="text-center py-12 text-gray-400">
         Loading leaderboard...
@@ -29,6 +36,7 @@
                         <th class="px-4 py-3 text-right">L2</th>
                         <th class="px-4 py-3 text-right">L3</th>
                         <th class="px-4 py-3 text-right">Tasks</th>
+                        <th class="px-4 py-3 text-right" title="Scored sessions behind this row. Repeats of the same task are averaged.">Runs</th>
                     </tr>
                 </thead>
                 <tbody id="leaderboard-body" class="divide-y divide-gray-100 bg-white">

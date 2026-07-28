@@ -2,6 +2,7 @@ import numpy as np
 from scipy import stats
 
 from scoring.analysis_templates import constant_side, insufficient
+from scoring.analysis_templates.block_bootstrap import bootstrap_contrast_p
 
 
 def run_paired_ttest(trial_data: list[dict], spec: dict) -> dict:
@@ -57,47 +58,74 @@ def run_paired_ttest(trial_data: list[dict], spec: dict) -> dict:
 
 
 def run_paired_proportion_test(trial_data: list[dict], spec: dict) -> dict:
-    group_a_trials = [
-        t for t in trial_data
-        if all(t.get(k) == v for k, v in spec["group_a"]["filter"].items())
-    ]
-    group_b_trials = [
-        t for t in trial_data
-        if all(t.get(k) == v for k, v in spec["group_b"]["filter"].items())
-    ]
+    """Contrast two groups' success rates, with a dependence-robust p-value.
 
+    This used to be a pooled-p normal z with no correction for either small n or
+    within-session dependence, and it was measurably the worst-calibrated test in
+    the suite: against a moving-block bootstrap its median p-value ran **2.4x too
+    small**, the only template that was anti-conservative rather than
+    conservative. It backs five weighted signatures, including both
+    `above_chance_discrimination` variants at w=2.0, and `primacy_effect`, which
+    compares 4 primacy trials against 8 middle ones — exactly the small-n regime
+    the sibling `proportion_test` docstring calls "both inaccurate and harder to
+    defend".
+
+    The bootstrap fixes both problems at once and makes no distributional
+    assumption. It is preferred here over an AR(1) `n_eff` correction because
+    measurement shows AR(1) over-charges: applying it to `proportion_test` raises
+    29 grades under the bootstrap and lowers none.
+
+    Effect of the switch on the archive: 4 grades of 1,315, panel L3 unchanged to
+    three decimals, model ranking identical.
+    """
     field_a = spec["group_a"]["field"]
     field_b = spec["group_b"]["field"]
 
-    values_a = [t[field_a] for t in group_a_trials if field_a in t]
-    values_b = [t[field_b] for t in group_b_trials if field_b in t]
+    # ONE pass, in TRIAL ORDER with group membership tagged. Order matters
+    # because the bootstrap resamples runs of adjacent trials, and building the
+    # two groups separately as well would define prop_a/prop_b over a different
+    # membership rule than the p-value — two answers to one question, free to
+    # disagree the first time a spec's group filters overlap. A trial matching
+    # BOTH filters is ambiguous and dropped; every shipped spec has mutually
+    # exclusive filters, so that is a guard rather than a behaviour.
+    values, group = [], []
+    for t in trial_data:
+        in_a = (all(t.get(k) == v for k, v in spec["group_a"]["filter"].items())
+                and field_a in t)
+        in_b = (all(t.get(k) == v for k, v in spec["group_b"]["filter"].items())
+                and field_b in t)
+        if in_a and not in_b:
+            values.append(1.0 if t[field_a] else 0.0); group.append(True)
+        elif in_b and not in_a:
+            values.append(1.0 if t[field_b] else 0.0); group.append(False)
 
+    values_a = [v for v, g in zip(values, group) if g]
+    values_b = [v for v, g in zip(values, group) if not g]
     if len(values_a) < 3 or len(values_b) < 3:
         return insufficient(
             f"Insufficient data: group_a={len(values_a)}, group_b={len(values_b)}")
 
-    prop_a = sum(1 for v in values_a if v) / len(values_a)
-    prop_b = sum(1 for v in values_b if v) / len(values_b)
+    prop_a = sum(values_a) / len(values_a)
+    prop_b = sum(values_b) / len(values_b)
+    higher = spec["expected_direction"] == "a > b"
+    direction_correct = bool(prop_a > prop_b) if higher else bool(prop_a < prop_b)
 
-    count_a = sum(1 for v in values_a if v)
-    count_b = sum(1 for v in values_b if v)
-    n_a = len(values_a)
-    n_b = len(values_b)
+    boot = bootstrap_contrast_p(values, group, higher)
+    if boot is None:
+        # Resampling retained too few draws with both groups populated. The
+        # guard above already excludes everything small enough for this to be
+        # likely, so report it honestly rather than silently substituting a
+        # second, weaker statistical method for the one this template documents.
+        return insufficient(
+            f"Bootstrap degenerate: group_a={len(values_a)}, group_b={len(values_b)}")
 
-    pooled_p = (count_a + count_b) / (n_a + n_b)
-    se = np.sqrt(pooled_p * (1 - pooled_p) * (1 / n_a + 1 / n_b)) if pooled_p > 0 and pooled_p < 1 else 1.0
-    z_stat = (prop_a - prop_b) / se if se > 0 else 0.0
-
-    if spec["expected_direction"] == "a > b":
-        direction_correct = bool(prop_a > prop_b)
-        p_value = 1 - stats.norm.cdf(z_stat) if z_stat > 0 else stats.norm.cdf(z_stat)
-    else:
-        direction_correct = bool(prop_a < prop_b)
-        p_value = stats.norm.cdf(z_stat) if z_stat < 0 else 1 - stats.norm.cdf(z_stat)
-
+    p_value, block_len = boot
     return {
         "direction_correct": direction_correct,
         "p_value": float(p_value),
         "effect_size": float(prop_a - prop_b),
-        "detail": f"prop_a={prop_a:.3f}, prop_b={prop_b:.3f}, z={z_stat:.3f}, p={p_value:.4f}",
+        "detail": (f"prop_a={prop_a:.3f} (n={len(values_a)}), "
+                   f"prop_b={prop_b:.3f} (n={len(values_b)}), "
+                   f"diff={prop_a - prop_b:+.3f}, moving-block bootstrap "
+                   f"(l={block_len}) p={p_value:.4f}"),
     }

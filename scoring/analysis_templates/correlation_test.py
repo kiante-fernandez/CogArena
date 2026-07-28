@@ -19,8 +19,8 @@ def run_correlation_test(trial_data: list[dict], spec: dict) -> dict:
     # a truncated session legitimately contains no trial carrying the field, so
     # a runtime absence check cannot tell a spec typo from sparse data and fired
     # on 48 real sessions when tried. The right home for that check is a
-    # repo-level test scoring each spec against a complete reference dataset;
-    # see results/CODEBASE_TODO.md.
+    # repo-level test scoring each spec against a complete reference dataset —
+    # scoring/tests/test_v1_signatures_reach_a_verdict.py does exactly that.
     pairs = [
         (float(t[field_x]), float(t[field_y]))
         for t in filtered

@@ -5,7 +5,7 @@ Versions are git tags; the Croissant `code-archive` URL pins to the most recent.
 ## v1.2.0 — 2026-07-25
 
 Rebuttal revision for NeurIPS 2026. Full record with per-change measured effects
-in [`results/REBUTTAL_CHANGES.md`](results/REBUTTAL_CHANGES.md).
+in the change record kept alongside the manuscript.
 
 Design: 4 models x 10 tasks x **5 repeats** = 200 sessions, replacing the single
 session per cell reported at v1.1.1. Scored coverage 45/60 (75%) -> 188/200 (94%).
@@ -57,7 +57,7 @@ Headline finding (paper-relevant):
 
 ## v1.1.0 — 2026-05-05
 
-L2 / L3 scoring spec audit. See [`results/AUDIT.md`](results/AUDIT.md) for full per-task before/after.
+L2 / L3 scoring spec audit; per-task before/after is recorded with the manuscript.
 
 - `tasks/tiny_alchemy/scoring/level3_signatures.json`: drop `empowerment_preference` (fired 8/8 random sessions); raise `above_chance_discovery` chance level 0.30 → 0.55; rewrite `non_redundant_attempts` to actually test unique-pair attempts.
 - `tasks/tiny_alchemy/scoring/level2_metrics.json`: add `unique_pair_rate` metric.
@@ -72,7 +72,7 @@ L2 / L3 scoring spec audit. See [`results/AUDIT.md`](results/AUDIT.md) for full 
 Random-agent floor changes:
 - `tiny_alchemy`: mean L3 0.700 → 0.000.
 - `repeated_games`: mean L3 0.440 → 0.250.
-- See [`results/AUDIT.md`](results/AUDIT.md) for the complete table.
+- The complete table is recorded with the manuscript.
 
 Pilot composite shifts (gemini-3-flash-preview):
 - `tiny_alchemy`: 66.70 → 26.17.

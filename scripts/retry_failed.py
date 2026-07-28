@@ -12,9 +12,12 @@ substitute or to report attempts-and-successes. Merge them with::
 
     python -m scripts.build_results --sweep <sweep> --sweep <sweep>_retry ...
 
-IMPORTANT: retries are capped at one attempt per cell by default. Retrying until
-a cell succeeds selects for lucky runs and silently inflates every score built on
-top of it. Whatever cap you use, report it.
+IMPORTANT: exactly one attempt per cell, and this is not configurable. Retrying
+until a cell succeeds is a best-of-N selector applied precisely to the cells that
+already failed, which inflates the recovered arm where the evidence is weakest.
+A ``--max-retries`` flag used to be accepted here; it was recorded in the retry
+manifest and never applied, so manifests written before v1.2.1 claim a policy
+that did not run. Anything describing this arm should say one attempt per cell.
 
 Usage::
 
@@ -192,8 +195,6 @@ def main(argv: list[str] | None = None) -> int:
                     help="Retry output dir. Default: <sweep>_retry (never overwrites originals).")
     ap.add_argument("--max-parallel", type=int, default=4)
     ap.add_argument("--base-port", type=int, default=9500)
-    ap.add_argument("--max-retries", type=int, default=1,
-                    help="Attempts per failed cell. Keep at 1; more selects for lucky runs.")
     ap.add_argument("--max-repeat", type=int, default=None,
                     help="Ignore repeats above this index. Use to match the slice the "
                          "analysis keeps, so retries do not spend money on excluded waves.")
@@ -243,14 +244,20 @@ def main(argv: list[str] | None = None) -> int:
             "suite_name": f"{sweep_dir.name}_retry",
             "suite_path": (_read_json(sweep_dir / "suite_manifest.json") or {}).get("suite_path"),
             "retry_of": str(sweep_dir),
-            "max_retries_per_cell": args.max_retries,
+            # One attempt per cell, always. A retry loop would be a best-of-N
+            # selector over the cells that happened to fail, which biases the
+            # recovered arm upward exactly where the data is weakest. The flag
+            # that used to sit here was parsed, recorded and never applied, so
+            # manifests written before v1.2.1 overstate the policy; anything
+            # describing that arm should say one attempt per cell.
+            "attempts_per_cell": 1,
             "total_runs": len(failed),
             "started_at_utc": _dt.datetime.utcnow().isoformat() + "Z",
         }, f, indent=2)
 
     suite = _load_suite(sweep_dir)
     print(f"\nRetrying {len(failed)} cells into {out_dir} "
-          f"(max_parallel={args.max_parallel}, {args.max_retries} attempt/cell)\n")
+          f"(max_parallel={args.max_parallel}, 1 attempt/cell)\n")
 
     results: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=max(1, args.max_parallel)) as ex:

@@ -1,0 +1,57 @@
+# Vision ablation — the DOM-text-only arm, answering igZ7 W1.
+#
+# WHY THIS EXISTS
+# The submitted paper claims agents need pixels, on the strength of every run
+# having been in screenshot mode. That is not evidence: it shows what the agents
+# had, not what they used. This arm removes screenshots and changes nothing else
+# — same models, same scaffold, same scoring — so the difference is attributable.
+#
+# The arm was originally driven by hand, which left it reproducible only from a
+# shell-history fragment. This file is that loop, checked in.
+#
+# TASK CHOICE — four tasks that separate two hypotheses
+# If pixels matter chiefly for ENCODING STIMULI, the canvas tasks should collapse
+# and the text tasks should barely move. If they matter for INTERFACE
+# ORIENTATION, both degrade together.
+#
+#   canvas, not described by the DOM:
+#     random_dot_motion_v2  — coherence exists only ACROSS frames of a
+#                             kinematogram, so one screenshot per step cannot
+#                             recover it even in principle
+#     visual_recognition    — studied images and their lures
+#   fully present as DOM text:
+#     moral_machine
+#     phishing_detection_v2
+#
+# The result was canvas -48% / text -38%, and measurability collapsed to 32% vs
+# 33% — indistinguishable. So the parsimonious reading is orientation, not
+# stimulus encoding, and the paper now claims only that.
+#
+# COMPARE AGAINST: the same cells in rebuttal_v1.yaml, which are vision-on.
+# Both arms must be scored by the same scorer version for the contrast to mean
+# anything — see scoring/version.py.
+#
+# 5 repeats rather than 10: this is a contrast against an existing arm, not a
+# stability estimate, so the repeats only need to support a rank-sum test.
+
+suite_name: vision_ablation
+
+# THE POINT OF THE FILE. Forwarded by harness/sweep.py to `eval --no-vision`
+# and recorded in the sweep's suite_manifest.json, so a retry reproduces the
+# condition. Before that plumbing existed, retrying a vision_ablation sweep
+# silently produced vision-ON runs inside a directory named vision_ablation.
+no_vision: true
+
+tasks:
+  - random_dot_motion_v2      # canvas
+  - visual_recognition        # canvas
+  - moral_machine             # text
+  - phishing_detection_v2     # text
+
+models:
+  - id: gemini-3-flash-preview
+  - id: kimi-k2.5
+  - id: gpt-5.4-nano
+  - id: qwen3-vl-235b-instruct
+
+repeats: 5

@@ -61,7 +61,7 @@ Signatures are tested with standard parametric methods (paired t-tests, proporti
 | GET | `/api/data/{id}/{task_id}` | Retrieve raw trial data (for re-scoring) |
 | POST | `/api/evaluate/{id}` | Trigger scoring |
 | GET | `/api/results/{id}` | Scorecard with L1/L2/L3 + composite |
-| GET | `/api/leaderboard` | Ranked agent results |
+| GET | `/api/leaderboard` | Ranked agent results; `?scorer_version=` selects an earlier scorer |
 
 OpenAPI docs at [`/docs`](https://cog-arena.vercel.app/docs) on the live site.
 

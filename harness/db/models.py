@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Float, Integer, Text, DateTime, Boolean, ForeignKey
+from sqlalchemy import (Column, String, Float, Integer, Text, DateTime, Boolean,
+                        ForeignKey, Index)
 from sqlalchemy.orm import DeclarativeBase, relationship
 from pydantic import BaseModel
 
@@ -45,6 +46,13 @@ class TaskResult(Base):
 class Score(Base):
     __tablename__ = "scores"
 
+    # The leaderboard filters on (session, task, version); declared here rather
+    # than in the migration so create_all builds it on a fresh database and the
+    # migration only has to add it to one that already exists.
+    __table_args__ = (
+        Index("ix_scores_session_task_version", "session_id", "task_id", "scorer_version"),
+    )
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     session_id = Column(String, ForeignKey("sessions.id"), nullable=False)
     task_id = Column(String, nullable=False)
@@ -54,6 +62,18 @@ class Score(Base):
     composite = Column(Float, nullable=False)
     details = Column(Text, nullable=True)
     scored_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # What produced this row. Rows predating versioning read "legacy"; see
+    # scoring/version.py. A (session_id, task_id) pair may now hold several
+    # rows, one per scorer version, so re-scoring adds a generation rather than
+    # overwriting the previous one — that is what keeps older scores publicly
+    # visible behind the leaderboard's version selector.
+    #
+    # Nullable because the ALTER in harness/db/migrations.py cannot retroactively
+    # make an existing column NOT NULL; the migration backfills every NULL to
+    # "legacy" and readers coalesce defensively.
+    scorer_version = Column(String, nullable=True, index=True)
+    spec_digest = Column(String, nullable=True)
 
     session = relationship("Session", back_populates="scores")
 

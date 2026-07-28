@@ -22,6 +22,12 @@ ImportError at module load.
 CONSTANT_PREDICTOR = "constant_predictor"
 CONSTANT_OUTCOME = "constant_outcome"
 
+# The task's trial allocation cannot reach threshold_p even under a perfect
+# result, so no behaviour could pass. A distinct reason rather than a detail
+# string: it is the difference between "this run was too short" and "this
+# signature is unpassable by construction", and the second is a spec defect.
+UNDERPOWERED = "underpowered"
+
 
 def insufficient(detail: str) -> dict:
     """Not enough data survived filtering for the test to run at all.
@@ -36,6 +42,27 @@ def insufficient(detail: str) -> dict:
         "effect_size": 0.0,
         "testable": False,
         "detail": detail,
+    }
+
+
+def underpowered(best_p: float, threshold: float, detail: str) -> dict:
+    """No behaviour could clear ``threshold`` at this trial allocation.
+
+    Reported as untestable rather than scored, because a score here would
+    describe the task's trial budget as a property of the agent. Carries its own
+    ``untestable_reason`` so callers can separate it from genuinely sparse data
+    without string-matching the prose — ``moral_machine/intervention_aversion``
+    (n=4, best attainable p=0.0625) shipped for a whole study on the wrong side
+    of that distinction.
+    """
+    return {
+        "direction_correct": False,
+        "p_value": 1.0,
+        "effect_size": 0.0,
+        "testable": False,
+        "untestable_reason": UNDERPOWERED,
+        "detail": f"Underpowered: {detail} best attainable p={best_p:.4f} > "
+                  f"threshold_p={threshold}. No behaviour could pass.",
     }
 
 

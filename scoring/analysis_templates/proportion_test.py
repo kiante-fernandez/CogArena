@@ -16,6 +16,8 @@ the exact test at p=0.0156, having been unreachable under the old n>=10 guard.
 """
 from scipy import stats
 
+from scoring.analysis_templates import underpowered
+
 # Only guards against a rate that does not exist. The exact test carries the
 # small-sample penalty itself, and the underpowering check below catches the
 # cases a blanket minimum was previously (and too bluntly) standing in for.
@@ -90,16 +92,9 @@ def run_proportion_test(trial_data: list[dict], spec: dict) -> dict:
 
     best = _best_attainable_p(n_eff, p_chance, expected)
     if best > threshold:
-        return {
-            "direction_correct": False,
-            "p_value": 1.0,
-            "effect_size": 0.0,
-            "testable": False,
-            "detail": (f"Underpowered: n={n}, n_eff={n_eff} (lag-1 rho={rho:+.2f}), "
-                       f"chance={p_chance:.3f}, best attainable p={best:.4f} > "
-                       f"threshold_p={threshold}. No behaviour could pass at this "
-                       f"effective sample size."),
-        }
+        return underpowered(best, threshold,
+                            f"n={n}, n_eff={n_eff} (lag-1 rho={rho:+.2f}), "
+                            f"chance={p_chance:.3f}.")
 
     successes = sum(1 for v in values if v)
     p_obs = successes / n

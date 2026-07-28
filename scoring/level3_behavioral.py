@@ -127,7 +127,13 @@ def _grade(sig: dict, result: dict) -> dict:
     # Templates flag insufficient data explicitly; absence means testable,
     # which keeps any template that has not been updated working.
     if result.get("testable", True) is False:
-        return _untestable(sig, "insufficient_data", detail=result.get("detail"))
+        # A template may name its own reason. Collapsing them all to
+        # "insufficient_data" would erase the difference between a run that was
+        # too short and a signature no behaviour could ever pass — the second is
+        # a spec defect, and the only way to detect it was string-matching the
+        # detail prose, which silently stops working the moment anyone rewords it.
+        return _untestable(sig, result.get("untestable_reason", "insufficient_data"),
+                           detail=result.get("detail"))
 
     p_value, effect = result.get("p_value"), result.get("effect_size")
     if p_value is None or _is_nan(p_value) or _is_nan(effect):

@@ -14,7 +14,7 @@ os.environ.setdefault("ADMIN_API_KEY", "test-key")
 import pytest
 from httpx import AsyncClient, ASGITransport
 
-from harness.server import app, engine
+from harness.server import app, engine, V1_TASK_IDS
 from harness.db.models import Base
 
 
@@ -334,7 +334,12 @@ async def test_full_evaluation_flow(client: AsyncClient):
     assert scored_task_ids == {"stroop", "two_armed_bandit", "risky_choice", "trust_game", "n_back"}
 
 
-async def test_leaderboard_populated(client: AsyncClient):
+async def test_leaderboard_populated(client: AsyncClient, monkeypatch):
+    # The generators above cover legacy tasks, not the v1 launch set, so this
+    # test exercises the unfiltered board via the documented escape hatch.
+    # test_leaderboard_is_v1_only covers the filtered default.
+    monkeypatch.setattr("harness.server.SHOW_ALL_TASKS", True)
+
     # Initially empty
     resp = await client.get("/api/leaderboard")
     assert resp.status_code == 200
@@ -370,4 +375,169 @@ async def test_leaderboard_populated(client: AsyncClient):
     assert len(entries) == 1
     assert entries[0]["agent_name"] == "lb-test"
     assert entries[0]["tasks_completed"] == 5
+    assert entries[0]["sessions_scored"] == 5
     assert 0 <= entries[0]["composite_score"] <= 100
+
+
+async def _approved_session(client: AsyncClient, agent: str, model: str):
+    resp = await client.post("/api/sessions",
+                             json={"agent_name": agent, "model_name": model})
+    session_id = resp.json()["session_id"]
+    for task_id, gen_fn in TASK_GENERATORS.items():
+        await client.post(f"/api/data/{session_id}/{task_id}",
+                          json={"trial_data": gen_fn()})
+    await client.post(f"/api/evaluate/{session_id}")
+    await client.post(f"/api/admin/submissions/{session_id}/approve",
+                      headers={"X-Admin-Key": "test-key"})
+    return session_id
+
+
+async def test_leaderboard_is_v1_only(client: AsyncClient):
+    """A board scored purely on non-v1 tasks reports nothing.
+
+    The rest of the site shows only the v1 launch set; a leaderboard that ranked
+    other tasks would compare entries evaluated on different task sets in one
+    composite column, and would report a denominator no entry was measured on.
+    """
+    await _approved_session(client, "legacy-agent", "legacy-model")
+
+    body = (await client.get("/api/leaderboard")).json()
+    assert body["entries"] == []
+    # Denominator is the v1 set, not every task on disk.
+    assert body["total_tasks"] == len(V1_TASK_IDS) == 10
+
+
+async def test_leaderboard_older_version_still_visible_after_rescore(
+    client: AsyncClient, monkeypatch
+):
+    """The headline behaviour: re-scoring adds a generation, it does not overwrite.
+
+    Before the version column, save_score deleted the (session, task) row before
+    inserting, so a scorer change silently destroyed the numbers the previous
+    version had produced — there was never a second version to select between.
+    """
+    monkeypatch.setattr("harness.server.SHOW_ALL_TASKS", True)
+
+    from sqlalchemy import select
+    from harness.db.models import Score
+    from harness.server import async_session_factory
+
+    session_id = await _approved_session(client, "ver-agent", "ver-model")
+
+    body = (await client.get("/api/leaderboard")).json()
+    v1 = body["scorer_version"]
+    v1_composite = body["entries"][0]["composite_score"]
+    assert v1 == body["running_scorer_version"]
+
+    # Re-score the same trial data under a different scorer version.
+    monkeypatch.setattr("scoring.score_session.scorer_version", lambda: "9.9-deadbeefcafe")
+    await client.post(f"/api/evaluate/{session_id}")
+
+    async with async_session_factory() as db:
+        rows = (await db.execute(select(Score))).scalars().all()
+        by_version = {}
+        for r in rows:
+            by_version.setdefault(r.scorer_version, []).append(r)
+    assert set(by_version) == {v1, "9.9-deadbeefcafe"}, "old rows must survive"
+    assert len(by_version[v1]) == 5, "original generation kept intact"
+    assert len(by_version["9.9-deadbeefcafe"]) == 5
+
+    # The default board shows the newest version...
+    body = (await client.get("/api/leaderboard")).json()
+    assert body["scorer_version"] == "9.9-deadbeefcafe"
+    assert [v["version"] for v in body["scorer_versions"]][0] == "9.9-deadbeefcafe"
+    assert {v["version"] for v in body["scorer_versions"]} == {v1, "9.9-deadbeefcafe"}
+
+    # ...and the older one is still reachable, with its own numbers.
+    older = (await client.get(f"/api/leaderboard?scorer_version={v1}")).json()
+    assert older["scorer_version"] == v1
+    assert older["entries"][0]["composite_score"] == v1_composite
+
+
+async def test_leaderboard_does_not_blend_versions(client: AsyncClient, monkeypatch):
+    """Two versions must never be averaged into a composite belonging to neither."""
+    monkeypatch.setattr("harness.server.SHOW_ALL_TASKS", True)
+    session_id = await _approved_session(client, "blend-agent", "blend-model")
+
+    monkeypatch.setattr("scoring.score_session.scorer_version", lambda: "9.9-deadbeefcafe")
+    await client.post(f"/api/evaluate/{session_id}")
+
+    body = (await client.get("/api/leaderboard")).json()
+    # 5 tasks scored twice = 10 rows, but one version's worth is 5 tasks.
+    assert body["entries"][0]["tasks_completed"] == 5
+    assert body["entries"][0]["sessions_scored"] == 5, "must not count both versions"
+
+
+async def test_leaderboard_rejects_unknown_version(client: AsyncClient, monkeypatch):
+    monkeypatch.setattr("harness.server.SHOW_ALL_TASKS", True)
+    await _approved_session(client, "known-agent", "known-model")
+
+    resp = await client.get("/api/leaderboard?scorer_version=nope")
+    assert resp.status_code == 400
+    assert "nope" in resp.json()["detail"]
+
+
+async def test_scorecard_not_double_counted_across_versions(
+    client: AsyncClient, monkeypatch
+):
+    """/api/results feeds harness/eval.py's archived score.json artifacts."""
+    session_id = await _approved_session(client, "sc-agent", "sc-model")
+    before = (await client.get(f"/api/results/{session_id}")).json()
+
+    monkeypatch.setattr("scoring.score_session.scorer_version", lambda: "9.9-deadbeefcafe")
+    await client.post(f"/api/evaluate/{session_id}")
+
+    after = (await client.get(f"/api/results/{session_id}")).json()
+    assert len(after["task_scores"]) == len(before["task_scores"]) == 5
+    assert 0 <= after["composite_score"] <= 100
+
+
+async def test_admin_submissions_not_double_counted_across_versions(
+    client: AsyncClient, monkeypatch
+):
+    session_id = await _approved_session(client, "adm-agent", "adm-model")
+    monkeypatch.setattr("scoring.score_session.scorer_version", lambda: "9.9-deadbeefcafe")
+    await client.post(f"/api/evaluate/{session_id}")
+
+    resp = await client.get("/api/admin/submissions",
+                            headers={"X-Admin-Key": "test-key"})
+    rows = [r for r in resp.json()["submissions"] if r["session_id"] == session_id]
+    assert len(rows) == 1
+    assert rows[0]["tasks_completed"] == 5, "one version's worth, not both"
+
+
+async def test_leaderboard_averages_repeats_rather_than_taking_the_best(
+    client: AsyncClient, monkeypatch
+):
+    """Repeats of a (model, task) are averaged.
+
+    Keeping the best of N rewards the luckiest draw and rises with the number of
+    attempts a submitter makes; on the ten-repeat study best-of-ten scored 14 to
+    18 composite points above the mean.
+    """
+    monkeypatch.setattr("harness.server.SHOW_ALL_TASKS", True)
+
+    from sqlalchemy import select
+    from harness.db.models import Score
+    from harness.server import async_session_factory
+
+    await _approved_session(client, "repeat-agent", "repeat-model")
+    await _approved_session(client, "repeat-agent", "repeat-model")
+
+    async with async_session_factory() as db:
+        rows = (await db.execute(select(Score))).scalars().all()
+        by_task: dict[str, list[float]] = {}
+        for s in rows:
+            by_task.setdefault(s.task_id, []).append(s.composite)
+        # Two sessions of the same model, so every task has two scores.
+        assert all(len(v) == 2 for v in by_task.values())
+        expected_mean = sum(sum(v) / len(v) for v in by_task.values()) / len(by_task)
+        best_of_n = sum(max(v) for v in by_task.values()) / len(by_task)
+
+    entries = (await client.get("/api/leaderboard")).json()["entries"]
+    assert len(entries) == 1
+    assert entries[0]["tasks_completed"] == 5
+    assert entries[0]["sessions_scored"] == 10
+    assert entries[0]["composite_score"] == pytest.approx(round(expected_mean, 2))
+    if best_of_n != expected_mean:  # only meaningful when the repeats differ
+        assert entries[0]["composite_score"] != pytest.approx(round(best_of_n, 2))

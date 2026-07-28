@@ -88,3 +88,39 @@ def test_filter_is_applied():
     # The 20 BoS rows must be excluded; including them would flip the direction.
     assert r["direction_correct"] is True
     assert "n=2" in r["detail"]
+
+
+def test_bins_too_small_to_ever_pass_are_untestable_not_scored():
+    """A 2-vs-2 split cannot reach p<0.05 even under perfect separation.
+
+    Best attainable one-sided Fisher p is 0.167 there, so scoring such a
+    signature reports a property of the task's trial allocation as a property of
+    the agent — the failure `proportion_test._best_attainable_p` already guards
+    against. An agent reciprocating flawlessly in these bins must be reported as
+    unmeasured, not as scoring 0.5.
+    """
+    data = _trials([(True, True)] * 2 + [(False, False)] * 2)
+    r = run_conditional_proportion_contrast(data, {**SPEC, "threshold_p": 0.05})
+    assert r["testable"] is False
+    assert "Underpowered" in r["detail"]
+    assert "0.1667" in r["detail"]
+
+
+def test_three_versus_three_is_the_boundary_case():
+    """3-vs-3 gives exactly p=0.0500, which is not < 0.05."""
+    data = _trials([(True, True)] * 3 + [(False, False)] * 3)
+    r = run_conditional_proportion_contrast(data, {**SPEC, "threshold_p": 0.05})
+    assert r["testable"] is False, "p=0.05 is not < 0.05"
+
+    # ...but it passes at a threshold that admits it.
+    r = run_conditional_proportion_contrast(data, {**SPEC, "threshold_p": 0.10})
+    assert r["testable"] is True
+    assert r["direction_correct"] is True
+
+
+def test_adequately_powered_bins_still_score():
+    """The check must not swallow signatures that can genuinely be tested."""
+    data = _trials([(True, True)] * 5 + [(False, False)] * 5)
+    r = run_conditional_proportion_contrast(data, {**SPEC, "threshold_p": 0.05})
+    assert r["testable"] is True
+    assert r["p_value"] < 0.05

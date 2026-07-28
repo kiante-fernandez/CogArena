@@ -6,9 +6,11 @@ from scoring.level1_completion import score_completion
 from scoring.level2_accuracy import score_accuracy
 from scoring.level3_behavioral import score_behavioral
 from scoring.composite_score import compute_composite
+from scoring.version import scorer_version, spec_digest
 
 
-def _augment_derived_fields(trial_data: list[dict], task_id: str) -> list[dict]:
+def _augment_derived_fields(trial_data: list[dict], task_id: str,
+                            task_config: dict | None = None) -> list[dict]:
     """Add per-task derived fields to each trial in place.
 
     Some L2/L3 metrics need quantities that are easier to compute over the
@@ -43,7 +45,15 @@ def _augment_derived_fields(trial_data: list[dict], task_id: str) -> list[dict]:
         positions = [t["study_position"] for t in trial_data
                      if t.get("study_position") is not None]
         if positions:
-            hi = max(positions)
+            # Band against the list length the participant actually STUDIED, not
+            # against the furthest position they happened to reach. A session
+            # truncated to positions 1-8 of a 16-pair list would otherwise get
+            # hi=8, labelling position 2 "primacy" and position 7 "terminal" —
+            # both mid-list in the real design — and primacy_effect would then
+            # contrast mislabelled groups. Partial runs are exactly what v1.2
+            # started archiving, so this is the case that matters.
+            configured = (task_config or {}).get("parameters", {}).get("n_study_pairs")
+            hi = configured if isinstance(configured, int) and configured > 0 else max(positions)
             first_q, last_q = hi / 4.0, hi * 3 / 4.0
             for trial in trial_data:
                 p = trial.get("study_position")
@@ -68,7 +78,7 @@ def score_task(trial_data: list[dict], task_id: str, tasks_dir: Path) -> dict:
     with open(task_dir / "scoring" / "level3_signatures.json") as f:
         signatures_spec = json.load(f)
 
-    trial_data = _augment_derived_fields(trial_data, task_id)
+    trial_data = _augment_derived_fields(trial_data, task_id, task_config)
 
     l1_result = score_completion(trial_data, task_config)
     l2_result = score_accuracy(trial_data, metrics_spec)
@@ -78,6 +88,11 @@ def score_task(trial_data: list[dict], task_id: str, tasks_dir: Path) -> dict:
 
     return {
         "task_id": task_id,
+        # Stamped at the single scoring choke point, so every consumer of a
+        # scorecard carries its provenance: the DB column, the archived
+        # score.json artifacts, and anything rescore_sweeps synthesises.
+        "scorer_version": scorer_version(),
+        "spec_digest": spec_digest(task_id),
         "composite": composite,
         "l1": l1_result,
         "l2": l2_result,

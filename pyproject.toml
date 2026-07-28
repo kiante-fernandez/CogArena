@@ -1,6 +1,6 @@
 [project]
 name = "cogarena"
-version = "1.2.0"
+version = "1.2.1"
 description = "A benchmark for testing AI agents on interactive behavioral experiments"
 requires-python = ">=3.11"
 dependencies = [

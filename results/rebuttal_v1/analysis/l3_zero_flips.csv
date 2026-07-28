@@ -8,7 +8,7 @@ gpt-5.4-nano,marbles_risk,scored,10,3,7,0.7,0.8182,a single session would have r
 gpt-5.4-nano,moral_machine,scored,10,7,3,0.3,0.55,a single session would have reported one of these at random
 gpt-5.4-nano,random_dot_motion_v2,scored,10,5,5,0.5,0.5,a single session would have reported one of these at random
 gpt-5.4-nano,repeated_games,scored,10,6,4,0.4,0.4,a single session would have reported one of these at random
-gpt-5.4-nano,serial_recall_v2,scored,10,1,9,0.9,0.5417,a single session would have reported one of these at random
+gpt-5.4-nano,serial_recall_v2,scored,10,1,9,0.9,0.625,a single session would have reported one of these at random
 gpt-5.4-nano,tiny_alchemy,scored,10,7,3,0.3,1.0,a single session would have reported one of these at random
 gpt-5.4-nano,visual_recognition,scored,10,4,6,0.6,0.5625,a single session would have reported one of these at random
 kimi-k2.5,effort_foraging,scored,10,2,8,0.8,0.4545,a single session would have reported one of these at random
@@ -31,7 +31,7 @@ gemini-3-flash-preview,effort_foraging,l3_measurable,10,2,8,0.8,0.2727,a single 
 gemini-3-flash-preview,tiny_alchemy,l3_measurable,9,1,8,0.8889,0.6667,a single session would have reported one of these at random
 gemini-3-flash-preview,visual_recognition,l3_measurable,10,2,8,0.8,0.5625,a single session would have reported one of these at random
 gpt-5.4-nano,effort_foraging,l3_measurable,9,2,7,0.7778,0.3182,a single session would have reported one of these at random
-gpt-5.4-nano,serial_recall_v2,l3_measurable,10,1,9,0.9,0.5417,a single session would have reported one of these at random
+gpt-5.4-nano,serial_recall_v2,l3_measurable,10,1,9,0.9,0.625,a single session would have reported one of these at random
 gpt-5.4-nano,visual_recognition,l3_measurable,6,2,4,0.6667,0.5625,a single session would have reported one of these at random
 kimi-k2.5,effort_foraging,l3_measurable,10,2,8,0.8,0.4545,a single session would have reported one of these at random
 kimi-k2.5,marbles_risk,l3_measurable,8,1,7,0.875,0.9091,a single session would have reported one of these at random

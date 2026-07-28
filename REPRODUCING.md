@@ -151,9 +151,8 @@ Expected: 374 passed (313 scoring + 10 harness unit + 51 field-alignment tests).
 
 ## What each result file contains
 
-- **`results/random_floor_v1.csv`** — 100-row chance floor: `(run_index, repeat_index, model_id, task_id, rc, wall_time, composite, l1, l2, l3)`. `model_id="random"` for all rows. Some rows have `rc=1` (transient Playwright timeouts) and empty score columns; the chance-ceiling analysis in `results/AUDIT.md` uses only `rc=0` rows.
+- **`results/random_floor_v1.csv`** — 100-row chance floor: `(run_index, repeat_index, model_id, task_id, rc, wall_time, composite, l1, l2, l3)`. `model_id="random"` for all rows. Some rows have `rc=1` (transient Playwright timeouts) and empty score columns; the chance-ceiling analysis uses only `rc=0` rows.
 - **`results/pilot_v1.csv`** — 60-row frontier-model pilot, same schema. 6 models × 10 tasks × 1 repeat. Composite = 100 × (0.15·L1 + 0.35·L2 + 0.50·L3).
-- **`results/AUDIT.md`** — record of the v1.0.0 → v1.1.0 spec audit (what changed in L2/L3 and why, with per-task before/after chance ceilings).
 - **`results/example_replay.html`** — self-contained HTML scrub of one agent run (gemini × moral_machine).
 - **Per-session `score.json`** (under `data/sweeps/<run>/runs/<r##>/artifacts/`) — full signature-level detail: every L3 effect's measured statistic, expected direction, score, and weight.
 

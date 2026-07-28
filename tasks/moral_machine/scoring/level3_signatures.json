@@ -64,22 +64,9 @@
       "weight": 1.0,
       "construct_type": "bias",
       "bias_rationale": "Punishing jaywalking with death is a preference, not a capacity."
-    },
-    {
-      "name": "intervention_aversion",
-      "description": "When the choice is whether the car should swerve (intervene) or stay on course, agents prefer the car to stay its course. Awad et al. 2018 global aggregate ~0.46 \u2014 humans show a mild aversion to intervention. Tested as a below-chance proportion of intervention choices.",
-      "test": "proportion_test",
-      "field": "chose_intervention",
-      "filter": {
-        "timed_out": false,
-        "dimension": "intervention"
-      },
-      "chance_level": 0.5,
-      "threshold_p": 0.05,
-      "expected_direction": "below_chance",
-      "weight": 0.5,
-      "construct_type": "bias",
-      "bias_rationale": "Omission bias: humans prefer the harm they did not cause. An agent indifferent between action and inaction is arguably more consistent, and is scored down for it."
     }
-  ]
+  ],
+  "_notes": {
+    "intervention_aversion": "Removed in v1.2.1. The task allocates 4 intervention trials; against a chance level of 0.5 the best attainable exact-binomial p is 0.0625, so no behaviour could ever clear threshold_p=0.05. It reported untestable in all 50 archived sessions (40 panel + 10 floor) and so was already excluded from every L3 denominator \u2014 removal changes no reported number. Restore it only alongside a trials_per_dimension.intervention count with power."
+  }
 }

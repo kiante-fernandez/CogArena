@@ -25,6 +25,8 @@ lacks reciprocity on evidence that cannot speak to it either way.
 """
 from scipy import stats
 
+from scoring.analysis_templates import underpowered
+
 # Both bins need at least two observations for a within-bin rate to exist at all.
 #
 # Deliberately low: Fisher's exact test already carries the small-sample penalty
@@ -36,6 +38,26 @@ from scipy import stats
 # gives p=0.77), which is the conservatism we want and is better placed in the
 # test statistic than in an arbitrary cutoff.
 MIN_PER_BIN = 2
+
+
+def _best_attainable_p(n_true: int, n_false: int, alternative: str) -> float:
+    """Smallest one-sided Fisher p reachable at these bin sizes.
+
+    Perfect separation is the most extreme table the bins admit, so its p-value
+    is a floor on what any behaviour could achieve. Small bins put that floor
+    above the usual threshold: 2-vs-2 bottoms out at 0.167, 3-vs-3 at exactly
+    0.050 (not <), 4-vs-2 at 0.067. An agent showing flawless reciprocity in
+    those bins would score 0.5 and stay in the L3 denominator, which reports a
+    property of the trial allocation as a property of the agent.
+
+    ``proportion_test`` has carried this rule since eb6de8b; it simply was not
+    applied here.
+    """
+    if alternative == "greater":
+        table = [[n_true, 0], [0, n_false]]
+    else:
+        table = [[0, n_true], [n_false, 0]]
+    return stats.fisher_exact(table, alternative=alternative)[1]
 
 
 def run_conditional_proportion_contrast(trial_data: list[dict], spec: dict) -> dict:
@@ -68,12 +90,18 @@ def run_conditional_proportion_contrast(trial_data: list[dict], spec: dict) -> d
                        f"The contrast is unidentifiable from this session."),
         }
 
+    expected = spec.get("expected_direction", "positive")
+    alternative = "greater" if expected == "positive" else "less"
+
+    threshold = spec.get("threshold_p", 0.05)
+    best = _best_attainable_p(n_true, n_false, alternative)
+    if best > threshold:
+        return underpowered(best, threshold,
+                            f"Fisher exact on n_true={n_true}, n_false={n_false}.")
+
     a, b = sum(cond_true), n_true - sum(cond_true)
     c, d = sum(cond_false), n_false - sum(cond_false)
     p_true, p_false = a / n_true, c / n_false
-
-    expected = spec.get("expected_direction", "positive")
-    alternative = "greater" if expected == "positive" else "less"
     # Rows are [condition true, condition false], columns [outcome true, false].
     _, p_value = stats.fisher_exact([[a, b], [c, d]], alternative=alternative)
 

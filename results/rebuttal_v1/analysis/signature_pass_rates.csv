@@ -13,7 +13,6 @@ gemini-3-flash-preview,marbles_risk,ev_difference_rt_effect,10,0,0.0,0.0,0.2775,
 gemini-3-flash-preview,marbles_risk,ev_sensitivity,10,10,1.0,0.7225,1.0,0.5616,0.0332,False,0,10,
 gemini-3-flash-preview,marbles_risk,magnitude_effect_high_payoff,10,9,0.9,0.5958,0.9821,0.4109,0.1107,True,0,10,
 gemini-3-flash-preview,moral_machine,age_preference_save_young,9,9,1.0,0.7008,1.0,0.5,0.0,False,1,10,
-gemini-3-flash-preview,moral_machine,intervention_aversion,0,0,,,,,,False,10,10,untestable in every session — no pass rate is defined
 gemini-3-flash-preview,moral_machine,legality_preference_save_lawful,8,3,0.375,0.1368,0.6943,0.2708,0.3326,True,2,10,
 gemini-3-flash-preview,moral_machine,species_preference_save_human,9,9,1.0,0.7008,1.0,0.5,0.0,False,1,10,
 gemini-3-flash-preview,moral_machine,utilitarian_preference,9,9,1.0,0.7008,1.0,0.5,0.0,False,1,10,
@@ -53,7 +52,6 @@ gpt-5.4-nano,marbles_risk,ev_difference_rt_effect,5,0,0.0,0.0,0.4345,0.0274,0.14
 gpt-5.4-nano,marbles_risk,ev_sensitivity,5,1,0.2,0.0362,0.6245,0.1683,0.1802,True,5,10,
 gpt-5.4-nano,marbles_risk,magnitude_effect_high_payoff,5,1,0.2,0.0362,0.6245,0.121,0.089,True,5,10,
 gpt-5.4-nano,moral_machine,age_preference_save_young,3,0,0.0,0.0,0.5615,-0.0444,0.1895,False,7,10,
-gpt-5.4-nano,moral_machine,intervention_aversion,0,0,,,,,,False,10,10,untestable in every session — no pass rate is defined
 gpt-5.4-nano,moral_machine,legality_preference_save_lawful,3,0,0.0,0.0,0.5615,-0.1111,0.2546,False,7,10,
 gpt-5.4-nano,moral_machine,species_preference_save_human,3,0,0.0,0.0,0.5615,-0.0424,0.1677,False,7,10,
 gpt-5.4-nano,moral_machine,utilitarian_preference,3,3,1.0,0.4385,1.0,0.5,0.0,False,7,10,
@@ -70,7 +68,7 @@ gpt-5.4-nano,repeated_games,cooperation_when_opp_cooperated,0,0,,,,,,False,10,10
 gpt-5.4-nano,repeated_games,round_rt_speedup,4,2,0.5,0.15,0.85,-0.3289,0.1696,True,6,10,
 gpt-5.4-nano,repeated_games,tit_for_tat_reciprocity_pd,1,0,0.0,0.0,0.7935,-0.1667,0.0,False,9,10,
 gpt-5.4-nano,serial_recall_v2,above_chance_recall,10,3,0.3,0.1078,0.6032,0.1313,0.1678,True,0,10,
-gpt-5.4-nano,serial_recall_v2,high_vs_low_sim_advantage,10,0,0.0,0.0,0.2775,0.175,0.2058,False,0,10,
+gpt-5.4-nano,serial_recall_v2,high_vs_low_sim_advantage,10,2,0.2,0.0567,0.5098,0.175,0.2058,True,0,10,
 gpt-5.4-nano,serial_recall_v2,primacy_effect,10,2,0.2,0.0567,0.5098,0.2,0.2776,True,0,10,
 gpt-5.4-nano,serial_recall_v2,similarity_aids_recall,10,0,0.0,0.0,0.2775,0.1434,0.2192,False,0,10,
 gpt-5.4-nano,serial_recall_v2,similarity_rt_effect,10,0,0.0,0.0,0.2775,0.0449,0.2218,False,0,10,
@@ -93,7 +91,6 @@ kimi-k2.5,marbles_risk,ev_difference_rt_effect,8,0,0.0,0.0,0.3244,0.1773,0.2125,
 kimi-k2.5,marbles_risk,ev_sensitivity,8,5,0.625,0.3057,0.8632,0.4783,0.3381,True,2,10,
 kimi-k2.5,marbles_risk,magnitude_effect_high_payoff,8,4,0.5,0.2152,0.7848,0.205,0.4169,True,2,10,
 kimi-k2.5,moral_machine,age_preference_save_young,8,3,0.375,0.1368,0.6943,0.2125,0.2748,True,2,10,
-kimi-k2.5,moral_machine,intervention_aversion,0,0,,,,,,False,10,10,untestable in every session — no pass rate is defined
 kimi-k2.5,moral_machine,legality_preference_save_lawful,6,0,0.0,0.0,0.3903,0.2222,0.0861,False,4,10,
 kimi-k2.5,moral_machine,species_preference_save_human,8,5,0.625,0.3057,0.8632,0.3625,0.1847,True,2,10,
 kimi-k2.5,moral_machine,utilitarian_preference,8,8,1.0,0.6756,1.0,0.4875,0.0354,False,2,10,
@@ -133,11 +130,10 @@ qwen3-vl-235b-instruct,marbles_risk,ev_difference_rt_effect,0,0,,,,,,False,10,10
 qwen3-vl-235b-instruct,marbles_risk,ev_sensitivity,0,0,,,,,,False,10,10,untestable in every session — no pass rate is defined
 qwen3-vl-235b-instruct,marbles_risk,magnitude_effect_high_payoff,0,0,,,,,,False,10,10,untestable in every session — no pass rate is defined
 qwen3-vl-235b-instruct,moral_machine,age_preference_save_young,0,0,,,,,,False,10,10,untestable in every session — no pass rate is defined
-qwen3-vl-235b-instruct,moral_machine,intervention_aversion,0,0,,,,,,False,10,10,untestable in every session — no pass rate is defined
 qwen3-vl-235b-instruct,moral_machine,legality_preference_save_lawful,0,0,,,,,,False,10,10,untestable in every session — no pass rate is defined
 qwen3-vl-235b-instruct,moral_machine,species_preference_save_human,1,0,0.0,0.0,0.7935,-0.1,0.0,False,9,10,
 qwen3-vl-235b-instruct,moral_machine,utilitarian_preference,0,0,,,,,,False,10,10,untestable in every session — no pass rate is defined
-qwen3-vl-235b-instruct,phishing_detection_v2,above_chance_discrimination,10,7,0.7,0.3968,0.8922,0.354,0.2979,True,0,10,
+qwen3-vl-235b-instruct,phishing_detection_v2,above_chance_discrimination,10,6,0.6,0.3127,0.8318,0.354,0.2979,True,0,10,
 qwen3-vl-235b-instruct,phishing_detection_v2,above_chance_overall,10,4,0.4,0.1682,0.6873,0.1895,0.147,True,0,10,
 qwen3-vl-235b-instruct,phishing_detection_v2,learning_effect,0,0,,,,,,False,10,10,untestable in every session — no pass rate is defined
 qwen3-vl-235b-instruct,phishing_detection_v2,practice_rt_speedup,10,3,0.3,0.1078,0.6032,-0.0274,0.3568,True,0,10,

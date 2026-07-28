@@ -48,7 +48,7 @@
   "name": "CogArena",
   "description": "CogArena v1: a benchmark of ten interactive jsPsych behavioral experiments for evaluating multimodal AI agents through a real browser, with three-level scoring (completion, accuracy vs. literature-derived human baselines, and behavioral signatures via statistical tests).",
   "conformsTo": "http://mlcommons.org/croissant/1.0",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "datePublished": "2026-05-05",
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "url": "https://github.com/kiante-fernandez/CogArena",
@@ -82,7 +82,7 @@
       "@id": "code-archive",
       "name": "code-archive",
       "description": "Source code archive pinned to the v1.0.0 release tag (immutable; sha256 will not drift as main advances). Tasks, scoring pipeline, agents, and committed reference results.",
-      "contentUrl": "https://github.com/kiante-fernandez/CogArena/archive/refs/tags/v1.1.1.tar.gz",
+      "contentUrl": "https://github.com/kiante-fernandez/CogArena/archive/refs/tags/v1.2.1.tar.gz",
       "encodingFormat": "application/x-tar",
       "sha256": "8361afd0134937ede91e59d7edd78703225b1284b558a31ad6c706f6aaa87386"
     },

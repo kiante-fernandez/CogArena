@@ -21,8 +21,11 @@ from harness.db.models import (
     Base, SessionCreate, TrialDataSubmission, IncrementalDataSubmission,
     AdminReviewRequest,
 )
+from harness.db.migrations import migrate
 from harness.session_manager import SessionManager
+from harness.task_sets import V1_TASK_IDS
 from scoring.score_session import score_task
+from scoring.version import scorer_version as running_scorer_version
 
 
 _USE_LIBSQL = settings.DATABASE_URL.startswith("sqlite+libsql")
@@ -66,25 +69,9 @@ DOMAIN_LABELS = {
 }
 
 
-# --- v1 launch set ---
-# These are the ten curated tasks foregrounded on the deployment site for the
-# NeurIPS 2026 D&B v1 paper. The broader 30+ tasks remain on disk and are still
-# discoverable via /api/tasks for direct use, but the website pages (/, /catalog,
-# /try, etc.) only show the v1 set. To re-expose all tasks on the site, set
-# SHOW_ALL_TASKS = True below or comment out the filter calls in the route
-# handlers.
-V1_TASK_IDS: set[str] = {
-    "random_dot_motion_v2",
-    "grid_bandit",
-    "marbles_risk",
-    "repeated_games",
-    "moral_machine",
-    "tiny_alchemy",
-    "visual_recognition",
-    "serial_recall_v2",
-    "phishing_detection_v2",
-    "effort_foraging",
-}
+# The website pages (/, /catalog, /try, /leaderboard) show only V1_TASK_IDS,
+# imported above; the broader 30+ tasks stay on disk and discoverable via
+# /api/tasks. Flip this to re-expose everything on the site.
 SHOW_ALL_TASKS: bool = False
 
 
@@ -176,11 +163,18 @@ async def _ensure_db():
         return
     async with _db_lock:
         if not _db_initialized:
+            # create_all only creates MISSING tables; it never adds a column to
+            # an existing one. The migration runs immediately after so a deploy
+            # cannot leave the code ahead of the schema — which would raise
+            # "no such column" on every Score read and take the site down.
             if _USE_LIBSQL:
                 Base.metadata.create_all(_sync_engine)
+                with _sync_engine.begin() as conn:
+                    migrate(conn)
             else:
                 async with engine.begin() as conn:
                     await conn.run_sync(Base.metadata.create_all)
+                    await conn.run_sync(migrate)
             _db_initialized = True
 
 
@@ -208,7 +202,7 @@ async def lifespan(app: FastAPI):
         await engine.dispose()
 
 
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.2.1"
 app = FastAPI(title="CogArena", version=APP_VERSION, lifespan=lifespan)
 
 app.add_middleware(
@@ -299,7 +293,7 @@ async def api_info():
             "save_partial": "PATCH /api/data/{session_id}/{task_id}",
             "evaluate": "POST /api/evaluate/{session_id}",
             "results": "GET /api/results/{session_id}",
-            "leaderboard": "GET /api/leaderboard",
+            "leaderboard": "GET /api/leaderboard?scorer_version=<version>",
         },
         "tasks": task_ids,
     }
@@ -467,11 +461,47 @@ async def get_results(session_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @app.get("/api/leaderboard", summary="Get ranked leaderboard of all scored sessions")
-async def get_leaderboard(db: AsyncSession = Depends(get_db)):
+async def get_leaderboard(
+    scorer_version: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
     mgr = SessionManager(db, settings.TASKS_DIR)
-    entries = await mgr.get_leaderboard()
-    total_tasks = len(mgr.get_available_tasks("_"))
-    return {"total_tasks": total_tasks, "entries": entries}
+    # Same v1 restriction the rest of the site applies. Without it the board
+    # ranks entries scored on different subsets of the catalogue against each
+    # other, and reports a denominator (every task on disk) that no entry was
+    # ever evaluated against.
+    task_ids = None if SHOW_ALL_TASKS else V1_TASK_IDS
+
+    versions = await mgr.list_scorer_versions()
+    known = [v["version"] for v in versions]
+    if scorer_version is not None and scorer_version not in known:
+        # Rejected rather than silently returning nothing: an empty board is
+        # indistinguishable from a version that genuinely has no entries, and a
+        # stale bookmark would look like data loss.
+        raise HTTPException(
+            status_code=400,
+            detail=f"unknown scorer_version {scorer_version!r}; known: {known}",
+        )
+    # Default to the newest version PRESENT IN THE DATA, not the running code's
+    # version. The running version has zero rows the instant it is deployed, so
+    # defaulting to it would empty the board and take the homepage's live
+    # counters to zero until a re-score finished.
+    effective = scorer_version or (known[0] if known else running_scorer_version())
+
+    entries = await mgr.get_leaderboard(task_ids, effective)
+    # Counted against what is actually on disk, so a task that goes missing
+    # shrinks the denominator instead of silently claiming ten. _load_tasks_meta
+    # is cached; get_available_tasks would build 50 throwaway pydantic models
+    # and ~100 stat syscalls per request to answer the same question.
+    on_disk = {t["task_id"] for t in _load_tasks_meta()}
+    total_tasks = len(on_disk if task_ids is None else on_disk & task_ids)
+    return {
+        "total_tasks": total_tasks,
+        "scorer_version": effective,
+        "running_scorer_version": running_scorer_version(),
+        "scorer_versions": versions,
+        "entries": entries,
+    }
 
 
 # --- Admin Routes ---
