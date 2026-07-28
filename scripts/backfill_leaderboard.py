@@ -206,9 +206,18 @@ def main() -> int:
             for row in _csv.DictReader(fh):
                 if row.get("scored") != "True":
                     continue
-                wanted.add((row["sweep"],
-                            "r%02d_%s_%s" % (int(row["repeat_index"]),
-                                             row["model_id"], row["task_id"])))
+                name = "r%02d_%s_%s" % (int(row["repeat_index"]),
+                                        row["model_id"], row["task_id"])
+                # A substituted retry keeps the PARENT sweep in `sweep` (that is
+                # what --substitute-retries means) while its trial_data lives in
+                # <parent>_retry. The parent directory still exists and is empty,
+                # so matching on `sweep` alone silently resolves to the failed
+                # attempt and drops the recovered cell — which is exactly the 12
+                # cells the retry arm was run to recover.
+                sweep = row["sweep"]
+                if row.get("retried") == "True":
+                    sweep += "_retry"
+                wanted.add((sweep, name))
         before = len(candidates)
         candidates = [c for c in candidates
                       if (c.parents[2].name, c.parent.name) in wanted]
