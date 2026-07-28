@@ -33,7 +33,7 @@ import logging
 import sys
 
 from sqlalchemy import inspect, text
-from sqlalchemy.schema import CreateColumn
+from sqlalchemy.schema import CreateColumn, CreateIndex
 
 from harness.db.models import Base
 from scoring.version import LEGACY_VERSION
@@ -45,9 +45,11 @@ _BACKFILLS = {
     ("scores", "scorer_version"): LEGACY_VERSION,
 }
 
-_INDEXES = [
-    ("ix_scores_session_task_version", "scores", "(session_id, task_id, scorer_version)"),
-]
+# Indexes are DERIVED from the models for the same reason columns are: a
+# hardcoded list drifts. It already did — the first deploy created only the
+# composite index, because `ix_scores_scorer_version` comes from
+# Column(index=True) and was not in the hand-written list, leaving production
+# with a different schema from any fresh clone.
 
 
 def _missing_columns(conn) -> list[tuple[str, object]]:
@@ -77,11 +79,14 @@ def migrate(conn) -> dict[str, int]:
     attempting the ALTERs unconditionally cost a failed statement per column
     plus a write commit to discover zero rows to backfill.
     """
-    summary = {"columns_added": 0, "rows_backfilled": 0}
+    summary = {"columns_added": 0, "rows_backfilled": 0, "indexes_created": 0}
 
     missing = _missing_columns(conn)
     if not missing:
-        return summary  # steady state: nothing to do, no write transaction
+        # Steady state for columns, but an index may still be absent — the
+        # reflection below is a read, so this stays cheap and write-free.
+        summary["indexes_created"] = _create_missing_indexes(conn)
+        return summary
 
     for table_name, col in missing:
         # Compile from the mapped column so the DDL type always matches what
@@ -110,15 +115,32 @@ def migrate(conn) -> dict[str, int]:
                 logger.info("migration: labelled %d pre-existing %s rows %r",
                             n, table_name, value)
 
-    for name, table_name, cols in _INDEXES:
-        try:
-            conn.execute(text(f"CREATE INDEX IF NOT EXISTS {name} ON {table_name} {cols}"))
-        except Exception as exc:  # noqa: BLE001
-            # An index is a performance affordance, not a correctness one. A
-            # driver that rejects the statement must not take the site down.
-            logger.warning("migration: could not create index %s: %s", name, exc)
-
+    summary["indexes_created"] = _create_missing_indexes(conn)
     return summary
+
+
+def _create_missing_indexes(conn) -> int:
+    """Create every model-declared index the live schema lacks."""
+    insp = inspect(conn)
+    existing_tables = set(insp.get_table_names())
+    created = 0
+    for table in Base.metadata.sorted_tables:
+        if table.name not in existing_tables:
+            continue
+        have = {i["name"] for i in insp.get_indexes(table.name)}
+        for index in table.indexes:
+            if index.name in have:
+                continue
+            try:
+                conn.execute(CreateIndex(index, if_not_exists=True))
+                created += 1
+                logger.info("migration: created index %s", index.name)
+            except Exception as exc:  # noqa: BLE001
+                # An index is a performance affordance, not a correctness one.
+                # A driver that rejects one must not take the site down.
+                logger.warning("migration: could not create index %s: %s",
+                               index.name, exc)
+    return created
 
 
 def main(argv: list[str] | None = None) -> int:

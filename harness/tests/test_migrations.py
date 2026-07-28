@@ -195,6 +195,29 @@ def test_ensure_db_sequence_on_a_partially_migrated_database(legacy_db):
         assert len(rows) == 3
         assert all(r.scorer_version == LEGACY_VERSION for r in rows)
 
-    # And a second cold start costs nothing: no ALTER, no backfill write.
+    # And a second cold start costs nothing: no ALTER, no backfill, no index.
     with engine.begin() as conn:
-        assert migrate(conn) == {"columns_added": 0, "rows_backfilled": 0}
+        assert migrate(conn) == {"columns_added": 0, "rows_backfilled": 0,
+                                 "indexes_created": 0}
+
+
+def test_model_declared_indexes_are_created_on_an_existing_table(legacy_db):
+    """Indexes are derived from the models, not hand-listed.
+
+    This is not hypothetical: the first v1.2.1 deploy created only the composite
+    index, because `ix_scores_scorer_version` comes from `Column(index=True)` and
+    was absent from the hardcoded list — leaving production with a different
+    schema from any fresh clone, which is the drift the derived column set was
+    written to prevent.
+    """
+    from harness.db.models import Base
+
+    engine = _engine(legacy_db)
+    Base.metadata.create_all(engine)   # skips the existing scores table
+    with engine.begin() as conn:
+        migrate(conn)
+
+    declared = {i.name for i in Base.metadata.tables["scores"].indexes}
+    live = {r[1] for r in sqlite3.connect(legacy_db).execute(
+        "SELECT type, name FROM sqlite_master WHERE type='index' AND tbl_name='scores'")}
+    assert declared <= live, f"missing from the live schema: {declared - live}"
