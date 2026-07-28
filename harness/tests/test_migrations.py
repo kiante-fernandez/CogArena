@@ -167,3 +167,34 @@ def test_a_new_mapped_column_migrates_without_editing_this_module(legacy_db):
         assert "simplify_probe" in cols
     finally:
         Score.__table__._columns.remove(extra)
+
+
+def test_ensure_db_sequence_on_a_partially_migrated_database(legacy_db):
+    """create_all THEN migrate, which is what _ensure_db does on both paths.
+
+    This is the production scenario and the one the rest of the suite cannot
+    reach: `scores` already exists, so `create_all(checkfirst=True)` skips it
+    entirely and leaves it short two columns. Everything after that depends on
+    `migrate` noticing. The libsql/Turso branch runs exactly this against a sync
+    engine, so a sync engine is what this uses.
+    """
+    from sqlalchemy.orm import Session as OrmSession
+    from harness.db.models import Base
+
+    engine = _engine(legacy_db)
+    Base.metadata.create_all(engine)          # no-op on the existing scores table
+    with engine.begin() as conn:
+        summary = migrate(conn)
+
+    assert summary["columns_added"] == 2, "create_all cannot add columns; migrate must"
+    assert summary["rows_backfilled"] == 3
+
+    # The ORM emits an explicit column list, which is what breaks pre-migration.
+    with OrmSession(engine) as db:
+        rows = db.execute(select(Score)).scalars().all()
+        assert len(rows) == 3
+        assert all(r.scorer_version == LEGACY_VERSION for r in rows)
+
+    # And a second cold start costs nothing: no ALTER, no backfill write.
+    with engine.begin() as conn:
+        assert migrate(conn) == {"columns_added": 0, "rows_backfilled": 0}
