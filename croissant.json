@@ -52,7 +52,7 @@
   "datePublished": "2026-05-05",
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "url": "https://github.com/kiante-fernandez/CogArena",
-  "citeAs": "Fernandez, K., Chen, C., Zhou, J., Sadowski, B., Miceli, A. C., & Krajbich, I. (2026). CogArena: Benchmarking Multimodal Agents on Interactive Behavioral Experiments. NeurIPS 2026 Evaluations and Datasets Track (under review).",
+  "citeAs": "Fernandez, K., Chen, C., Zhou, J., Sadowski, B., Miceli, A. C., & Krajbich, I. (2026). CogArena: Benchmarking Multimodal Agents on Interactive Behavioral Experiments. In Advances in Neural Information Processing Systems (NeurIPS 2026), Evaluations and Datasets Track.",
   "keywords": [
     "benchmark",
     "multimodal agents",
