@@ -1,10 +1,10 @@
 # CogArena
 
-Claims about simulating cognitive capabilities of large language models are typically tested by translating behavioral paradigms into natural language prompts, bypassing the visual interfaces and time-pressured interactions that define how human participants actually engage with experiments. At the same time, recent demonstrations that AI agents can produce human-like response data on live online tasks raise concerns about the integrity of behavioral research conducted at scale.
+[![NeurIPS 2026](https://img.shields.io/badge/NeurIPS%202026-Evaluations%20%26%20Datasets%20Track-4b44ce)](#citation)
 
-CogArena is a benchmark of ten online experimental paradigms spanning the social and behavioral sciences. Agents interact with the experiments through a standard browser, processing screenshots of visual stimuli and responding under configurable deadlines. A three-level scoring pipeline evaluates task completion, performance accuracy normalized against literature-derived human baselines, and alignment with canonical task-specific signatures. Across frontier multimodal agents, we find that while most models complete the tasks, their behavior diverges from humans on the signatures these paradigms reliably elicit in people.
+> **Accepted at NeurIPS 2026.** CogArena will appear in the Evaluations and Datasets Track of the 40th Conference on Neural Information Processing Systems. See [Citation](#citation) below.
 
-CogArena provides the tasks, API, scoring pipeline, and a public leaderboard, and we plan to expand both the task set and agent coverage in future work.
+Claims about the cognitive capabilities of large language models are typically tested by translating behavioral paradigms into natural language prompts, bypassing the visual interfaces and time-pressured interactions through which human participants actually engage with experiments. In parallel, recent demonstrations that AI agents can produce human-like response data on live behavioral tasks raise concerns that online datasets used across the social and behavioral sciences are increasingly susceptible to contamination. We introduce CogArena, a benchmark of ten experimental paradigms drawn from social and behavioral science. Agents interact with the experiments through a standard browser, processing visual stimuli and responding under configurable deadlines. We designed a three-level scoring pipeline that evaluates task completion, performance accuracy, and alignment with canonical task-specific signatures. Across four economy-tier multimodal agents, each run ten times per task, we find that completing an experiment and reproducing its behavioral signatures are separable: agents that finish a task reproduce some of the signatures these paradigms reliably elicit in people and not others, and many attempted sessions do not yield complete data at all. A single pass with a frontier model suggests the gap narrows at higher model tiers without closing. CogArena provides the tasks, scoring pipeline, and a public leaderboard for ongoing community submissions.
 
 ## Live demo
 
@@ -49,22 +49,6 @@ Composite scores in [0, 100] use a fixed weighting:
 
 Signatures are tested with standard parametric methods (paired t-tests, proportion tests, Pearson correlations, interaction tests) against literature-derived effect sizes. Per-task signature specs live in `tasks/{task_id}/scoring/level3_signatures.json`; baselines are in `scoring/human_baselines/{task_id}.json`.
 
-## API
-
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/info` | Server info and endpoint inventory |
-| GET | `/api/tasks` | List all tasks with configuration |
-| POST | `/api/sessions` | Create an evaluation session |
-| GET | `/api/sessions/{id}` | Session status |
-| POST | `/api/data/{id}/{task_id}` | Submit trial data |
-| GET | `/api/data/{id}/{task_id}` | Retrieve raw trial data (for re-scoring) |
-| POST | `/api/evaluate/{id}` | Trigger scoring |
-| GET | `/api/results/{id}` | Scorecard with L1/L2/L3 + composite |
-| GET | `/api/leaderboard` | Ranked agent results; `?scorer_version=` selects an earlier scorer |
-
-OpenAPI docs at [`/docs`](https://cog-arena.vercel.app/docs) on the live site.
-
 ## Psych-101 / Psych-201 overlap
 
 Many CogArena tasks have direct counterparts in [Psych-101](https://huggingface.co/datasets/marcelbinz/Psych-101) or [Psych-201](https://github.com/marcelbinz/Psych-201), which enables direct comparison of LLM behavior in text-transcript vs. interactive-browser settings. A representative subset:
@@ -96,8 +80,10 @@ Full list in the task catalog.
 ## Citation
 
 ```bibtex
-@article{cogarena2026,
-  title={CogArena: Benchmarking Multimodal Agents on Interactive Cognitive Experiments},
-  year={2026}
+@inproceedings{cogarena2026,
+  title     = {{CogArena}: Benchmarking Multimodal Agents on Interactive Behavioral Experiments},
+  author    = {Fernandez, Kiant{\'e} and Chen, Caitlin and Zhou, Jialu and Sadowski, Bartek and Miceli, Anthony C. and Krajbich, Ian},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS 2026), Evaluations and Datasets Track},
+  year      = {2026}
 }
 ```
