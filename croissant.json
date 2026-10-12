@@ -81,10 +81,10 @@
       "@type": "cr:FileObject",
       "@id": "code-archive",
       "name": "code-archive",
-      "description": "Source code archive pinned to the v1.0.0 release tag (immutable; sha256 will not drift as main advances). Tasks, scoring pipeline, agents, and committed reference results.",
-      "contentUrl": "https://github.com/kiante-fernandez/CogArena/archive/refs/tags/v1.2.1.tar.gz",
+      "description": "Source code archive pinned to the v1.3.0 release tag (immutable; sha256 will not drift as main advances). Tasks, scoring pipeline, agents, and committed reference results.",
+      "contentUrl": "https://github.com/kiante-fernandez/CogArena/archive/refs/tags/v1.3.0.tar.gz",
       "encodingFormat": "application/x-tar",
-      "sha256": "8361afd0134937ede91e59d7edd78703225b1284b558a31ad6c706f6aaa87386"
+      "sha256": "e5a34d1431fcaa49b6531169d874cc573250b44e6d9c5ef9601980d600adf514"
     },
     {
       "@type": "cr:FileSet",
