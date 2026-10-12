@@ -57,7 +57,9 @@ class Score(Base):
     session_id = Column(String, ForeignKey("sessions.id"), nullable=False)
     task_id = Column(String, nullable=False)
     l1_completion = Column(Float, nullable=False)
-    l2_accuracy = Column(Float, nullable=False)
+    # NULL for a task with no Level 2 metrics (scoring/level2_accuracy.py).
+    # Existing databases were created NOT NULL; migrations.py relaxes it.
+    l2_accuracy = Column(Float, nullable=True)
     l3_behavioral = Column(Float, nullable=False)
     composite = Column(Float, nullable=False)
     details = Column(Text, nullable=True)
@@ -118,7 +120,7 @@ class AdminReviewRequest(BaseModel):
 class TaskScore(BaseModel):
     task_id: str
     l1_completion: float
-    l2_accuracy: float
+    l2_accuracy: float | None
     l3_behavioral: float
     composite: float
     details: dict | None = None
@@ -129,5 +131,5 @@ class ScorecardResponse(BaseModel):
     task_scores: list[TaskScore]
     composite_score: float
     l1_overall: float
-    l2_overall: float
+    l2_overall: float | None
     l3_overall: float

@@ -15,7 +15,7 @@
       "field": "player_cooperate",
       "condition_field": "prev_opp_coop_pd",
       "construct_type": "bias",
-      "bias_rationale": "Against a fixed tit-for-tat opponent in a finite-horizon PD, defection is the subgame-perfect equilibrium. Reciprocity is a human social preference, so an agent that defects throughout is playing the game-theoretic solution and is scored down for it."
+      "bias_rationale": "Against a fixed tit-for-tat opponent the agent faces a sequential decision problem, not a strategic game. With the 15-round horizon shown on screen, the payoff-maximizing policy cooperates in every round but the last and, after a defection, cooperates again at once, since retaliating costs R - P per round. Reciprocity (cooperating less after the opponent defects) therefore departs from the best response."
     },
     {
       "name": "above_chance_coordination_bos",
@@ -46,8 +46,7 @@
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
       "weight": 1.0,
-      "construct_type": "bias",
-      "bias_rationale": "Same finite-horizon argument: conditional cooperation is a social preference, not a capacity."
+      "construct_type": "capacity"
     },
     {
       "name": "round_rt_speedup",

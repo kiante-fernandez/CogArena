@@ -316,7 +316,12 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"   {name:28s} {mean:8.3f}  (sd {sd:.3f}, n={n})  [reference only]")
                 continue
             m = by_name.get(name)
-            if m is None or mean is None:
+            if mean is None:
+                continue
+            if m is None:
+                # A source rate no Level 2 metric scores any more (moral_machine,
+                # marbles_risk): still worth seeing, never written to the spec.
+                print(f"   {name:28s} {mean:8.3f}  (sd {sd:.3f}, n={n})  [reference only]")
                 continue
             cur = m.get("human_mean")
             ok = cur is not None and abs(cur - mean) <= _tol(mean)

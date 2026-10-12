@@ -91,7 +91,7 @@ async function loadLeaderboard(version) {
                 <td class="px-4 py-3 text-gray-500">${esc(entry.scaffold || '—')}</td>
                 <td class="px-4 py-3 text-right font-bold">${entry.composite_score.toFixed(1)}</td>
                 <td class="px-4 py-3 text-right text-gray-500">${(entry.l1_overall * 100).toFixed(0)}%</td>
-                <td class="px-4 py-3 text-right text-gray-500">${(entry.l2_overall * 100).toFixed(0)}%</td>
+                <td class="px-4 py-3 text-right text-gray-500">${entry.l2_overall == null ? "&mdash;" : (entry.l2_overall * 100).toFixed(0) + "%"}</td>
                 <td class="px-4 py-3 text-right text-gray-500">${(entry.l3_overall * 100).toFixed(0)}%</td>
                 <td class="px-4 py-3 text-right text-gray-500">${entry.tasks_completed}/${totalTasks}</td>
                 <td class="px-4 py-3 text-right text-gray-500">${entry.sessions_scored ?? '—'}</td>

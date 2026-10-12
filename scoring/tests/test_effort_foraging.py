@@ -25,12 +25,14 @@ def test_l1_completion_random(random_effort_foraging_data, effort_foraging_confi
     assert result["score"] == 1.0
 
 
-def test_l2_humanlike_recovers_residence_gradient(human_like_effort_foraging_data):
+def test_l2_scores_only_performance(human_like_effort_foraging_data):
+    """Stay rate and residence times are not scored: more staying is better only
+    up to the MVT optimum, so they rewarded over-harvesting. The residence
+    gradient is a Level 3 signature (travel_cost_residence_effect)."""
     metrics = _load_spec("level2_metrics.json")
     result = score_accuracy(human_like_effort_foraging_data, metrics)
     vals = {m["name"]: m["raw_value"] for m in result["metrics"]}
-    # Headline MVT prediction: longer residence in high-cost than low-cost.
-    assert vals["mean_residence_time_high"] > vals["mean_residence_time_low"]
+    assert set(vals) == {"total_reward", "mvt_optimal_match_rate"}
     # MVT match should beat chance.
     assert vals["mvt_optimal_match_rate"] > 0.5
 

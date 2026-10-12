@@ -55,7 +55,8 @@ SOURCES: dict[str, dict] = {
         "citation": "Ciranka, S. & van den Bos, W. (2025), Communications Psychology 3:137, "
                     "doi:10.1038/s44271-025-00314-6; archive doi:10.5281/zenodo.16738297",
         "scale": "23,887 trials, n=166",
-        "supplies": "prop_chose_higher_ev",
+        # Reference only since v1.3: marbles_risk has no Level 2 metrics.
+        "supplies": "prop_chose_higher_ev (reference rate; not scored)",
     },
     "moral_machine": {
         "file": "awad_2018_moral_machine_amce_fig2a.csv",
@@ -65,8 +66,9 @@ SOURCES: dict[str, dict] = {
                     "OSF osf.io/3hvt2, Datasets/Moral Machine Effect Sizes/plotdatamain.rdata",
         "derived": True,
         "scale": "Figure 2a source data, n = 35.2M decisions",
+        # Reference only since v1.3: moral_machine has no Level 2 metrics.
         "supplies": "prop_utilitarian, prop_save_young, prop_save_human, prop_save_legal, "
-                    "prop_intervention",
+                    "prop_intervention (reference rates; not scored)",
     },
     "serial_recall_v2": {
         "file": "haridi_2025_serial_recall_exp1.csv",
@@ -110,8 +112,11 @@ SOURCES: dict[str, dict] = {
                     "Neurosci 15(4):837-853",
         "derived": True,
         "scale": "350,608 decisions, n=537",
+        # Reference only since v1.3: stay rate and residence times are not scored
+        # (more staying is better only up to the MVT optimum).
         "supplies": "prop_stay_overall (direct); mean_residence_time_low/high (calibrated "
-                    "to this port's MVT optimum, see the baseline note)",
+                    "to this port's MVT optimum, see the baseline note); reference rates, "
+                    "not scored",
     },
     "tiny_alchemy": {
         "file": "brandle_2023_tiny_alchemy_human.csv",

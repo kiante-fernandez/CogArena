@@ -35,14 +35,14 @@ def test_editing_a_human_baseline_changes_the_version(tmp_path, monkeypatch):
     """The case that a code-only version string would miss."""
     before = scorer_version()
 
-    real = version_mod.TASKS_DIR / "marbles_risk" / "scoring" / "level2_metrics.json"
+    real = version_mod.TASKS_DIR / "grid_bandit" / "scoring" / "level2_metrics.json"
     spec = json.loads(real.read_text())
     # Perturb whatever the first human_mean is, wherever it lives.
     dumped = json.dumps(spec)
     assert "human_mean" in dumped, "fixture assumption: L2 specs carry human_mean"
 
     fake_tasks = tmp_path / "tasks"
-    (fake_tasks / "marbles_risk" / "scoring").mkdir(parents=True)
+    (fake_tasks / "grid_bandit" / "scoring").mkdir(parents=True)
     for task_id in version_mod.scorable_tasks():
         src = version_mod.TASKS_DIR / task_id / "scoring"
         dst = fake_tasks / task_id / "scoring"
@@ -51,9 +51,9 @@ def test_editing_a_human_baseline_changes_the_version(tmp_path, monkeypatch):
             if (src / name).exists():
                 (dst / name).write_text((src / name).read_text())
 
-    mutated = json.loads((fake_tasks / "marbles_risk" / "scoring" / "level2_metrics.json").read_text())
+    mutated = json.loads((fake_tasks / "grid_bandit" / "scoring" / "level2_metrics.json").read_text())
     mutated["_baseline_audit_marker"] = "changed"
-    (fake_tasks / "marbles_risk" / "scoring" / "level2_metrics.json").write_text(json.dumps(mutated))
+    (fake_tasks / "grid_bandit" / "scoring" / "level2_metrics.json").write_text(json.dumps(mutated))
 
     monkeypatch.setattr(version_mod, "TASKS_DIR", fake_tasks)
     clear_caches()

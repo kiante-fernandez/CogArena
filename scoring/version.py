@@ -51,7 +51,7 @@ BASELINES_DIR = SCORING_DIR / "human_baselines"
 # Human-readable series. Bump for headline scoring releases; the digest catches
 # everything else. Keep this in step with pyproject.toml, croissant.json and
 # harness/server.py:APP_VERSION — those four have historically disagreed.
-SCORER_SERIES = "1.2.1"
+SCORER_SERIES = "1.3.0"
 
 # Rows written before versioning existed. Not a version: it asserts only "we do
 # not know what produced this", and must never be compared against a real one.

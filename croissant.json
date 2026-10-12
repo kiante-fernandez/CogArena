@@ -48,7 +48,7 @@
   "name": "CogArena",
   "description": "CogArena v1: a benchmark of ten interactive jsPsych behavioral experiments for evaluating multimodal AI agents through a real browser, with three-level scoring (completion, accuracy vs. literature-derived human baselines, and behavioral signatures via statistical tests).",
   "conformsTo": "http://mlcommons.org/croissant/1.0",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "datePublished": "2026-05-05",
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "url": "https://github.com/kiante-fernandez/CogArena",

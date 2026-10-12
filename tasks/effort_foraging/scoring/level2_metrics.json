@@ -1,5 +1,6 @@
 {
   "task_id": "effort_foraging",
+  "note": "prop_stay_overall, mean_residence_time_low and mean_residence_time_high were removed in v1.3. Level 2 scores exceeding the human mean as better, but under the marginal value theorem staying longer is better only up to the optimum, so those three rewarded over-harvesting: agents that almost never left a patch scored highest on them. Performance is scored by total_reward and mvt_optimal_match_rate; whether residence tracks travel cost as in people is tested at Level 3 (travel_cost_residence_effect). The source-study stay rate remains in scoring/human_baselines/effort_foraging.json for reference.",
   "metrics": [
     {
       "name": "total_reward",
@@ -11,43 +12,6 @@
       },
       "human_mean": 32,
       "human_sd": 10
-    },
-    {
-      "name": "prop_stay_overall",
-      "description": "Proportion of decisions that were STAY across both blocks (uses derived boolean is_stay field). MVT-following humans typically stay more often than random (~0.6-0.8 across patches before leaving).",
-      "type": "proportion_correct",
-      "field": "is_stay",
-      "filter": {
-        "timed_out": false
-      },
-      "human_mean": 0.871,
-      "human_sd": 0.075
-    },
-    {
-      "name": "mean_residence_time_low",
-      "description": "Average number of consecutive STAY decisions per patch in the LOW-COST block. Lower under MVT because cheap travel encourages early leaving.",
-      "type": "mean",
-      "field": "harvests_stayed_in_patch",
-      "filter": {
-        "timed_out": false,
-        "block_condition": "low_cost",
-        "action": "leave"
-      },
-      "human_mean": 4.5,
-      "human_sd": 2.3
-    },
-    {
-      "name": "mean_residence_time_high",
-      "description": "Average number of consecutive STAY decisions per patch in the HIGH-COST block. Higher under MVT because expensive travel discourages leaving.",
-      "type": "mean",
-      "field": "harvests_stayed_in_patch",
-      "filter": {
-        "timed_out": false,
-        "block_condition": "high_cost",
-        "action": "leave"
-      },
-      "human_mean": 6.3,
-      "human_sd": 3.1
     },
     {
       "name": "mvt_optimal_match_rate",

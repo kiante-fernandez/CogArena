@@ -541,3 +541,47 @@ async def test_leaderboard_averages_repeats_rather_than_taking_the_best(
     assert entries[0]["composite_score"] == pytest.approx(round(expected_mean, 2))
     if best_of_n != expected_mean:  # only meaningful when the repeats differ
         assert entries[0]["composite_score"] != pytest.approx(round(best_of_n, 2))
+
+
+async def test_task_without_level2_scores_null_and_drops_out_of_the_l2_mean(
+    client: AsyncClient, monkeypatch
+):
+    """moral_machine has no Level 2 metrics, so its L2 is null rather than 0.
+
+    A zero would drag every model's L2 mean down for a task on which accuracy
+    is undefined. The null has to survive the NOT NULL column it replaced, the
+    scorecard, the admin list and the leaderboard, and the task's composite
+    must still sit on the 0-100 scale.
+    """
+    from scoring.tests.conftest import _generate_moral_machine_trials
+
+    monkeypatch.setattr("harness.server.SHOW_ALL_TASKS", True)
+    resp = await client.post("/api/sessions",
+                             json={"agent_name": "pref-agent", "model_name": "pref-model"})
+    session_id = resp.json()["session_id"]
+    for task_id, trials in (("stroop", _make_stroop_trials()),
+                            ("moral_machine", _generate_moral_machine_trials(
+                                p_utilitarian=0.8, p_save_young=0.75, p_save_human=0.9,
+                                p_save_legal=0.65, p_intervention=0.4))):
+        resp = await client.post(f"/api/data/{session_id}/{task_id}",
+                                 json={"trial_data": trials})
+        assert resp.status_code == 200, resp.text
+    assert (await client.post(f"/api/evaluate/{session_id}")).status_code == 200
+
+    results = (await client.get(f"/api/results/{session_id}")).json()
+    by_task = {t["task_id"]: t for t in results["task_scores"]}
+    mm, stroop = by_task["moral_machine"], by_task["stroop"]
+    assert mm["l2_accuracy"] is None
+    assert stroop["l2_accuracy"] is not None
+    assert results["l2_overall"] == pytest.approx(round(stroop["l2_accuracy"], 4))
+    assert mm["composite"] == pytest.approx(
+        round(100 * (0.15 * mm["l1_completion"] + 0.50 * mm["l3_behavioral"]) / 0.65, 2))
+
+    await client.post(f"/api/admin/submissions/{session_id}/approve",
+                      headers={"X-Admin-Key": "test-key"})
+    entry, = (await client.get("/api/leaderboard")).json()["entries"]
+    assert entry["l2_overall"] == pytest.approx(round(stroop["l2_accuracy"], 4))
+    subs = (await client.get("/api/admin/submissions",
+                             headers={"X-Admin-Key": "test-key"})).json()
+    sub = next(s for s in subs["submissions"] if s["session_id"] == session_id)
+    assert sub["l2_overall"] == pytest.approx(round(stroop["l2_accuracy"], 4))

@@ -2,6 +2,49 @@
 
 Versions are git tags; the Croissant `code-archive` URL pins to the most recent.
 
+## v1.3.0 — 2026-10-12
+
+Level 2 now scores only performance. Camera-ready revision for NeurIPS 2026.
+
+Level 2 maps each metric through a monotonic CDF, so exceeding the human mean
+always scores higher. That is right for accuracy and wrong for anything with no
+better direction, and three groups of metrics had none:
+- `tasks/moral_machine/`: all five Level 2 metrics removed. They were moral
+  preferences, so an agent more extreme than people outscored them, and each
+  preference was counted twice (here and as its Level 3 signature).
+- `tasks/marbles_risk/`: `prop_chose_higher_ev` removed. It treated risk
+  neutrality as correct; expected utility leaves risk attitude open.
+- `tasks/effort_foraging/`: `prop_stay_overall` and both
+  `mean_residence_time_*` removed. Staying is better only up to the MVT optimum,
+  so these rewarded over-harvesting: agents stayed on 96% of decisions and
+  scored 0.89 on the stay rate while matching the MVT choice less often than
+  random play.
+The patterns themselves are still tested at Level 3. The source-study rates stay
+in `scoring/human_baselines/` as reference values.
+
+A task with no Level 2 metrics now has no Level 2 (`None`), not a Level 2 of 0:
+- `scoring/composite_score.py`: such a task's composite splits the L2 weight
+  over L1 and L3 in proportion (`effective_weights`), keeping the 0-100 scale.
+  Analysis scripts reuse the same rule.
+- `harness/db/`: `scores.l2_accuracy` is nullable. `migrate` rebuilds a table
+  whose live schema still has NOT NULL on a column the models declare nullable,
+  so existing databases (including production) migrate on the next cold start.
+- Scorecard, admin list and leaderboard means skip a missing L2; the UI shows a
+  dash. CLI scorecards print `n/a`.
+
+Signature labels (`construct_type`), no score change:
+- `repeated_games/cooperation_when_opp_cooperated` is a capacity. Against a fixed
+  tit-for-tat opponent over a known 15-round horizon, the best response
+  cooperates every round but the last.
+- `marbles_risk/magnitude_effect_high_payoff` is a capacity (choice rising with
+  payoff at matched probability, which expected utility requires);
+  `above_chance_ev_optimal` is a bias (risk neutrality).
+
+Effect on the archive, all 578 sessions re-scored, no agent re-runs: L1, L3 and
+measurability unchanged in every row. Panel mean L2 over measurable sessions
+0.439 -> 0.345 (floor 0.139 -> 0.159); composite 53.0 -> 52.0 (floor 29.05 ->
+31.31). Model ranking identical under every convention and weighting.
+
 ## v1.2.0 — 2026-07-25
 
 Rebuttal revision for NeurIPS 2026. Full record with per-change measured effects

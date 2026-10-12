@@ -490,7 +490,8 @@ def _print_scorecard(agent_name: str, results: dict[str, Any]) -> None:
     print("=" * 65)
     print(f"  Composite Score:    {results.get('composite_score', 0):.2f} / 100")
     print(f"  L1 Completion:      {results.get('l1_overall', 0):.4f}")
-    print(f"  L2 Accuracy:        {results.get('l2_overall', 0):.4f}")
+    l2 = results.get('l2_overall')
+    print(f"  L2 Accuracy:        {'n/a' if l2 is None else format(l2, '.4f')}")
     print(f"  L3 Behavioral:      {results.get('l3_overall', 0):.4f}")
     task_scores = results.get("task_scores") or []
     if task_scores:
@@ -501,6 +502,6 @@ def _print_scorecard(agent_name: str, results: dict[str, Any]) -> None:
             tid = t.get("task_id", "?")
             print(f"  {tid:<24} {t.get('composite', 0):>9.2f}"
                   f" {t.get('l1_completion', 0):>6.2f}"
-                  f" {t.get('l2_accuracy', 0):>6.2f}"
+                  f" {'n/a' if t.get('l2_accuracy') is None else format(t['l2_accuracy'], '.2f'):>6}"
                   f" {t.get('l3_behavioral', 0):>6.2f}")
     print("=" * 65)

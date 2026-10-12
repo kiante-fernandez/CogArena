@@ -28,7 +28,8 @@
       "threshold_p": 0.05,
       "expected_direction": "above_chance",
       "weight": 1.5,
-      "construct_type": "capacity"
+      "construct_type": "bias",
+      "bias_rationale": "Choosing the higher-expected-value option is what a risk-neutral decision-maker does. Expected-utility theory, the normative standard for risky choice, does not fix risk attitude, so a risk-averse agent that prefers the sure option is not making an error."
     },
     {
       "name": "magnitude_effect_high_payoff",
@@ -42,8 +43,7 @@
       "threshold_p": 0.05,
       "expected_direction": "positive",
       "weight": 1.0,
-      "construct_type": "bias",
-      "bias_rationale": "Payoff magnitude shifting risk preference is a documented human departure from expected-value maximisation. An agent whose choices are magnitude-invariant is closer to EV-rational, not worse."
+      "construct_type": "capacity"
     },
     {
       "name": "ev_difference_rt_effect",

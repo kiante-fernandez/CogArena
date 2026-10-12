@@ -58,10 +58,14 @@ def score_accuracy(trial_data: list[dict], metrics_spec: dict) -> dict:
             "normalized_score": normalized,
         })
 
+    # A task with no Level 2 metrics has no Level 2, not a Level 2 of zero. Its
+    # composite is taken over L1 and L3 (scoring/composite_score.py) and model
+    # means skip it. moral_machine and marbles_risk are such tasks: everything
+    # they record is a preference, which has no better direction to score.
     if metric_results:
         score = float(np.mean([m["normalized_score"] for m in metric_results]))
     else:
-        score = 0.0
+        score = None
 
     return {"score": score, "metrics": metric_results}
 

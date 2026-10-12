@@ -24,15 +24,12 @@ def test_l1_completion_random(random_marbles_risk_data, marbles_risk_config):
     assert result["score"] == 1.0
 
 
-def test_l2_humanlike_picks_higher_ev(human_like_marbles_risk_data):
-    metrics = _load_spec("level2_metrics.json")
-    result = score_accuracy(human_like_marbles_risk_data, metrics)
-    vals = {m["name"]: m["raw_value"] for m in result["metrics"]}
-    # Humanlike fixture should pick the higher-EV option more than chance.
-    # The absolute prop_chose_risky is hard to predict because most v1 trials
-    # have positive ev_diff (EV-rational picks risky on most of them), so we
-    # don't assert direction on prop_chose_risky.
-    assert vals["prop_chose_higher_ev"] > 0.6
+def test_l2_is_undefined_because_ev_choice_is_a_risk_preference(human_like_marbles_risk_data):
+    """The higher-EV choice rate treats risk neutrality as correct, which expected
+    utility does not, so this task has no Level 2. The rate is tested at Level 3
+    as above_chance_ev_optimal, labelled a bias."""
+    result = score_accuracy(human_like_marbles_risk_data, _load_spec("level2_metrics.json"))
+    assert result == {"score": None, "metrics": []}
 
 
 def test_l3_humanlike_recovers_signatures(human_like_marbles_risk_data):

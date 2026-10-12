@@ -24,18 +24,12 @@ def test_l1_completion_random(random_moral_machine_data, moral_machine_config):
     assert result["score"] == 1.0
 
 
-def test_l2_humanlike_recovers_preferences(human_like_moral_machine_data):
-    metrics = _load_spec("level2_metrics.json")
-    result = score_accuracy(human_like_moral_machine_data, metrics)
-    vals = {m["name"]: m["raw_value"] for m in result["metrics"]}
-    # Each canonical preference fires above chance.
-    assert vals["prop_utilitarian"] > 0.5
-    assert vals["prop_save_young"] > 0.5
-    assert vals["prop_save_human"] > 0.5
-    # Legality and intervention have small effects and few trials per dimension;
-    # require only that the direction is at least at chance, not statistically above.
-    assert vals["prop_save_legal"] >= 0.5
-    assert vals["prop_intervention"] <= 0.55
+def test_l2_is_undefined_because_every_metric_is_a_preference(human_like_moral_machine_data):
+    """Level 2 scores accuracy, where exceeding the human mean is better. A moral
+    preference has no better direction, so this task has no Level 2 at all and
+    its preferences are tested only at Level 3 (below)."""
+    result = score_accuracy(human_like_moral_machine_data, _load_spec("level2_metrics.json"))
+    assert result == {"score": None, "metrics": []}
 
 
 def test_l3_humanlike_recovers_signatures(human_like_moral_machine_data):

@@ -1,17 +1,5 @@
 {
   "task_id": "marbles_risk",
-  "metrics": [
-    {
-      "name": "prop_chose_higher_ev",
-      "description": "On trials where one option has a clearly higher expected value, proportion of trials where the agent picked the higher-EV option. Random ~0.50; humans typically 0.70-0.80. (The previous prop_chose_risky metric, with baseline 0.45, was dropped in the v1.1 audit because random play (~0.50) was within one SD of its baseline and the metric could not discriminate random from risk-averse human play.)",
-      "type": "proportion_correct",
-      "field": "chose_higher_ev",
-      "filter": {
-        "timed_out": false,
-        "has_clear_better": true
-      },
-      "human_mean": 0.728,
-      "human_sd": 0.127
-    }
-  ]
+  "note": "No Level 2 metrics. The task's only metric was the rate of higher-expected-value choices, which treats risk neutrality as correct; expected-utility theory, the normative standard for risky choice, does not fix risk attitude, so a risk-averse agent choosing the sure option makes no error. The pattern is tested at Level 3 (above_chance_ev_optimal, construct_type bias). The source-study rate remains in scoring/human_baselines/marbles_risk.json for reference.",
+  "metrics": []
 }

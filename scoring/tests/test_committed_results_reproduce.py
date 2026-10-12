@@ -83,6 +83,13 @@ def _archived_trials(artifacts, task_id):
     return trials or None
 
 
+def _differs(stored: str, now) -> bool:
+    """A blank cell is a task with no Level 2; it matches None and nothing else."""
+    if now is None or stored == "":
+        return not (now is None and stored == "")
+    return abs(float(stored) - now) > TOLERANCE
+
+
 @pytest.mark.parametrize("label", RESULT_DIRS)
 def test_committed_runs_csv_matches_current_scorer(label):
     csv_path = REPO_ROOT / "results" / label / "runs.csv"
@@ -109,8 +116,8 @@ def test_committed_runs_csv_matches_current_scorer(label):
             "l2": result["l2"]["score"],
             "l3": result["l3"]["score"],
         }
-        diff = {k: (float(row[k]), round(v, 4))
-                for k, v in now.items() if abs(float(row[k]) - v) > TOLERANCE}
+        diff = {k: (row[k], v if v is None else round(v, 4))
+                for k, v in now.items() if _differs(row[k], v)}
         if diff:
             moved.append(f"{row['model_id']}/{row['task_id']} {diff}")
 

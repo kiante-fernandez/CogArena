@@ -36,6 +36,11 @@ TASKS_DIR = REPO_ROOT / "tasks"
 logger = logging.getLogger("rescore")
 
 
+def _mean_or_none(values: list) -> float | None:
+    vals = [v for v in values if v is not None]
+    return sum(vals) / len(vals) if vals else None
+
+
 def _rescore_session(artifacts: Path) -> dict[str, Any] | None:
     trial_dir = artifacts / "trial_data"
     if not trial_dir.exists():
@@ -66,7 +71,8 @@ def _rescore_session(artifacts: Path) -> dict[str, Any] | None:
         "task_scores": task_scores,
         "composite_score": sum(t["composite"] for t in task_scores) / len(task_scores),
         "l1_overall": sum(t["l1_completion"] for t in task_scores) / len(task_scores),
-        "l2_overall": sum(t["l2_accuracy"] for t in task_scores) / len(task_scores),
+        # None for a task with no Level 2 metrics; such tasks drop out of the mean.
+        "l2_overall": _mean_or_none([t["l2_accuracy"] for t in task_scores]),
         "l3_overall": sum(t["l3_behavioral"] for t in task_scores) / len(task_scores),
     }
     out_path = artifacts / "score.json"
@@ -223,7 +229,7 @@ def _process_sweep(sweep_dir: Path) -> Path | None:
             **agg_row,
             "composite": f"{ts['composite']:.2f}",
             "l1": f"{ts['l1_completion']:.4f}",
-            "l2": f"{ts['l2_accuracy']:.4f}",
+            "l2": "" if ts["l2_accuracy"] is None else f"{ts['l2_accuracy']:.4f}",
             "l3": f"{ts['l3_behavioral']:.4f}",
         }
         rescored += 1

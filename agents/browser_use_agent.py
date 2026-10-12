@@ -426,14 +426,15 @@ async def _run_all_tasks_inner(
         print(f"{'=' * 65}")
         print(f"  Composite Score:    {results['composite_score']:.2f} / 100")
         print(f"  L1 Completion:      {results['l1_overall']:.4f}")
-        print(f"  L2 Accuracy:        {results['l2_overall']:.4f}")
+        l2 = results['l2_overall']
+        print(f"  L2 Accuracy:        {'n/a' if l2 is None else format(l2, '.4f')}")
         print(f"  L3 Behavioral:      {results['l3_overall']:.4f}")
         print(f"{'-' * 65}")
         print(f"  {'Task':<22s} {'Composite':>9s} {'L1':>6s} {'L2':>6s} {'L3':>6s}")
         print(f"  {'-'*22} {'-'*9} {'-'*6} {'-'*6} {'-'*6}")
         for ts in sorted(results["task_scores"], key=lambda t: t["task_id"]):
             print(f"  {ts['task_id']:<22s} {ts['composite']:>9.2f} "
-                  f"{ts['l1_completion']:>6.2f} {ts['l2_accuracy']:>6.2f} "
+                  f"{ts['l1_completion']:>6.2f} {'n/a' if ts['l2_accuracy'] is None else format(ts['l2_accuracy'], '.2f'):>6} "
                   f"{ts['l3_behavioral']:>6.2f}")
         print(f"{'=' * 65}")
 

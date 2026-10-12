@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td class="px-4 py-3 text-gray-500">${esc(sub.scaffold || '\u2014')}</td>
                     <td class="px-4 py-3 text-right font-bold">${sub.composite_score.toFixed(1)}</td>
                     <td class="px-4 py-3 text-right text-gray-500">${(sub.l1_overall * 100).toFixed(0)}%</td>
-                    <td class="px-4 py-3 text-right text-gray-500">${(sub.l2_overall * 100).toFixed(0)}%</td>
+                    <td class="px-4 py-3 text-right text-gray-500">${sub.l2_overall == null ? "&mdash;" : (sub.l2_overall * 100).toFixed(0) + "%"}</td>
                     <td class="px-4 py-3 text-right text-gray-500">${(sub.l3_overall * 100).toFixed(0)}%</td>
                     <td class="px-4 py-3 text-right text-gray-500">${sub.tasks_completed}</td>
                     <td class="px-4 py-3">${statusBadge(sub.approved)}</td>

@@ -62,7 +62,7 @@ The `harness` CLI sets `ANONYMIZED_TELEMETRY=false` by default to disable Browse
 1. Client `POST /api/sessions` → `SessionManager` mints a `session_id`.
 2. Agent navigates to `/{task_id}?session={id}`. The task's `index.html` loads jsPsych + `static/js/incremental_save.js`, which wraps `initJsPsych` to PATCH `/api/data/{session_id}/{task_id}` every 10 trials. Final POST submits the full dataset.
 3. `POST /api/evaluate/{session_id}` triggers `scoring.score_session.score_task` for each completed task.
-4. Composite score = `0.15·L1 + 0.35·L2 + 0.50·L3` (see `scoring/composite_score.py`).
+4. Composite score = `0.15·L1 + 0.35·L2 + 0.50·L3` (see `scoring/composite_score.py`). A task with no Level 2 metrics (moral_machine, marbles_risk) has L2 = None and splits that weight over L1 and L3 in proportion; Level 2 holds only metrics where exceeding the human mean is better performance.
 
 ### Scoring pipeline (`scoring/`)
 Three independent levels read per-task spec files in `tasks/{task_id}/scoring/`:

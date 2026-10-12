@@ -55,7 +55,8 @@ Source: Zenodo doi:[10.5281/zenodo.16738297](https://doi.org/10.5281/zenodo.1673
 → `DevelopingMarbles_zenodo/A_raw_data/TidyMarbleNew.csv` · 23,887 trials, n=166
 · Licence: CC-BY (Zenodo record)
 
-Supplies `prop_chose_higher_ev`, computed from `valueGamble × probGamble` against
+Supplies the reference rate `prop_chose_higher_ev` (not scored since v1.3, when
+marbles_risk's Level 2 was removed as a risk-neutrality preference), computed from `valueGamble × probGamble` against
 `valueSure`. Sample is ages 10–26; adults 18+ give 0.725 against the full
 sample's 0.728, so the developmental spread does not bias this metric.
 
@@ -87,7 +88,8 @@ attribute by the file rather than by inferring an order:
 | Intervention | 0.060556 | 0.000355 |
 
 Cross-check: the Fig 2 caption states the Age effect as 0.49, against the file's
-0.490328. Supplies all five `prop_*` metrics via `p = (1 + ΔP) / 2`. Not raw
+0.490328. Supplies all five `prop_*` reference rates (not scored since v1.3, when
+moral_machine's Level 2 was removed: every rate is a preference) via `p = (1 + ΔP) / 2`. Not raw
 trials — this is the published effect-size table, so the standard errors reflect
 n = 35.2M and are **not** usable as `human_sd` (between-person variation).
 
@@ -155,7 +157,9 @@ this copy keeps the 10 columns the derivation reads (`subject_id`,
 `start_reward_mean`, `round`) and is 28 MB. Row count and values are unchanged.
 Re-fetch the full file from the URL above if you need the other columns.
 
-Supplies `prop_stay_overall` directly. Residence times are *calibrated* rather
+Supplies `prop_stay_overall` directly, as a reference rate (not scored since v1.3:
+more staying is better only up to the MVT optimum, so Level 2 rewarded
+over-harvesting). Residence times are *calibrated* rather
 than transferred, because their travel duration is fixed at 8.33 s in both
 conditions while our port varies travel time 4 s vs 8 s — see the task note.
 

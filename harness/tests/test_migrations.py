@@ -198,7 +198,7 @@ def test_ensure_db_sequence_on_a_partially_migrated_database(legacy_db):
     # And a second cold start costs nothing: no ALTER, no backfill, no index.
     with engine.begin() as conn:
         assert migrate(conn) == {"columns_added": 0, "rows_backfilled": 0,
-                                 "indexes_created": 0}
+                                 "indexes_created": 0, "tables_rebuilt": 0}
 
 
 def test_model_declared_indexes_are_created_on_an_existing_table(legacy_db):
@@ -221,3 +221,76 @@ def test_model_declared_indexes_are_created_on_an_existing_table(legacy_db):
     live = {r[1] for r in sqlite3.connect(legacy_db).execute(
         "SELECT type, name FROM sqlite_master WHERE type='index' AND tbl_name='scores'")}
     assert declared <= live, f"missing from the live schema: {declared - live}"
+
+
+# The scores table as v1.2.1 deployed it: versioned, but l2_accuracy NOT NULL.
+# Copied from a live database rather than written from the model, because the
+# point is the state the model no longer describes.
+_V121_DDL = [
+    """CREATE TABLE sessions (
+        id VARCHAR NOT NULL, agent_name VARCHAR NOT NULL, scaffold VARCHAR,
+        model_name VARCHAR, observation_mode VARCHAR, status VARCHAR NOT NULL,
+        approved BOOLEAN, reviewed_by VARCHAR, review_notes TEXT,
+        reviewed_at DATETIME, created_at DATETIME, updated_at DATETIME,
+        PRIMARY KEY (id))""",
+    """CREATE TABLE scores (
+        id INTEGER NOT NULL,
+        session_id VARCHAR NOT NULL,
+        task_id VARCHAR NOT NULL,
+        l1_completion FLOAT NOT NULL,
+        l2_accuracy FLOAT NOT NULL,
+        l3_behavioral FLOAT NOT NULL,
+        composite FLOAT NOT NULL,
+        details TEXT,
+        scored_at DATETIME, scorer_version VARCHAR, spec_digest VARCHAR,
+        PRIMARY KEY (id),
+        FOREIGN KEY(session_id) REFERENCES sessions (id))""",
+    "CREATE INDEX ix_scores_session_task_version ON scores (session_id, task_id, scorer_version)",
+    "CREATE INDEX ix_scores_scorer_version ON scores (scorer_version)",
+]
+
+
+def test_migrate_relaxes_l2_not_null_and_keeps_every_row(tmp_path):
+    """A task with no Level 2 metrics writes NULL; v1.2.1 databases refuse it."""
+    from sqlalchemy.orm import Session as OrmSession
+
+    path = tmp_path / "v121.db"
+    raw = sqlite3.connect(path)
+    for ddl in _V121_DDL:
+        raw.execute(ddl)
+    raw.executemany(
+        "INSERT INTO scores (id, session_id, task_id, l1_completion, l2_accuracy,"
+        " l3_behavioral, composite, details, scorer_version) VALUES (?,?,?,?,?,?,?,?,?)",
+        [(7, "s", "stroop", 1.0, 0.25, 0.5, 50.0, "{}", "1.2.1-aaaaaaaaaaaa"),
+         (9, "s", "moral_machine", 1.0, 0.75, 1.0, 90.0, None, "1.2.1-aaaaaaaaaaaa")])
+    raw.commit()
+    raw.close()
+
+    engine = _engine(path)
+    with engine.begin() as conn:
+        summary = migrate(conn)
+    assert summary["tables_rebuilt"] == 1
+    assert summary["columns_added"] == 0
+
+    with engine.begin() as conn:
+        rows = conn.execute(text(
+            "SELECT id, task_id, l2_accuracy, composite, scorer_version FROM scores ORDER BY id")).all()
+        notnull = {r[1]: r[3] for r in conn.execute(text("PRAGMA table_info(scores)")).all()}
+        indexes = {r[0] for r in conn.execute(text(
+            "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='scores'")).all()}
+    assert [tuple(r) for r in rows] == [(7, "stroop", 0.25, 50.0, "1.2.1-aaaaaaaaaaaa"),
+                                        (9, "moral_machine", 0.75, 90.0, "1.2.1-aaaaaaaaaaaa")]
+    assert notnull["l2_accuracy"] == 0
+    assert notnull["l1_completion"] == 1, "only the relaxed column changes"
+    assert {"ix_scores_session_task_version", "ix_scores_scorer_version"} <= indexes
+
+    with OrmSession(engine) as db:
+        db.add(Score(session_id="s", task_id="marbles_risk", l1_completion=1.0,
+                     l2_accuracy=None, l3_behavioral=0.5, composite=61.54,
+                     details="{}", scorer_version="1.3.0-bbbbbbbbbbbb"))
+        db.commit()
+        new = db.execute(select(Score).where(Score.task_id == "marbles_risk")).scalar_one()
+        assert new.l2_accuracy is None and new.id == 10, "ids continue past the copied rows"
+
+    with engine.begin() as conn:
+        assert migrate(conn)["tables_rebuilt"] == 0, "steady state must not rebuild again"

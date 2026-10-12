@@ -32,8 +32,8 @@ import argparse
 import logging
 import sys
 
-from sqlalchemy import inspect, text
-from sqlalchemy.schema import CreateColumn, CreateIndex
+from sqlalchemy import MetaData, inspect, text
+from sqlalchemy.schema import CreateColumn, CreateIndex, CreateTable
 
 from harness.db.models import Base
 from scoring.version import LEGACY_VERSION
@@ -52,19 +52,50 @@ _BACKFILLS = {
 # with a different schema from any fresh clone.
 
 
-def _missing_columns(conn) -> list[tuple[str, object]]:
-    """Mapped columns absent from the live schema, as (table, Column)."""
+def _drift(conn) -> tuple[list[tuple[str, object]], list[str]]:
+    """How the live schema differs from the models, from one reflection.
+
+    Returns the mapped columns absent from the live schema, as (table, Column),
+    and the names of tables holding a column the models declare nullable but
+    the live schema still has NOT NULL. ``scores.l2_accuracy`` is the first
+    such column: a task with no Level 2 metrics scores NULL there.
+    """
     insp = inspect(conn)
     existing_tables = set(insp.get_table_names())
-    out = []
+    missing, relax = [], []
     for table in Base.metadata.sorted_tables:
         if table.name not in existing_tables:
             continue  # create_all will make it whole
-        have = {c["name"] for c in insp.get_columns(table.name)}
+        live = {c["name"]: c["nullable"] for c in insp.get_columns(table.name)}
         for col in table.columns:
-            if col.name not in have:
-                out.append((table.name, col))
-    return out
+            if col.name not in live:
+                missing.append((table.name, col))
+        if any(col.nullable and live.get(col.name) is False for col in table.columns
+               if not col.primary_key):
+            relax.append(table.name)
+    return missing, relax
+
+
+def _rebuild_table(conn, name: str) -> None:
+    """Recreate table `name` from its model, keeping every row.
+
+    SQLite cannot drop a NOT NULL constraint in place, so this is the standard
+    rebuild: create the new shape under a temporary name, copy, drop, rename.
+    The old table's indexes go with it; _create_missing_indexes recreates them
+    from the models. Copying the whole metadata lets foreign keys resolve.
+    """
+    meta = MetaData()
+    for t in Base.metadata.sorted_tables:
+        t.to_metadata(meta)
+    tmp = f"{name}__rebuild"
+    new = Base.metadata.tables[name].to_metadata(meta, name=tmp)
+    conn.execute(text(f"DROP TABLE IF EXISTS {tmp}"))  # a crashed earlier attempt
+    conn.execute(CreateTable(new))
+    live = {c["name"] for c in inspect(conn).get_columns(name)}
+    cols = ", ".join(c.name for c in new.columns if c.name in live)
+    conn.execute(text(f"INSERT INTO {tmp} ({cols}) SELECT {cols} FROM {name}"))
+    conn.execute(text(f"DROP TABLE {name}"))
+    conn.execute(text(f"ALTER TABLE {tmp} RENAME TO {name}"))
 
 
 def migrate(conn) -> dict[str, int]:
@@ -79,10 +110,11 @@ def migrate(conn) -> dict[str, int]:
     attempting the ALTERs unconditionally cost a failed statement per column
     plus a write commit to discover zero rows to backfill.
     """
-    summary = {"columns_added": 0, "rows_backfilled": 0, "indexes_created": 0}
+    summary = {"columns_added": 0, "rows_backfilled": 0, "indexes_created": 0,
+               "tables_rebuilt": 0}
 
-    missing = _missing_columns(conn)
-    if not missing:
+    missing, relax = _drift(conn)
+    if not missing and not relax:
         # Steady state for columns, but an index may still be absent — the
         # reflection below is a read, so this stays cheap and write-free.
         summary["indexes_created"] = _create_missing_indexes(conn)
@@ -114,6 +146,11 @@ def migrate(conn) -> dict[str, int]:
             if n:
                 logger.info("migration: labelled %d pre-existing %s rows %r",
                             n, table_name, value)
+
+    for name in relax:
+        _rebuild_table(conn, name)
+        summary["tables_rebuilt"] += 1
+        logger.info("migration: rebuilt %s to relax NOT NULL", name)
 
     summary["indexes_created"] = _create_missing_indexes(conn)
     return summary

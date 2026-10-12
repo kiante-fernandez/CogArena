@@ -21,6 +21,18 @@ from scoring.version import LEGACY_VERSION, scorer_version
 logger = logging.getLogger(__name__)
 
 
+def _mean(values, ndigits: int | None = None):
+    """Rounded mean skipping None, or None if nothing is left.
+
+    Level 2 is None for a task with no Level 2 metrics. Such a task has no
+    accuracy to average, so it drops out of the mean rather than counting as 0.
+    """
+    vals = [v for v in values if v is not None]
+    if not vals:
+        return None
+    return fmean(vals) if ndigits is None else round(fmean(vals), ndigits)
+
+
 class SessionManager:
     def __init__(self, db: AsyncSession, tasks_dir: Path):
         self.db = db
@@ -304,7 +316,7 @@ class SessionManager:
             task_scores=task_scores,
             composite_score=round(sum(t.composite for t in task_scores) / n, 2),
             l1_overall=round(sum(t.l1_completion for t in task_scores) / n, 4),
-            l2_overall=round(sum(t.l2_accuracy for t in task_scores) / n, 4),
+            l2_overall=_mean((t.l2_accuracy for t in task_scores), 4),
             l3_overall=round(sum(t.l3_behavioral for t in task_scores) / n, 4),
         )
 
@@ -423,20 +435,20 @@ class SessionManager:
             if not by_task:
                 continue  # nothing in the requested task set
 
-            def level(attr, by_task=by_task):
-                """Mean within each task, then across tasks."""
-                return fmean([fmean([getattr(s, attr) for s in rows])
-                              for rows in by_task.values()])
+            def level(attr, ndigits, by_task=by_task):
+                """Mean within each task, then across tasks, skipping None."""
+                return _mean((_mean(getattr(s, attr) for s in rows)
+                              for rows in by_task.values()), ndigits)
 
             entries.append({
                 "agent_name": group["agent_name"],
                 "scaffold": group["scaffold"],
                 "model_name": group["model_name"],
                 "observation_mode": group["observation_mode"],
-                "composite_score": round(level("composite"), 2),
-                "l1_overall": round(level("l1_completion"), 4),
-                "l2_overall": round(level("l2_accuracy"), 4),
-                "l3_overall": round(level("l3_behavioral"), 4),
+                "composite_score": level("composite", 2),
+                "l1_overall": level("l1_completion", 4),
+                "l2_overall": level("l2_accuracy", 4),
+                "l3_overall": level("l3_behavioral", 4),
                 "tasks_completed": len(by_task),
                 "sessions_scored": sum(len(v) for v in by_task.values()),
                 "evaluated_at": group["latest_at"].isoformat() if group["latest_at"] else None,
@@ -471,7 +483,7 @@ class SessionManager:
                 "model_name": session.model_name,
                 "composite_score": round(sum(s.composite for s in scores) / n, 2) if n else 0,
                 "l1_overall": round(sum(s.l1_completion for s in scores) / n, 4) if n else 0,
-                "l2_overall": round(sum(s.l2_accuracy for s in scores) / n, 4) if n else 0,
+                "l2_overall": _mean((s.l2_accuracy for s in scores), 4) if n else 0,
                 "l3_overall": round(sum(s.l3_behavioral for s in scores) / n, 4) if n else 0,
                 "tasks_completed": n,
                 "approved": session.approved,
