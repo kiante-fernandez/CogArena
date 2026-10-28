@@ -1,8 +1,8 @@
 # Reproducing CogArena results
 
-This document walks reviewers through (1) installing CogArena, (2) running a single agent end-to-end, (3) regenerating the chance-floor and frontier-model results reported in the paper.
+This guide accompanies the paper, [CogArena: Benchmarking Multimodal Agents on Interactive Behavioral Experiments](https://arxiv.org/abs/2610.36484) (NeurIPS 2026, Evaluations and Datasets Track). Every number in the paper comes from release `v1.3.0` and the results tables under [`results/`](results/).
 
-CogArena is a benchmark suite — the artifact under review is the *evaluation infrastructure*, not a static dataset. To inspect what the paper claims, you run the agent yourself and look at the resulting scorecards.
+CogArena is a benchmark suite, so the main artifact is the evaluation infrastructure rather than a static dataset. You can check the paper's claims in two ways. The first re-derives every analysis from the results tables we released, at no API cost (Section 3). The second re-runs the agents yourself and compares the scorecards (Section 4).
 
 ---
 
@@ -11,41 +11,34 @@ CogArena is a benchmark suite — the artifact under review is the *evaluation i
 ```bash
 git clone https://github.com/kiante-fernandez/CogArena.git
 cd CogArena
+git checkout v1.3.0                    # the release the paper reports
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-lock.txt   # core (server + harness + scoring)
 pip install -e .[agents]               # adds browser-use==0.9.5, playwright
 playwright install chromium            # Chromium binary for browser-use
 ```
 
-System: Python 3.11+, macOS or Linux. The lockfile pins exact versions of the 41 core packages used to produce the paper's results (FastAPI 0.129.2, Starlette 0.52.1, jsPsych 8.2.3 vendored in the repo).
+System: Python 3.11+, macOS or Linux. The lockfile pins the exact versions of the 42 core packages used to produce the paper's results (FastAPI 0.129.2, Starlette 0.52.1, with jsPsych 8.2.3 vendored in the repo).
 
 ---
 
 ## 2. Smoke test (no API calls)
 
-Run the random agent on a single task. This validates the harness without any LLM cost:
+Run the random agent on a single task. This validates the harness without any LLM cost.
 
 ```bash
 python -m harness eval --model random --tasks marbles_risk \
     --start-server --trace-dir /tmp/cogarena_smoke --task-timeout 300
 ```
 
-Expected: ~90 seconds wall time. Prints a scorecard like:
-
-```
-COGARENA SCORECARD: RandomAgent
-  Composite Score:    33.07 / 100
-  L1 Completion:      1.0000
-  L2 Accuracy:        0.5164
-  L3 Behavioral:      0.0000
-```
+Expect about 90 seconds of wall time and a `COGARENA SCORECARD` with Level 1, Level 2, Level 3, and composite scores. `marbles_risk` has no Level 2 metrics as of `v1.3.0`, so its Level 2 prints as `n/a` and the composite splits that weight over Level 1 and Level 3. Scores vary from run to run, because each session draws its own stimulus seed.
 
 Artifacts under `/tmp/cogarena_smoke/`:
-- `meta.json` — session metadata (model, git sha, env, task list)
-- `score.json` — full L1/L2/L3 breakdown with signature-level detail
+- `meta.json` — session metadata (model, git sha, environment, task list)
+- `score.json` — the full Level 1/2/3 breakdown with signature-level detail
 - `trial_data/marbles_risk.json` — raw jsPsych trial data
-- `interactions.jsonl`, `actions.jsonl`, `screenshots/` — agent step trail
-- `server.log` — uvicorn access + tracebacks
+- `interactions.jsonl`, `actions.jsonl`, `screenshots/` — the agent's step trail
+- `server.log` — uvicorn access log and tracebacks
 
 To re-score the saved trial data without rerunning the agent:
 
@@ -55,73 +48,79 @@ python -m scoring.score_session \
     --task-id marbles_risk
 ```
 
-This is the mechanism that lets scoring rules evolve without invalidating prior runs.
+This is the mechanism that lets scoring rules evolve without invalidating earlier runs.
 
 ---
 
-## 3. Reproduce the chance-floor table
+## 3. Re-derive the paper's analyses (no API cost)
 
-The paper's chance-floor numbers come from running the random agent across the v1 task set:
+The released tables hold one row per scored session and one row per signature test:
+
+| Directory | Study in the paper |
+|---|---|
+| `results/rebuttal_v1/` | Main panel: 4 models × 10 tasks × 10 sessions = 400 sessions |
+| `results/random_floor/` | Chance floor: Random Agent, 10 tasks × 10 sessions = 100 sessions |
+| `results/vision_ablation/` | Vision ablation: 4 models × 4 tasks × 5 sessions, DOM text only |
+| `results/flagship/` | Frontier model `gpt-5.6-sol`, one session per task |
+
+Each directory has `runs.csv` (session-level L1, L2, L3, composite, coverage, and observation mode) and `signatures.csv` (signature-level p-value, effect size, direction, and testability).
 
 ```bash
-python -m harness sweep --suite harness/suites/random_floor_v1.yaml \
-    --max-parallel 4 --verbose
+# Per-cell means and SDs, bootstrap rank probabilities, signature pass rates
+# with Wilson intervals, and Level 3 zero-flip counts. Rewrites
+# results/rebuttal_v1/analysis/, and the output matches the committed tables.
+python -m scripts.analyze_repeats --results results/rebuttal_v1
+
+# Level 3 under four grading rules (the grading-rule sensitivity table).
+python -m scripts.grading_rule_sensitivity
+
+# Recompute every derived human baseline from the source studies' data in
+# scoring/human_baselines/sources/, and check those files' hashes.
+python -m scripts.derive_baselines
+python -m scripts.baseline_sources --verify
 ```
 
-100 sessions (10 v1 tasks × 10 repeats), ~60 min wall time, $0 API cost. Some sessions may drop to transient Playwright `Page.goto` timeouts (~15% in our run); the per-task chance-ceiling estimates use whatever sessions complete. Output goes to `data/sweeps/random_floor_v1_<timestamp>/aggregate.csv`.
-
-Reference: [`results/random_floor_v1.csv`](results/random_floor_v1.csv).
+`results/bootstrap_signatures.csv` holds the moving-block bootstrap regrade of every signature test. Producing it, and the response-time structure analysis, requires the raw per-session trial archives (`scripts.block_bootstrap`, `scripts.analyze_rt_structure`, `scripts.build_results`, `scripts.rescore_sweeps`). We will release those archives separately.
 
 ---
 
-## 4. Reproduce the frontier-model results
+## 4. Re-run the studies
 
-Frontier-model evaluation requires `OPENROUTER_API_KEY` in `.env` (or your shell env). All paper models route through OpenRouter, so a single key is sufficient. Estimated cost per (model × 10-task) run, based on observed token usage at v1.1.1:
-
-| Model | $/M in | $/M out | ≈ $ per 10 tasks | OK / 10 in our run |
-|---|---:|---:|---:|---:|
-| `gemini-3-flash-preview` | $0.50 | $3.00 | ~$5  | 10 |
-| `kimi-k2.5`               | $0.44 | $2.00 | ~$4  | 7  |
-| `qwen3-vl-235b-instruct`  | $0.20 | $0.88 | ~$2  | 7  |
-| `qwen3-vl-30b-instruct`   | $0.13 | $0.52 | ~$1.50 | 7  |
-| `grok-4.1-fast`           | $0.20 | $0.50 | ~$2  | 6  |
-| `gpt-5.4-nano`            | $0.20 | $1.25 | ~$2.50 | 8  |
-
-The paper reports the canonical v1 pilot as 6 models × 10 tasks × 1 repeat = 60 sessions. The full set of suite YAMLs that produced it:
+The chance floor needs no API key. The model studies need `OPENROUTER_API_KEY` in `.env` (or your shell environment). Every model in the paper routes through OpenRouter, so one key is enough.
 
 ```bash
-# Three frontier proprietary models (gemini, gpt-5.2-tier, claude-sonnet-4.6).
-# Note: only gemini was actually run in the v1 pilot — gpt-5.2 and Sonnet
-# are listed but skipped because their per-session cost was outside the
-# pilot budget. To rerun gemini alone:
-python -m harness sweep --suite harness/suites/pilot_v1.yaml \
-    --models gemini-3-flash-preview --max-parallel 4
+# Chance floor: 100 sessions, about 60 min at --max-parallel 4, no API cost.
+python -m harness sweep --suite harness/suites/random_floor_v1.yaml --max-parallel 4
 
-# Cheap-frontier additions (grok, glm — glm fails Browser-Use schema):
-python -m harness sweep --suite harness/suites/pilot_v1_cheap.yaml \
-    --max-parallel 4
+# Main panel: 400 sessions across four models.
+python -m harness sweep --suite harness/suites/rebuttal_v1.yaml --max-parallel 4
 
-# Open + cheap-frontier expansion (kimi, qwen-235):
-python -m harness sweep --suite harness/suites/pilot_v1_addons.yaml \
-    --max-parallel 4
+# Vision ablation: the same four models on four tasks with screenshots removed.
+python -m harness sweep --suite harness/suites/vision_ablation.yaml --max-parallel 4
 
-# Smaller open + OpenAI nano (qwen-30, ui-tars [also fails], gpt-5.4-nano):
-python -m harness sweep --suite harness/suites/pilot_v1_addons2.yaml \
-    --max-parallel 4
+# Frontier model: one session per task.
+python -m harness sweep --suite harness/suites/rebuttal_flagship.yaml --max-parallel 4
 ```
 
-Aggregate cost across all four sweeps in our run: ~$15-20 OpenRouter credit. ~75-90 min wall time per sweep at `--max-parallel 4`.
-
-To reproduce a single model cheaply (e.g. `gemini-3-flash-preview` for ~$5):
+To run part of a study, pass `--models` (e.g. `--models gemini-3-flash-preview`). Each sweep writes per-session artifacts under `data/sweeps/<suite>_<timestamp>/`. To turn a sweep into tables like the released ones and analyze them:
 
 ```bash
-python -m harness sweep --suite harness/suites/pilot_v1.yaml \
-    --models gemini-3-flash-preview --max-parallel 4 --verbose
+python -m scripts.build_results --sweep data/sweeps/<your_sweep> --out results/my_run
+python -m scripts.analyze_repeats --results results/my_run
 ```
 
-Reference results: [`results/pilot_v1.csv`](results/pilot_v1.csv) (60 rows, 6 models).
+Approximate OpenRouter cost per model for one session on each of the ten tasks, from observed token usage. A full panel cell is ten such passes.
 
-Two models were excluded from the canonical results — `glm-4.6v` and `ui-tars-1.5-7b` both produced 0/10 successful sessions because Browser-Use's strict pydantic action validator rejected their native action shapes (`{"key": " "}` and `{"input": ...}` respectively, where the validator requires `{"send_keys": {"keys": " "}}`). The suite YAMLs that reference them are kept in the repo for reproducibility but the failure pattern is a scaffold-compatibility note, not a model-capability claim.
+| Model | $/M in | $/M out | ≈ $ per 10 tasks |
+|---|---:|---:|---:|
+| `gemini-3-flash-preview` | $0.50 | $3.00 | ~$5 |
+| `kimi-k2.5`              | $0.44 | $2.00 | ~$4 |
+| `qwen3-vl-235b-instruct` | $0.20 | $0.88 | ~$2 |
+| `gpt-5.4-nano`           | $0.20 | $1.25 | ~$2.50 |
+
+Two models attempted for the paper, `glm-4.6v` and `ui-tars-1.5-7b`, produced no valid scorecards. Browser-Use's pydantic action validator rejected their native action shapes (`{"key": " "}` and `{"input": ...}` respectively, where it requires `{"send_keys": {"keys": " "}}`). This is a scaffold-compatibility note, not a model-capability claim.
+
+The submission-era pilot (6 models × 10 tasks × 1 session) is kept for the record in `results/pilot_v1.csv` and the `harness/suites/pilot_v1*.yaml` suites. The paper no longer reports it.
 
 ---
 
@@ -135,7 +134,7 @@ To generate your own from a session you just ran:
 python -m harness replay --session <session_id> --inline
 ```
 
-The `--inline` flag produces a self-contained HTML file with screenshots embedded — no server required to view it.
+The `--inline` flag produces a self-contained HTML file with screenshots embedded, so no server is needed to view it.
 
 ---
 
@@ -145,24 +144,28 @@ The `--inline` flag produces a self-contained HTML file with screenshots embedde
 pytest scoring/tests/ harness/tests/ -v
 ```
 
-Expected: 374 passed (313 scoring + 10 harness unit + 51 field-alignment tests). Field-alignment tests verify every task's data layout matches what the L1/L2/L3 scorers expect.
+Expected: 456 passed. Among them, `scoring/tests/test_committed_results_reproduce.py` checks that every committed results table reproduces under the current task specifications.
 
 ---
 
 ## What each result file contains
 
-- **`results/random_floor_v1.csv`** — 100-row chance floor: `(run_index, repeat_index, model_id, task_id, rc, wall_time, composite, l1, l2, l3)`. `model_id="random"` for all rows. Some rows have `rc=1` (transient Playwright timeouts) and empty score columns; the chance-ceiling analysis uses only `rc=0` rows.
-- **`results/pilot_v1.csv`** — 60-row frontier-model pilot, same schema. 6 models × 10 tasks × 1 repeat. Composite = 100 × (0.15·L1 + 0.35·L2 + 0.50·L3).
-- **`results/example_replay.html`** — self-contained HTML scrub of one agent run (gemini × moral_machine).
-- **Per-session `score.json`** (under `data/sweeps/<run>/runs/<r##>/artifacts/`) — full signature-level detail: every L3 effect's measured statistic, expected direction, score, and weight.
+- **`results/rebuttal_v1/`, `results/random_floor/`, `results/vision_ablation/`, `results/flagship/`** — `runs.csv` and `signatures.csv` for each study, as described in Section 3. A session is measurable (`l3_measurable`) when at least half of its task's signature weight was testable and no test errored. The paper's descriptive Level 3 and composite means are taken over measurable sessions.
+- **`results/rebuttal_v1/analysis/`** — the tables `scripts.analyze_repeats` writes: `cell_stability.csv`, `rank_stability.csv`, `signature_pass_rates.csv`, and `l3_zero_flips.csv`.
+- **`results/bootstrap_signatures.csv`** — the moving-block bootstrap regrade of every signature test.
+- **`results/pilot_v1.csv`**, **`results/random_floor_v1.csv`** — the submission-era pilot and chance floor, superseded by the directories above.
+- **`results/example_replay.html`** — a self-contained HTML scrub of one agent run (gemini × moral_machine).
+- **Per-session `score.json`** (under `data/sweeps/<run>/runs/<r##>/artifacts/`, after you run a sweep) — full signature-level detail: every Level 3 effect's measured statistic, expected direction, score, and weight.
+
+The composite is 100 × (0.15·L1 + 0.35·L2 + 0.50·L3). A task with no Level 2 metrics splits the Level 2 weight over Level 1 and Level 3 in proportion.
 
 ---
 
 ## Troubleshooting
 
 - **`playwright._impl._errors.Error: Executable doesn't exist`** — run `playwright install chromium`.
-- **`openai.AuthenticationError` or `httpx 401`** — set `OPENROUTER_API_KEY` in `.env`. The harness uses pydantic-settings to auto-load `.env` at import time.
-- **All sessions FAIL in 1–3 seconds** — check `data/sweeps/<run>/runs/r00_*/run.log` for a Python traceback. Server log is at `artifacts/server.log` in the same directory.
-- **Site-related issues (`/`, `/catalog` 500)** — these are surfaced by the dev server (`uvicorn harness.server:app`). The benchmark itself doesn't depend on the website; it's a presentation layer over `/api/*` endpoints.
+- **`openai.AuthenticationError` or `httpx 401`** — set `OPENROUTER_API_KEY` in `.env`. The harness uses pydantic-settings to load `.env` at import time.
+- **All sessions FAIL in 1–3 seconds** — check `data/sweeps/<run>/runs/r00_*/run.log` for a Python traceback. The server log is at `artifacts/server.log` in the same directory.
+- **Site-related issues (`/`, `/catalog` 500)** — these come from the dev server (`uvicorn harness.server:app`). The benchmark itself doesn't depend on the website, which is a presentation layer over the `/api/*` endpoints.
 
-For all other questions: see [`CLAUDE.md`](CLAUDE.md) for the developer-oriented architecture overview, or the inline docstrings in `harness/`, `scoring/`, and `agents/`.
+For anything else, see [`CLAUDE.md`](CLAUDE.md) for the developer-oriented architecture overview, or the docstrings in `harness/`, `scoring/`, and `agents/`.

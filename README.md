@@ -1,8 +1,9 @@
 # CogArena
 
 [![NeurIPS 2026](https://img.shields.io/badge/NeurIPS%202026-Evaluations%20%26%20Datasets%20Track-4b44ce)](#citation)
+[![arXiv](https://img.shields.io/badge/arXiv-2610.36484-b31b1b.svg)](https://arxiv.org/abs/2610.36484)
 
-> **Accepted at NeurIPS 2026.** CogArena will appear in the Evaluations and Datasets Track of the 40th Conference on Neural Information Processing Systems. See [Citation](#citation) below.
+> **Accepted at NeurIPS 2026.** CogArena will appear in the Evaluations and Datasets Track of the 40th Conference on Neural Information Processing Systems. Read the paper on [arXiv](https://arxiv.org/abs/2610.36484), and see [Citation](#citation) below.
 
 Claims about the cognitive capabilities of large language models are typically tested by translating behavioral paradigms into natural language prompts, bypassing the visual interfaces and time-pressured interactions through which human participants actually engage with experiments. In parallel, recent demonstrations that AI agents can produce human-like response data on live behavioral tasks raise concerns that online datasets used across the social and behavioral sciences are increasingly susceptible to contamination. We introduce CogArena, a benchmark of ten experimental paradigms drawn from social and behavioral science. Agents interact with the experiments through a standard browser, processing visual stimuli and responding under configurable deadlines. We designed a three-level scoring pipeline that evaluates task completion, performance accuracy, and alignment with canonical task-specific signatures. Across four economy-tier multimodal agents, each run ten times per task, we find that completing an experiment and reproducing its behavioral signatures are separable. Agents that finish a task reproduce some of the signatures these paradigms reliably elicit in people and not others, and many attempted sessions do not produce complete data at all. CogArena provides the tasks, scoring pipeline, and a public leaderboard for ongoing community submissions.
 
@@ -81,9 +82,13 @@ Full list in the task catalog.
 
 ```bibtex
 @inproceedings{cogarena2026,
-  title     = {{CogArena}: Benchmarking Multimodal Agents on Interactive Behavioral Experiments},
-  author    = {Fernandez, Kiant{\'e} and Chen, Caitlin and Zhou, Jialu and Sadowski, Bartek and Miceli, Anthony C. and Krajbich, Ian},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS 2026), Evaluations and Datasets Track},
-  year      = {2026}
+  title         = {{CogArena}: Benchmarking Multimodal Agents on Interactive Behavioral Experiments},
+  author        = {Fernandez, Kiant{\'e} and Chen, Caitlin and Zhou, Jialu and Sadowski, Bartek and Miceli, Anthony C. and Krajbich, Ian},
+  booktitle     = {Advances in Neural Information Processing Systems (NeurIPS 2026), Evaluations and Datasets Track},
+  year          = {2026},
+  eprint        = {2610.36484},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+  url           = {https://arxiv.org/abs/2610.36484}
 }
 ```

@@ -19,6 +19,11 @@ dependencies = [
     "pyyaml>=6.0",
 ]
 
+[project.urls]
+Homepage = "https://cog-arena.vercel.app"
+Repository = "https://github.com/kiante-fernandez/CogArena"
+Paper = "https://arxiv.org/abs/2610.36484"
+
 [project.optional-dependencies]
 # `pip install -e .[agents]` for the LLM-driven Browser-Use scaffold.
 # Pinned version: Browser-Use's API churns aggressively across minor releases;
