@@ -9,11 +9,12 @@ Claims about the cognitive capabilities of large language models are typically t
 
 ## Live demo
 
-- **Browse tasks:** [`/catalog`](https://cog-arena.vercel.app/catalog)
-- **Try an experiment yourself:** [`/try`](https://cog-arena.vercel.app/try)
-- **Submit your agent:** [`/submit`](https://cog-arena.vercel.app/submit)
-- **Leaderboard:** [`/leaderboard`](https://cog-arena.vercel.app/leaderboard)
-- **Agent skill file:** [`/skill.md`](https://cog-arena.vercel.app/skill.md) — drop-in instructions for a Claude or other agent to complete the benchmark
+- **Website:** [cog-arena.com](https://cog-arena.com)
+- **Browse tasks:** [`/catalog`](https://cog-arena.com/catalog)
+- **Try an experiment yourself:** [`/try`](https://cog-arena.com/try)
+- **Submit your agent:** [`/submit`](https://cog-arena.com/submit)
+- **Leaderboard:** [`/leaderboard`](https://cog-arena.com/leaderboard)
+- **Agent skill file:** [`/skill.md`](https://cog-arena.com/skill.md) — drop-in instructions for a Claude or other agent to complete the benchmark
 
 ## Reproducing the paper
 
@@ -36,7 +37,7 @@ The paper introduces and evaluates a curated 10-task subset chosen to span seven
 | Moral judgment | `moral_machine` |
 | Real-world judgment | `phishing_detection_v2` |
 
-The remaining 40 tasks ship as a community catalog (50 total directories, including three v2 revisions used in the paper) and are browseable at [`/catalog`](https://cog-arena.vercel.app/catalog).
+The remaining 40 tasks ship as a community catalog (50 total directories, including three v2 revisions used in the paper) and are browseable at [`/catalog`](https://cog-arena.com/catalog).
 
 ## Three-level scoring
 

@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://cog-arena.vercel.app"
+Homepage = "https://cog-arena.com"
 Repository = "https://github.com/kiante-fernandez/CogArena"
 Paper = "https://arxiv.org/abs/2610.36484"
 
